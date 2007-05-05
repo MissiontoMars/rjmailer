@@ -9,14 +9,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Represents a query sent to the DNS server.
+ * Represents a query sent to the DNS server. This class has the ability
+ * to serialize to a byte stream suitable for sending to a Domain Name Server
+ * as defined in the RFC1035.
  *
- *
+ * @author Noa Resare (noa@resare.com)
  */
 public class Query
 {
     private String name;
     private int id;
+    private byte[] wireCache = null;
 
     private static Random random = new Random();
 
@@ -31,17 +34,18 @@ public class Query
         return id;
     }
 
-    private byte Z = (byte)0;
 
     public byte[] toWire()
     {
+        if (wireCache != null) {
+            return wireCache;
+        }
         // RFC1035 4.1.2
         ByteArrayOutputStream baos = new ByteArrayOutputStream(10 + calculateNameLength());
         try {
             // the header, 4.1.1
             writeBEUInt16(id, baos);
-            baos.write(new byte[] {(byte)(1 + (1 << 7)), Z,
-                    Z, (byte)1, Z, Z, Z, Z, Z, Z});
+            baos.write(new byte[] {1, 0, 0, 1, 0,0,0,0,0,0});
             nameToWire(baos);
             // TYPE MX
             writeBEUInt16(15, baos);
@@ -50,7 +54,8 @@ public class Query
         } catch (IOException e) {
             throw new RJMException(e);
         }
-        return baos.toByteArray();
+        wireCache = baos.toByteArray();
+        return wireCache;
     }
 
 
@@ -71,6 +76,8 @@ public class Query
     /**
      * Converts a domain name to bytes suitable for DNS wire transfer.
      *
+     * @param os the OutputStream to write the query data to
+     * @throws IOException beacuse we work with streams.. doh
      */
     void nameToWire(OutputStream os)
             throws IOException

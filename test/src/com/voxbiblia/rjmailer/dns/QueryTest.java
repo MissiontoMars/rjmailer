@@ -5,11 +5,7 @@ import junit.framework.TestCase;
 import java.io.ByteArrayOutputStream;
 
 /**
- * Created by IntelliJ IDEA.
- * User: noa
- * Date: Apr 24, 2007
- * Time: 8:50:32 PM
- * To change this template use File | Settings | File Templates.
+ * Tests the query class. 
  */
 public class QueryTest
     extends TestCase
@@ -23,7 +19,7 @@ public class QueryTest
             int id = q.getId();
             assertEquals((byte)(id >> 8 & 0xff), bytes[0]);
             assertEquals((byte)(id & 0xff), bytes[1]);
-            assertEquals((byte)129, bytes[2]);
+            assertEquals((byte)1, bytes[2]);
             assertEquals(0, bytes[3]);
             assertEquals(0, bytes[4]);
             assertEquals((byte)1, bytes[5]);
