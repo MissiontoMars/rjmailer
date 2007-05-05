@@ -2,8 +2,10 @@ package com.voxbiblia.rjmailer.dns;
 
 import com.voxbiblia.rjmailer.RJMException;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * A Resolver instance resolves DNS queries by relaying them an external
@@ -11,8 +13,9 @@ import java.net.UnknownHostException;
  */
 public class Resolver
 {
-    InetAddress serverAddress;
+    InetAddress server;
     int timeout;
+    private static final int PORT = 53;
 
     /**
      * Creates a new Resolver instance with the given serverIp as it's
@@ -23,14 +26,27 @@ public class Resolver
     public Resolver(String serverIp)
     {
         try {
-            this.serverAddress = InetAddress.getByName(serverIp);
+            this.server = InetAddress.getByName(serverIp);
         } catch (UnknownHostException e) {
             throw new RJMException(e);
         }
     }
 
-    public void resolve(Query query)
+    public List resolve(Query query)
     {
+        try {
+            DatagramSocket ds = new DatagramSocket();
+            byte[] bs = query.toWire();
+            DatagramPacket dp = new DatagramPacket(bs, bs.length, server, PORT);
+            try {
+                ds.send(dp);
+            } catch (IOException e) {
+                throw new RJMException(e);
+            }
+        } catch (SocketException e) {
+            throw new RJMException(e);
+        }
+        return new ArrayList();
     }
 
 

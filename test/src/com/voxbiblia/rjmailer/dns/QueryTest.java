@@ -2,6 +2,8 @@ package com.voxbiblia.rjmailer.dns;
 
 import junit.framework.TestCase;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * Created by IntelliJ IDEA.
  * User: noa
@@ -15,8 +17,9 @@ public class QueryTest
     public void testGetHeader()
     {
         for (int i = 0 ; i < 1; i++) {
-            Query q = new Query();
-            byte[] bytes = q.getHeader();
+            Query q = new Query("test");
+            byte[] bytes = q.toWire();
+            assertNotNull(bytes);
             int id = q.getId();
             assertEquals((byte)(id >> 8 & 0xff), bytes[0]);
             assertEquals((byte)(id & 0xff), bytes[1]);
@@ -35,12 +38,15 @@ public class QueryTest
     }
 
     public void testNameToWire()
+            throws Exception
     {
-        Query q = new Query();
-        q.setName("resare.com");
-        compareArrays(new byte[]{6,'r','e','s','a','r','e',3,'c','o','m',0},q.nameToWire());
-        q.setName("resare.com.");
-        compareArrays(new byte[]{6,'r','e','s','a','r','e',3,'c','o','m',0},q.nameToWire());
+        Query q = new Query("resare.com");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        q.nameToWire(baos);
+        compareArrays(new byte[]{6,'r','e','s','a','r','e',3,'c','o','m',0},baos.toByteArray());
+        baos = new ByteArrayOutputStream();
+        q.nameToWire(baos);
+        compareArrays(new byte[]{6,'r','e','s','a','r','e',3,'c','o','m',0},baos.toByteArray());
     }
 
     private void compareArrays(byte[] b0, byte[] b1)

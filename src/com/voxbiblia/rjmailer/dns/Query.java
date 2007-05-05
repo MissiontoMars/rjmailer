@@ -1,9 +1,12 @@
 package com.voxbiblia.rjmailer.dns;
 
 import com.voxbiblia.rjmailer.RJMParseException;
+import com.voxbiblia.rjmailer.RJMException;
 
 import java.util.Random;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Represents a query sent to the DNS server.
@@ -12,34 +15,15 @@ import java.io.ByteArrayOutputStream;
  */
 public class Query
 {
-    private String name, type;
+    private String name;
     private int id;
 
     private static Random random = new Random();
 
-    public Query()
+    public Query(String name)
     {
-        this.id = random.nextInt(0xffff); 
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
+        this.id = random.nextInt(0xffff);
         this.name = name;
-    }
-
-    public String getType()
-    {
-        return type;
-    }
-
-    public void setType(String type)
-    {
-        this.type = type;
     }
 
     public int getId()
@@ -47,32 +31,50 @@ public class Query
         return id;
     }
 
+    private byte Z = (byte)0;
+
     public byte[] toWire()
     {
-        // see RFC1035 4.1.1
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] header = new byte[12];
-        return null;
+        // RFC1035 4.1.2
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(10 + calculateNameLength());
+        try {
+            // the header, 4.1.1
+            writeBEUInt16(id, baos);
+            baos.write(new byte[] {(byte)(1 + (1 << 7)), Z,
+                    Z, (byte)1, Z, Z, Z, Z, Z, Z});
+            nameToWire(baos);
+            // TYPE MX
+            writeBEUInt16(15, baos);
+            // CLASS IN
+            writeBEUInt16(1, baos);
+        } catch (IOException e) {
+            throw new RJMException(e);
+        }
+        return baos.toByteArray();
     }
 
-    byte[] getHeader()
+
+    static void writeBEUInt16(int i, OutputStream os)
+            throws IOException
     {
-        byte[] header = new byte[12];
-        header[0] = (byte)(id >> 8 & 0xff);
-        header[1] = (byte)(id & 0xff);
-        // flags, bit 0 and 7 is 1 all others 0
-        header[2] = (byte)(1 + (1 << 7));
-        // qdcount == 0
-        // always contains one (1) query. The rest
-        // of the sizes are zero.
-        header[5] = 1;
-        
-        return header;
+        os.write((byte)(i >> 8 & 0xff));
+        os.write((byte)(i & 0xff));
     }
 
-    byte[] nameToWire()
+
+    int calculateNameLength()
     {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int len = name.length();
+        return name.charAt(len - 1) == '.' ? len : len + 1;
+    }
+
+    /**
+     * Converts a domain name to bytes suitable for DNS wire transfer.
+     *
+     */
+    void nameToWire(OutputStream os)
+            throws IOException
+    {
         int start = 0;
         char[] nameChars = name.toCharArray();
         for (int i = 0; i < name.length(); i++) {
@@ -82,27 +84,23 @@ public class Query
             }
             if (c == '.') {
                 if (i - start > 63) {
-                    throw new RJMParseException("contains label longer than 63 chars: " + name);
+                    throw new RJMParseException("contains label longer than " +
+                            "63 chars: " + name);
                 }
-                baos.write(i - start);
+                os.write(i - start);
                 for (int j = start; j < i; j++) {
-                    baos.write(nameChars[j]);
+                    os.write(nameChars[j]);
                 }
                 i++;
                 start = i;
             }
         }
         if (start < nameChars.length) {
-            baos.write(nameChars.length - start);
+            os.write(nameChars.length - start);
             for (int j = start; j < nameChars.length; j++) {
-                baos.write(nameChars[j]);
+                os.write(nameChars[j]);
             }
         }
-        baos.write(0);
-        byte[] result = baos.toByteArray();
-        if (result.length > 255) {
-            throw new RJMParseException("name " + name + " too long.");
-        }
-        return result;
+        os.write(0);
     }
 }
