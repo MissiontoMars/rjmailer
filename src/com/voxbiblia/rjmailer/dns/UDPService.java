@@ -142,7 +142,7 @@ class UDPService
             while (true) {
                 try {
                     socket.receive(dp);
-                    int id = Resolver.parseBEUInt16(dp.getData(), 0);
+                    int id = Buffer.parseInt16(dp.getData());
                     UDPState state = (UDPState)queryMap.get(new Integer(id));
                     if (state != null) {
                         byte[] data = new byte[dp.getLength()];

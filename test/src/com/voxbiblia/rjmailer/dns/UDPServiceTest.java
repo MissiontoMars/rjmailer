@@ -13,17 +13,6 @@ import java.io.FileOutputStream;
 public class UDPServiceTest
     extends TestCase
 {
-    public void testParseBEUInt16()
-    {
-        byte[] buf = new byte[2];
-        buf[0] = 18;
-        buf[1] = 19;
-        assertEquals(4627, Resolver.parseBEUInt16(buf, 0));
-
-        buf[0] = -1;
-        buf[1] = -1;
-        assertEquals(65535, Resolver.parseBEUInt16(buf, 0));
-    }
 
     public void testSendRecv()
             throws Exception

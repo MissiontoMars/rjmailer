@@ -3,28 +3,33 @@ package com.voxbiblia.rjmailer.dns;
 /**
  * An MX record
  */
-public class MXRecord
+public class MXRecord implements Comparable
 {
-    private String name;
-    private int priority;
+    private String exchange;
+    private int preference;
 
-    public String getName()
+    public String getExchange()
     {
-        return name;
+        return exchange;
     }
 
-    public void setName(String name)
+    public void setExchange(String exchange)
     {
-        this.name = name;
+        this.exchange = exchange;
     }
 
-    public int getPriority()
+    public int getPreference()
     {
-        return priority;
+        return preference;
     }
 
-    public void setPriority(int priority)
+    public void setPreference(int preference)
     {
-        this.priority = priority;
+        this.preference = preference;
+    }
+
+    public int compareTo(Object o)
+    {
+        return preference - ((MXRecord)o).getPreference();
     }
 }

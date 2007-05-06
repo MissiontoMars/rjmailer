@@ -5,9 +5,8 @@ import com.voxbiblia.rjmailer.RJMException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * A Resolver instance resolves DNS queries by relaying them an external
@@ -17,119 +16,109 @@ public class Resolver
 {
     private UDPService udpService;
     int timeout;
-    private static final int PORT = 53;
 
     /**
-     * Creates a new Resolver instance with the given serverIp as it's
+     * Creates a new Resolver instance with the given server as it's
      * name server.
      *
-     * @param serverIp the ip numer, or hostname of the server to use
+     * @param server the ip numer, or hostname of the server to use
      */
-    public Resolver(String serverIp)
+    public Resolver(String server)
     {
         try {
-            InetAddress server = InetAddress.getByName(serverIp);
-            udpService = new UDPService(server);
+            InetAddress ia = InetAddress.getByName(server);
+            udpService = new UDPService(ia);
         } catch (UnknownHostException e) {
             throw new RJMException(e);
         }
     }
 
+    /**
+     * Resolves a Query using the server supplied in the Resolver constructor.
+     *
+     * @param query
+     * @return a sorted List of MXRecord objects, with lowest preference first.
+     *
+     */
     public List resolve(Query query)
     {
-        return null;
+        return parseResponse(udpService.sendRecv(query));
     }
 
+    /**
+     * Parses an incoming MX query and returns a sorted list of MXRecord
+     * objects (lowest preference first).
+     *
+     * @param data an array of bytes read from an response packet from a
+     * DNS server.
+     * @return a sorted List of MXRecord objects, with lowest preference first.
+     */
     static List parseResponse(byte[] data)
-
     {
-        try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(data);
-            System.out.println("id: " + parseBEUInt16(bais));
-            int flagByte = bais.read();
-            System.out.println((flagByte & 0x80) == 0 ? "query" : "response");
-            System.out.println("authoritative: " + ((flagByte & 0x02) == 0));
-            flagByte = bais.read();
-            int qCount = parseBEUInt16(bais);
-            System.out.println("question count: " + qCount);
-            int aCount = parseBEUInt16(bais);
-            System.out.println("answer count: " + aCount);
-            System.out.println("authority count: " + parseBEUInt16(bais));
-            System.out.println("additional count: " + parseBEUInt16(bais));
-            for (int i = 0; i < qCount; i++) {
-                readQuery(bais);
-            }
-            for (int i = 0; i < aCount; i++) {
-                readRecord(bais);
-            }
+        // RFC1035 4.1, Message Format
+        Buffer buffer = new Buffer(data);
 
-            return null;
-        } catch (IOException e) {
-            throw new Error(e);
+        // 4.1.1 Header format
+        // id is already matched, skipping
+        buffer.skip(2);
+        int flagByte = buffer.read();
+        if ((flagByte & 0x80) == 0) {
+            throw new RJMException("got response that claimed to be a query");
         }
+        buffer.skip();
+        int questionCount = buffer.readInt16();
+        int answerCount = buffer.readInt16();
+        // for now, we're not interested in authority or additional records
+        buffer.skip(4);
+
+        List mxRecords = new ArrayList();
+
+        for (int i = 0; i < questionCount; i++) {
+            readQuery(buffer);
+        }
+        for (int i = 0; i < answerCount; i++) {
+            readRecord(buffer, mxRecords);
+        }
+
+        Collections.sort(mxRecords);
+
+        return mxRecords;
     }
 
-    static void readQuery(InputStream is)
-            throws IOException
+    static void readQuery(Buffer buffer)
     {
-        readName(is);
-        System.out.println("type Code: " + parseBEUInt16(is));
-        System.out.println("class: " + parseBEUInt16(is));
+        // RFC 1035 4.1.2
+        buffer.readName();
+        // skipping type and class
+        buffer.skip(4);
     }
 
-    static void readRecord(InputStream is)
-            throws IOException
+    static void readRecord(Buffer buffer, List mxRecords)
     {
-        readName(is);
-        int typeCode = parseBEUInt16(is);
-        System.out.println("typeCode: " + typeCode);
+        // RFC 1035 4.1.3
+        // ignoring name
+        buffer.readName();
+        int typeCode = buffer.readInt16();
+
+        // skipping class and ttl for now
+        buffer.skip(6);
+        int rLength = buffer.readInt16();
         switch (typeCode) {
-            case 15: // MX
-                int preference = parseBEUInt16(is);
-                System.out.println("preference: " + preference);
-                readName(is);
+            case 15: // MX 3.3.9
+                MXRecord mx = new MXRecord();
+                mx.setPreference(buffer.readInt16());
+                mx.setExchange(buffer.readName());
+                mxRecords.add(mx);
+                break;
+            /*
+            case 2:  // NS 3.3.11
+                dump("nameserver: " + buffer.readName());
+                break;
+            */
+            default:
+                buffer.skip(rLength);
                 break;
         }
-    }
-
-    static void readName(InputStream is)
-            throws IOException
-    {
-        StringBuffer sb = new StringBuffer();
-        int len = getLen(is);
-        if (len < 0) {
-            // handle compressed domain name
-        }
-        if (len != 0) {
-            byte[] bytes = new byte[len];
-            is.read(bytes);
-            sb.append(new String(bytes, "US-ASCII"));
-            len = getLen(is);
-            if (len < 0) {
-                // handle compressed domain name
-            }
-        }
-        while (len != 0) {
-            byte[] bytes = new byte[len];
-            is.read(bytes);
-            sb.append('.');
-            sb.append(new String(bytes, "US-ASCII"));
-            len = getLen(is);
-            if (len < 0) {
-                // handle compressed domain name
-            }
-        }
-        System.out.println("name: " + sb.toString());
-    }
-
-    static int getLen(InputStream is)
-            throws IOException
-    {
-        int len = is.read();
-        if ((len & 0xc0)  != 0) {
-            return -((len & 0x3f << 8) + is.read());
-        }
-        return len;
     }
 
     /**
@@ -142,26 +131,7 @@ public class Resolver
      */
     public void setTimeout(int timeout)
     {
-        this.timeout = timeout;
+        udpService.setTimeout(timeout);
     }
-
-    static int parseBEUInt16(InputStream is)
-    {
-        try {
-            return (is.read() << 8) + is.read();
-        } catch (IOException e) {
-            throw new Error();
-        }
-    }
-
-    static int parseBEUInt16(byte[] buf, int offset)
-    {
-        return (pos(buf[offset]) << 8) + pos(buf[offset + 1]);
-    }
-
-    static int pos(byte b) {
-        return b < 0 ? b + 0x100 : b;
-    }
-
 
 }

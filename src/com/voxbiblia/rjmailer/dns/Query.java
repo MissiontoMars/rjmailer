@@ -17,9 +17,8 @@ import java.io.OutputStream;
  */
 public class Query
 {
-    private String name;
-    private int id;
-    private byte[] wireCache = null;
+    private final String name;
+    private final int id;
 
     private static Random random = new Random();
 
@@ -37,15 +36,12 @@ public class Query
 
     public byte[] toWire()
     {
-        if (wireCache != null) {
-            return wireCache;
-        }
         // RFC1035 4.1.2
         ByteArrayOutputStream baos = new ByteArrayOutputStream(10 + calculateNameLength());
         try {
             // the header, 4.1.1
             writeBEUInt16(id, baos);
-            baos.write(new byte[] {1, 0, 0, 1, 0,0,0,0,0,0});
+            baos.write(new byte[] {1, 0, 0, 1, 0, 0, 0, 0, 0, 0});
             nameToWire(baos);
             // TYPE MX
             writeBEUInt16(15, baos);
@@ -54,8 +50,7 @@ public class Query
         } catch (IOException e) {
             throw new RJMException(e);
         }
-        wireCache = baos.toByteArray();
-        return wireCache;
+        return baos.toByteArray();
     }
 
 
