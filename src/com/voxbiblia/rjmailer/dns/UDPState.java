@@ -10,7 +10,9 @@ import java.net.DatagramPacket;
 class UDPState
 {
     private byte[] response;
+    private int id;
     private DatagramPacket query;
+    private Throwable exception;
 
     public byte[] getResponse()
     {
@@ -22,6 +24,16 @@ class UDPState
         this.response = response;
     }
 
+    public int getId()
+    {
+        return id;
+    }
+
+    public void setId(int id)
+    {
+        this.id = id;
+    }
+
     public DatagramPacket getQuery()
     {
         return query;
@@ -30,5 +42,15 @@ class UDPState
     public void setQuery(DatagramPacket query)
     {
         this.query = query;
+    }
+
+    public Throwable getException()
+    {
+        return exception;
+    }
+
+    public void setException(Throwable exception)
+    {
+        this.exception = exception;
     }
 }

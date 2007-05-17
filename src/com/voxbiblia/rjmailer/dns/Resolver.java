@@ -14,6 +14,7 @@ import java.util.Collections;
  */
 public class Resolver
 {
+    //Logger log = Logger.getLogger(Resolver.class.getName());
     private UDPService udpService;
     int timeout;
 

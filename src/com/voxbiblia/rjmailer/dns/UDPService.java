@@ -9,14 +9,14 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.io.IOException;
 
 /**
- * Adds 
+ * Low level multithreaded UDP Service that sends and recieves UDP messages,
+ * pairing requests and responses based on the id value in the first two
+ * packet bytes.
  *
  * @author Noa Resare (noa@voxbiblia.com)
  */
@@ -31,7 +31,7 @@ class UDPService
     private static final int PORT = 53;
 
     private DatagramSocket socket;
-    private Scheduler scheduler;
+    private UDPScheduler scheduler;
 
     /**
      * Constructs a new UDPService and spins up the Recieve and Scheduler
@@ -48,7 +48,7 @@ class UDPService
         } catch (SocketException e) {
             throw new RJMException(e);
         }
-        scheduler = new Scheduler();
+        scheduler = new UDPScheduler(socket, queryMap);
         scheduler.setDaemon(true);
         scheduler.start();
 
@@ -69,14 +69,14 @@ class UDPService
      * without an answer.
      */
     public byte[] sendRecv(Query query)
-            throws RJMTimeoutException
     {
         UDPState state = new UDPState();
         byte[] queryBytes = query.toWire();
         state.setQuery(new DatagramPacket(queryBytes, queryBytes.length, server, PORT));
+        state.setId(Buffer.parseInt16(queryBytes));
         Integer key = new Integer(query.getId());
         queryMap.put(key, state);
-        scheduler.queue(state);
+        scheduler.enqueue(state);
         try {
             synchronized(state) {
                 state.wait(timeout * 1000);
@@ -85,51 +85,21 @@ class UDPService
             throw new Error("someone interruped this thread");
         }
         queryMap.remove(key);
-        return state.getResponse();
+        byte[] response = state.getResponse();
+        if (response == null) {
+            Throwable t = state.getException();
+            if (t != null) {
+                throw new RJMException(t);
+            }
+            throw new RJMTimeoutException("timeout " +
+                    "after " + timeout + " seconds.");
+        }
+        return response;
     }
 
     public void setTimeout(int seconds)
     {
         this.timeout = seconds;
-    }
-
-    private class Scheduler extends Thread
-    {
-        private LinkedList toHandle = new LinkedList();
-
-        public void queue(UDPState state)
-        {
-            synchronized(this) {
-                toHandle.add(state);
-                this.notify();
-            }
-        }
-
-        public void run()
-        {
-            UDPState current;
-            //noinspection InfiniteLoopStatement
-            while (true) {
-                synchronized(this) {
-                    if (toHandle.size() > 0) {
-                        current = (UDPState)toHandle.removeFirst();
-                    } else {
-                        try {
-                            this.wait();
-                        } catch (InterruptedException e) {
-                            log.log(Level.WARNING, "Scheduler interrupted", e);
-                        }
-                        current = (UDPState)toHandle.removeFirst();
-                    }
-                }
-                try {
-                    socket.send(current.getQuery());
-                } catch (IOException e) {
-                    throw new RJMException(e);
-                }
-            }
-
-        }
     }
 
     private class Reciever extends Thread
@@ -143,6 +113,7 @@ class UDPService
                 try {
                     socket.receive(dp);
                     int id = Buffer.parseInt16(dp.getData());
+                    scheduler.remove(id);
                     UDPState state = (UDPState)queryMap.get(new Integer(id));
                     if (state != null) {
                         byte[] data = new byte[dp.getLength()];
