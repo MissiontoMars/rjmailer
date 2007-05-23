@@ -3,15 +3,10 @@ package com.voxbiblia.rjmailer.dns;
 import com.voxbiblia.rjmailer.RJMException;
 import com.voxbiblia.rjmailer.RJMTimeoutException;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.io.IOException;
 
 /**
  * Low level multithreaded UDP Service that sends and recieves UDP messages,
@@ -20,35 +15,27 @@ import java.io.IOException;
  *
  * @author Noa Resare (noa@voxbiblia.com)
  */
-class UDPService
+class ConversationService
 {
-    private static Logger log = Logger.getLogger(UDPService.class.getName());
+    private static Logger log = Logger.getLogger(ConversationService.class.getName());
 
     // default timeout value is 20 seconds.
     private int timeout = 20;
     private Map queryMap = Collections.synchronizedMap(new HashMap());
-    private InetAddress server;
-    private static final int PORT = 53;
 
-    private DatagramSocket socket;
-    private UDPScheduler scheduler;
+    private TransportService transportService;
+    private ConversationScheduler scheduler;
 
     /**
-     * Constructs a new UDPService and spins up the Recieve and Scheduler
+     * Constructs a new ConversationService and spins up the Reciever and Scheduler
      * daemon threads.
      *
-     * @param server the address of the server to send data to.
+     * @param transportService the underlying transport to use
      */
-    public UDPService(InetAddress server)
+    public ConversationService(TransportService transportService)
     {
-        this.server = server;
-        try {
-            socket = new DatagramSocket();
-            socket.connect(server, PORT);
-        } catch (SocketException e) {
-            throw new RJMException(e);
-        }
-        scheduler = new UDPScheduler(socket, queryMap);
+        this.transportService = transportService;
+        scheduler = new ConversationScheduler(transportService, queryMap);
         scheduler.setDaemon(true);
         scheduler.start();
 
@@ -68,13 +55,14 @@ class UDPService
      * @throws RJMTimeoutException if the specified timeout has been reached
      * without an answer.
      */
-    public byte[] sendRecv(Query query)
+    public byte[] sendRecv(byte[] query)
     {
-        UDPState state = new UDPState();
-        byte[] queryBytes = query.toWire();
-        state.setQuery(new DatagramPacket(queryBytes, queryBytes.length, server, PORT));
-        state.setId(Buffer.parseInt16(queryBytes));
-        Integer key = new Integer(query.getId());
+        ConversationState state = new ConversationState();
+
+        state.setQuery(query);
+        int id = Buffer.parseInt16(query);
+        state.setId(id);
+        Integer key = new Integer(id);
         queryMap.put(key, state);
         scheduler.enqueue(state);
         try {
@@ -106,29 +94,26 @@ class UDPService
     {
         public void run()
         {
-            // the size limit for UDP packets according to RFC1035 2.3.4 is 512 octets.
-            DatagramPacket dp = new DatagramPacket(new byte[512], 512);
             //noinspection InfiniteLoopStatement
             while (true) {
-                try {
-                    socket.receive(dp);
-                    int id = Buffer.parseInt16(dp.getData());
-                    scheduler.remove(id);
-                    UDPState state = (UDPState)queryMap.get(new Integer(id));
-                    if (state != null) {
-                        byte[] data = new byte[dp.getLength()];
-                        System.arraycopy(dp.getData(), 0, data, 0, dp.getLength());
-                        state.setResponse(data);
-                        synchronized(state) {
-                            state.notify();
-                        }
-                    } else {
-                        log.info("no query for packet with id " + id + " ignoring");
-                    }
-                } catch (IOException e) {
-                    throw new RJMException(e);
-                }
 
+                // the size limit for UDP packets according to RFC1035 2.3.4 is 512 octets.
+                byte[] buffer = new byte[512];
+
+                int count = transportService.recv(buffer);
+                int id = Buffer.parseInt16(buffer);
+                scheduler.remove(id);
+                ConversationState state = (ConversationState)queryMap.get(new Integer(id));
+                if (state != null) {
+                    byte[] data = new byte[count];
+                    System.arraycopy(buffer, 0, data, 0, count);
+                    state.setResponse(data);
+                    synchronized(state) {
+                        state.notify();
+                    }
+                } else {
+                    log.info("no query for packet with id " + id + " ignoring");
+                }
             }
         }
 

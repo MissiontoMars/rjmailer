@@ -1,17 +1,15 @@
 package com.voxbiblia.rjmailer.dns;
 
-import java.net.DatagramPacket;
-
 /**
  * Contains information about the state of an UDP query-response-cycle.
  *
  * @author Noa Resare (noa@voxbiblia.com)
  */
-class UDPState
+class ConversationState
 {
     private byte[] response;
     private int id;
-    private DatagramPacket query;
+    private byte[] query;
     private Throwable exception;
 
     public byte[] getResponse()
@@ -34,12 +32,12 @@ class UDPState
         this.id = id;
     }
 
-    public DatagramPacket getQuery()
+    public byte[] getQuery()
     {
         return query;
     }
 
-    public void setQuery(DatagramPacket query)
+    public void setQuery(byte[] query)
     {
         this.query = query;
     }

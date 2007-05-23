@@ -1,32 +1,29 @@
 package com.voxbiblia.rjmailer.dns;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.net.DatagramSocket;
 
 /**
- * Created by IntelliJ IDEA.
-* User: noa
-* Date: May 6, 2007
-* Time: 10:00:22 PM
-* To change this template use File | Settings | File Templates.
-*/
-class UDPScheduler extends Thread
+ * A Thread that handles all writes and re-writes to the TransportService layer.
+ *
+ * @author Noa Resare (noa@resare.com)  
+ */
+class ConversationScheduler extends Thread
 {
-    private static final Logger log = Logger.getLogger(UDPScheduler.class.getName());
+    private static final Logger log = Logger.getLogger(ConversationScheduler.class.getName());
 
     /**
-     * The number of resends of one particular UDP packet, not including the first
-     * packet send.
+     * The number of resends of one particular conversation packet, not including the first
+     * packet sent.
      */
     private static final int RESENDS = 2;
     /**
-     * The interval in seconds between UDP resends
+     * The interval in seconds between resends
      */
-    private static final int INTERVAL = 3;
+    private static final int RESEND_INTERVAL = 3;
 
     /**
      * Specifies something that should be done at a specific time.
@@ -68,16 +65,16 @@ class UDPScheduler extends Thread
     }
 
     private LinkedList tasks = new LinkedList();
-    private DatagramSocket socket;
+    private TransportService transportService;
     private Map queryMap;
 
-    public UDPScheduler(DatagramSocket socket, Map queryMap)
+    public ConversationScheduler(TransportService transportService, Map queryMap)
     {
-        this.socket = socket;
+        this.transportService = transportService;
         this.queryMap = queryMap;
     }
 
-    public void enqueue(UDPState state)
+    public void enqueue(ConversationState state)
     {
         Task t = new Task(Task.ENQUEUE, 0L, state);
         synchronized(this) {
@@ -125,13 +122,13 @@ class UDPScheduler extends Thread
             }
             switch (task.getOpcode()) {
                 case Task.ENQUEUE:
-                    doEnqueue((UDPState) task.getData());
+                    doEnqueue((ConversationState) task.getData());
                     break;
                 case Task.REMOVE:
                     doRemove((Integer) task.getData());
                     break;
                 case Task.SEND:
-                    doSend((UDPState) task.getData());
+                    doSend((ConversationState) task.getData());
                     break;
             }
         }
@@ -147,20 +144,20 @@ class UDPScheduler extends Thread
             while (i.hasNext()) {
                 Task t = (Task)i.next();
                 if (t.getOpcode() == Task.SEND
-                        && ((UDPState)t.getData()).getId() == id) {
+                        && ((ConversationState)t.getData()).getId() == id) {
                     i.remove();
                 }
             }
         }
     }
 
-    private void doEnqueue(UDPState state)
+    private void doEnqueue(ConversationState state)
     {
         long now = System.currentTimeMillis();
         Task[] ts = new Task[RESENDS + 1];
         ts[0] = new Task(Task.SEND, 0, state);
         for (int i = 1; i < RESENDS; i++) {
-            ts[i] = new Task(Task.SEND, now + i * INTERVAL * 1000, state);
+            ts[i] = new Task(Task.SEND, now + i * RESEND_INTERVAL * 1000, state);
         }
         synchronized(this) {
             tasks.addFirst(ts[0]);
@@ -171,11 +168,11 @@ class UDPScheduler extends Thread
 
     }
 
-    private void doSend(UDPState state)
+    private void doSend(ConversationState state)
     {
         try {
             log.finest("sending packet");
-            socket.send(state.getQuery());
+            transportService.send(state.getQuery());
         } catch (Throwable t) {
             state.setException(t);
             // since we got an exception, better wake up the calling

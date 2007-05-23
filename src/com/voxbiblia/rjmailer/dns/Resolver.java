@@ -2,8 +2,6 @@ package com.voxbiblia.rjmailer.dns;
 
 import com.voxbiblia.rjmailer.RJMException;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +13,7 @@ import java.util.Collections;
 public class Resolver
 {
     //Logger log = Logger.getLogger(Resolver.class.getName());
-    private UDPService udpService;
+    private ConversationService converstaionService;
     int timeout;
 
     /**
@@ -26,12 +24,7 @@ public class Resolver
      */
     public Resolver(String server)
     {
-        try {
-            InetAddress ia = InetAddress.getByName(server);
-            udpService = new UDPService(ia);
-        } catch (UnknownHostException e) {
-            throw new RJMException(e);
-        }
+        converstaionService = new ConversationService(new UDPTransportService(server));
     }
 
     /**
@@ -43,7 +36,7 @@ public class Resolver
      */
     public List resolve(Query query)
     {
-        return parseResponse(udpService.sendRecv(query));
+        return parseResponse(converstaionService.sendRecv(query.toWire()));
     }
 
     /**
@@ -132,7 +125,7 @@ public class Resolver
      */
     public void setTimeout(int timeout)
     {
-        udpService.setTimeout(timeout);
+        converstaionService.setTimeout(timeout);
     }
 
 }
