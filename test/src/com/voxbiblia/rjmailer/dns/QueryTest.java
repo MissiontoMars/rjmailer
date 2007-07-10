@@ -13,7 +13,7 @@ public class QueryTest
     public void testGetHeader()
     {
         for (int i = 0 ; i < 1; i++) {
-            Query q = new Query("test");
+            MXQuery q = new MXQuery("test");
             byte[] bytes = q.toWire();
             assertNotNull(bytes);
             int id = q.getId();
@@ -36,7 +36,7 @@ public class QueryTest
     public void testNameToWire()
             throws Exception
     {
-        Query q = new Query("resare.com");
+        MXQuery q = new MXQuery("resare.com");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         q.nameToWire(baos);
         compareArrays(new byte[]{6,'r','e','s','a','r','e',3,'c','o','m',0},baos.toByteArray());

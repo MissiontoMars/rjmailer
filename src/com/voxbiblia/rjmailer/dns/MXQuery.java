@@ -15,14 +15,13 @@ import java.io.OutputStream;
  *
  * @author Noa Resare (noa@resare.com)
  */
-public class Query
-{
+public class MXQuery {
     private final String name;
     private final int id;
 
     private static Random random = new Random();
 
-    public Query(String name)
+    public MXQuery(String name)
     {
         this.id = random.nextInt(0xffff);
         this.name = name;

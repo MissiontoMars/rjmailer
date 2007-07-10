@@ -39,13 +39,13 @@ public class Resolver
     }
 
     /**
-     * Resolves a DNS Query using the server supplied in the Resolver constructor.
+     * Resolves a DNS MXQuery using the server supplied in the Resolver constructor.
      *
-     * @param query an instance of Query that represents the domainname to query for. 
+     * @param query an instance of MXQuery that represents the domainname to query for.
      * @return a sorted List of MXRecord objects, with lowest preference first.
      *
      */
-    public List resolve(Query query)
+    public List resolve(MXQuery query)
     {
         return parseResponse(converstaionService.sendRecv(query.toWire()));
     }

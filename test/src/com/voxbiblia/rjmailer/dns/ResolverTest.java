@@ -16,7 +16,7 @@ public class ResolverTest
     public void testResolve()
     {
         Resolver r = new Resolver("192.168.0.1");
-        List l = r.resolve(new Query("dn.se"));
+        List l = r.resolve(new MXQuery("dn.se"));
         assertEquals(1, l.size());
         assertEquals("mail-gw.dn.se", ((MXRecord)l.get(0)).getExchange());
         assertEquals(10, ((MXRecord)l.get(0)).getPreference());

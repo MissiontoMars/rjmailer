@@ -13,7 +13,7 @@ public class ResendTest
     public void testResend()
     {
         Resolver r = new Resolver(new DummyTransportService());
-        List l = r.resolve(new Query("svd.se"));
+        List l = r.resolve(new MXQuery("svd.se"));
         assertNotNull(l);
     }
 
@@ -23,7 +23,7 @@ public class ResendTest
         dts.setMode(DummyTransportService.DROP_FIRST);
 
         Resolver r = new Resolver(dts);
-        List l = r.resolve(new Query("svd.se"));
+        List l = r.resolve(new MXQuery("svd.se"));
         assertNotNull(l);
         
     }
