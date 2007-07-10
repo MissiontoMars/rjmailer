@@ -9,17 +9,17 @@ package com.voxbiblia.rjmailer.dns;
 interface TransportService
 {
     /**
-     * Sends the specified data to the transport.
+     * Sends the specified answer to the transport.
      *
-     * @param data
+     * @param data the data to send.
      */
     void send(byte[] data);
 
     /**
-     * Blocks until data is recieved fro the transport, then returns
+     * Blocks until answer is recieved from the transport, then returns
      * the number of bytes written to the given buffer.
      *
-     * @param buffer the buffer to write the data to
+     * @param buffer the buffer to write the answer to
      * @return the number of bytes recieved
      */
     int recv(byte[] buffer);

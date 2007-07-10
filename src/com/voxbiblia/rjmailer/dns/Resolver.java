@@ -12,9 +12,20 @@ import java.util.Collections;
  */
 public class Resolver
 {
-    //Logger log = Logger.getLogger(Resolver.class.getName());
+    //static Logger log = Logger.getLogger(Resolver.class.getName());
     private ConversationService converstaionService;
     int timeout;
+
+
+    /**
+     * Creates a new resolver with the specified transport service. For testing.
+     *
+     * @param transportService the transportService implementation to use
+     */
+    Resolver(TransportService transportService)
+    {
+        converstaionService = new ConversationService(transportService);
+    }
 
     /**
      * Creates a new Resolver instance with the given server as it's
@@ -28,9 +39,9 @@ public class Resolver
     }
 
     /**
-     * Resolves a Query using the server supplied in the Resolver constructor.
+     * Resolves a DNS Query using the server supplied in the Resolver constructor.
      *
-     * @param query
+     * @param query an instance of Query that represents the domainname to query for. 
      * @return a sorted List of MXRecord objects, with lowest preference first.
      *
      */
@@ -40,7 +51,7 @@ public class Resolver
     }
 
     /**
-     * Parses an incoming MX query and returns a sorted list of MXRecord
+     * Parses an incoming MX query response and returns a sorted list of MXRecord
      * objects (lowest preference first).
      *
      * @param data an array of bytes read from an response packet from a
@@ -57,7 +68,7 @@ public class Resolver
         buffer.skip(2);
         int flagByte = buffer.read();
         if ((flagByte & 0x80) == 0) {
-            throw new RJMException("got response that claimed to be a query");
+            throw new RJMException("got response that claimed to be a query: " + flagByte);
         }
         buffer.skip();
         int questionCount = buffer.readInt16();

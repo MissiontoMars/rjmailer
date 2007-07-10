@@ -1,8 +1,6 @@
 package com.voxbiblia.rjmailer.dns;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,29 +26,15 @@ class ConversationScheduler extends Thread
     /**
      * Specifies something that should be done at a specific time.
      */
-    static class Task
+    static class SendTask
     {
-        /** Put packet send and resend Tasks in the queue */
-        public static final int ENQUEUE = 1;
-        /** Remove all sends with a specific ide from the queue */
-        public static final int REMOVE = 2;
-        /*** Send an udp packet at a specified time */
-        public static final int SEND = 3;
-
-        private int opcode;
         private long time;
-        private Object data;
+        private ConversationState state;
 
-        public Task(int opcode, long time, Object data)
+        public SendTask(long time, ConversationState state)
         {
-            this.opcode = opcode;
             this.time = time;
-            this.data = data;
-        }
-
-        public int getOpcode()
-        {
-            return opcode;
+            this.state = state;
         }
 
         public long getTime()
@@ -58,9 +42,9 @@ class ConversationScheduler extends Thread
             return time;
         }
 
-        public Object getData()
+        public ConversationState getState()
         {
-            return data;
+            return state;
         }
     }
 
@@ -76,25 +60,39 @@ class ConversationScheduler extends Thread
 
     public void enqueue(ConversationState state)
     {
-        Task t = new Task(Task.ENQUEUE, 0L, state);
+        long now = System.currentTimeMillis();
+        SendTask[] ts = new SendTask[RESENDS + 1];
+        ts[0] = new SendTask(0, state);
+        for (int i = 1; i < RESENDS + 1; i++) {
+            ts[i] = new SendTask(now + i * RESEND_INTERVAL * 1000, state);
+        }
         synchronized(this) {
-            tasks.add(t);
+            tasks.addFirst(ts[0]);
+            for (int i = 1; i < RESENDS + 1; i++) {
+                putSorted(tasks, ts[i]);
+            }
             this.notify();
         }
     }
 
     public void remove(int id)
     {
-        Task t = new Task(Task.REMOVE, 0L, new Integer(id));
+
         synchronized(this) {
-            tasks.add(t);
-            this.notify();
+            Iterator i = tasks.iterator();
+            while (i.hasNext()) {
+                SendTask t = (SendTask)i.next();
+                if (t.getState().getId() == id) {
+                    i.remove();
+                }
+            }
         }
     }
 
+
     public void run()
     {
-        Task task;
+        SendTask task;
         //noinspection InfiniteLoopStatement
         while (true) {
             synchronized(this) {
@@ -107,7 +105,7 @@ class ConversationScheduler extends Thread
                         log.log(Level.WARNING, "Scheduler interrupted", e);
                     }
                 }
-                task = (Task)tasks.getFirst();
+                task = (SendTask)tasks.getFirst();
                 long toWait = task.getTime() - System.currentTimeMillis();
                 while (toWait > 0) {
                     try {
@@ -115,77 +113,38 @@ class ConversationScheduler extends Thread
                     } catch (InterruptedException e) {
                         log.log(Level.WARNING, "Scheduler interrupted", e);
                     }
-                    task = (Task)tasks.getFirst();
-                    toWait = task.getTime() - System.currentTimeMillis();
+                    try {
+                        task = (SendTask)tasks.getFirst();
+                        toWait = task.getTime() - System.currentTimeMillis();
+                    } catch (NoSuchElementException e) {
+                        task = null;
+                    }
+                }
+                if (task == null) {
+                    // the list went empty in the inner wait loop
+                    continue;
                 }
                 tasks.removeFirst();
             }
-            switch (task.getOpcode()) {
-                case Task.ENQUEUE:
-                    doEnqueue((ConversationState) task.getData());
-                    break;
-                case Task.REMOVE:
-                    doRemove((Integer) task.getData());
-                    break;
-                case Task.SEND:
-                    doSend((ConversationState) task.getData());
-                    break;
-            }
-        }
 
-    }
-
-    private void doRemove(Integer queryId)
-    {
-        int id = queryId.intValue();
-
-        synchronized(this) {
-            Iterator i = tasks.iterator();
-            while (i.hasNext()) {
-                Task t = (Task)i.next();
-                if (t.getOpcode() == Task.SEND
-                        && ((ConversationState)t.getData()).getId() == id) {
-                    i.remove();
-                }
+            ConversationState state = task.getState();
+            try {
+                transportService.send(state.getQuery());
+            } catch (Throwable t) {
+                state.setException(t);
+                // since we got an exception, better wake up the calling
+                // thread with the bad news.
+                queryMap.get(new Integer(state.getId())).notify();
             }
         }
     }
 
-    private void doEnqueue(ConversationState state)
-    {
-        long now = System.currentTimeMillis();
-        Task[] ts = new Task[RESENDS + 1];
-        ts[0] = new Task(Task.SEND, 0, state);
-        for (int i = 1; i < RESENDS; i++) {
-            ts[i] = new Task(Task.SEND, now + i * RESEND_INTERVAL * 1000, state);
-        }
-        synchronized(this) {
-            tasks.addFirst(ts[0]);
-            for (int i = 1; i < RESENDS; i++) {
-                putSorted(tasks, ts[i]);
-            }
-        }
 
-    }
-
-    private void doSend(ConversationState state)
-    {
-        try {
-            log.finest("sending packet");
-            transportService.send(state.getQuery());
-        } catch (Throwable t) {
-            state.setException(t);
-            // since we got an exception, better wake up the calling
-            // thread with the bad news.
-            queryMap.get(new Integer(state.getId())).notify();
-        }
-    }
-
-    static void putSorted(LinkedList tasks, Task toAdd)
+    static void putSorted(LinkedList tasks, SendTask toAdd)
     {
         long time = toAdd.getTime();
         for (int i = 0; i < tasks.size(); i++) {
-            Task t = (Task)tasks.get(i);
+            SendTask t = (SendTask)tasks.get(i);
             if (time < t.getTime()) {
                 tasks.add(i, toAdd);
                 return;

@@ -37,10 +37,13 @@ class ConversationService
         this.transportService = transportService;
         scheduler = new ConversationScheduler(transportService, queryMap);
         scheduler.setDaemon(true);
+        scheduler.setName("Scheduler");
         scheduler.start();
+
 
         Thread t = new Reciever();
         t.setDaemon(true);
+        t.setName("Reciever");
         t.start();
     }
 
@@ -48,7 +51,7 @@ class ConversationService
      * Delegates responsibility for sending the specified query packet to
      * the udp service.
      *
-     * @param query query data
+     * @param query query answer
      *
      * @return a DatagramPacket recieved from the server with matching id field
      *
@@ -83,6 +86,7 @@ class ConversationService
                     "after " + timeout + " seconds.");
         }
         return response;
+
     }
 
     public void setTimeout(int seconds)

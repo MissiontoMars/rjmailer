@@ -71,7 +71,7 @@ public class Query
     /**
      * Converts a domain name to bytes suitable for DNS wire transfer.
      *
-     * @param os the OutputStream to write the query data to
+     * @param os the OutputStream to write the query answer to
      * @throws IOException beacuse we work with streams.. doh
      */
     void nameToWire(OutputStream os)

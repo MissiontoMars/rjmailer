@@ -6,7 +6,7 @@ import java.io.UnsupportedEncodingException;
 
 /**
  * Something like a ByteArrayInputStream but with methods for
- * reading DNS query response data.
+ * reading DNS query response answer.
  *
  * @author Noa Resare (noa@voxbiblia.com)
  */

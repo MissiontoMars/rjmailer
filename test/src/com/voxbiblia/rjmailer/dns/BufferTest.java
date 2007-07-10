@@ -20,6 +20,19 @@ public class BufferTest
         assertEquals(65535, Buffer.parseInt16(buf));
     }
 
+    public void testWriteBEUInt16()
+    {
+        int i = 52400;
+        //int i = 255;
+        byte[] buf = new byte[2];
+        buf[0] = (byte)(i >> 8 & 0xff);
+        buf[1] = (byte)(i & 0xff);
+        System.out.println("buf0 " + buf[0]);
+        System.out.println("buf1 " + buf[1]);
+        assertEquals(i, Buffer.parseInt16(buf));
+
+    }
+
 
     public void testReadName()
     {
