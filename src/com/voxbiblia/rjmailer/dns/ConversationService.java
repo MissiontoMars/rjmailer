@@ -67,9 +67,9 @@ class ConversationService
         state.setId(id);
         Integer key = new Integer(id);
         queryMap.put(key, state);
-        scheduler.enqueue(state);
         try {
             synchronized(state) {
+                scheduler.enqueue(state);
                 state.wait(timeout * 1000);
             }
         } catch (InterruptedException e) {
