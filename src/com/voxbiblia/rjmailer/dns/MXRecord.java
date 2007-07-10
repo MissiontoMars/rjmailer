@@ -32,4 +32,9 @@ public class MXRecord implements Comparable
     {
         return preference - ((MXRecord)o).getPreference();
     }
+
+    public String toString()
+    {
+        return "{" + getExchange() + ": " + getPreference() + "}";
+    }
 }
