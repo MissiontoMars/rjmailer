@@ -6,6 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.DatagramPacket;
 import java.io.IOException;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Implements the TransportService as an UDP datagram socket connected to
@@ -17,6 +19,7 @@ class UDPTransportService implements TransportService
 {
     private DatagramSocket socket;
     private static final int PORT = 53;
+    private static final Logger log = Logger.getLogger(UDPTransportService.class.getName());
 
     public UDPTransportService(String serverName)
     {
@@ -26,12 +29,14 @@ class UDPTransportService implements TransportService
         } catch (Exception e) {
             throw new RJMException(e);
         }
-
     }
 
     public void send(byte[] data)
     {
         DatagramPacket dp = new DatagramPacket(data, data.length);
+        if (log.isLoggable(Level.FINE)) {
+            log.fine("sending packet with id " + Buffer.parseInt16(data));
+        }
         try {
             socket.send(dp);
         } catch (IOException e) {
@@ -44,10 +49,12 @@ class UDPTransportService implements TransportService
         try {
             DatagramPacket dp = new DatagramPacket(buffer, buffer.length);
             socket.receive(dp);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("recieving packet with id " + Buffer.parseInt16(buffer));
+            }
             return dp.getLength();
         } catch (IOException e) {
             throw new Error(e);
         }
-
     }
 }
