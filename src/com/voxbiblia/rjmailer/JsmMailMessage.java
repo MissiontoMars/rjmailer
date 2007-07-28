@@ -1,13 +1,11 @@
 package com.voxbiblia.rjmailer;
 
-import org.springframework.mail.MailMessage;
-
 import java.util.Date;
 
 /**
  * Represents an Email that can be sent via the SyncMailSender.
  */
-public class JsmMailMessage implements MailMessage
+public class JsmMailMessage 
 {
     private String[] bcc;
     private String[] cc;

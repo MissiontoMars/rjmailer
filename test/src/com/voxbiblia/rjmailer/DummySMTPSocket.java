@@ -83,4 +83,9 @@ public class DummySMTPSocket extends Socket
     {
         return new DSOutputStream();
     }
+
+    public boolean hasFinished()
+    {
+        return currentResponse == responses.length;
+    }
 }

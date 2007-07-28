@@ -16,9 +16,11 @@ public class ConversationHandlerTest
         ConversationHandler ch = new ConversationHandler("localhost");
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
-                "MAIL FROM: <noa@resare.com>"
+                "MAIL FROM: <sender@sender.com>", "250 Ok",
+                "RCPT TO: <reciever@reciver.com>", "250 Ok"
         });
         ch.send(null, s);
+        assertTrue("more data to read from the server", s.hasFinished());
     }
 
     public void testGetStatus()
