@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import com.voxbiblia.rjmailer.JsmMailMessage;
+import com.voxbiblia.rjmailer.RJMMailMessage;
 import com.voxbiblia.rjmailer.SyncMailSender;
 
 /**
@@ -24,7 +24,7 @@ public class MailSenderTest
     {
         SyncMailSender ms = new SyncMailSender();
         ms.setServer("johanna.resare.com");
-        JsmMailMessage mm = new JsmMailMessage();
+        RJMMailMessage mm = new RJMMailMessage();
         mm.setFrom("noa@resare.com");
         mm.setTo("noa@resare.com");
         ms.send(mm);
@@ -33,7 +33,7 @@ public class MailSenderTest
 
     public void testMakeStream()
     {
-        JsmMailMessage jmm = new JsmMailMessage();
+        RJMMailMessage jmm = new RJMMailMessage();
         jmm.setFrom("Noa Resare <noa@resare.com>");
         jmm.setTo("Noa Resare <noa@voxbiblia.se>");
         jmm.setSubject("Simple subject");
@@ -58,7 +58,7 @@ public class MailSenderTest
 
     public void testDetermineCharset()
     {
-        JsmMailMessage jmm = new JsmMailMessage();
+        RJMMailMessage jmm = new RJMMailMessage();
         jmm.setText("only ascii");
         assertEquals(Charset.forName("US-ASCII"), SyncMailSender.determineCharset(jmm));
         jmm.setText("Lådbilsrace");

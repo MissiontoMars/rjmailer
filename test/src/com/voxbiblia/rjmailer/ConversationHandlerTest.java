@@ -17,9 +17,15 @@ public class ConversationHandlerTest
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
-                "RCPT TO: <reciever@reciver.com>", "250 Ok"
+                "RCPT TO: <reciever@reciever.com>", "250 Ok",
+                "DATA", "354 End data with <CR><LF>.<CR><LF>",
+                "email data\n."
         });
-        ch.send(null, s);
+
+        RJMMailMessage rmm = new RJMMailMessage();
+        rmm.setFrom("sender@sender.com");
+        rmm.setText("email data");
+        ch.send(rmm, new String[] {"reciever@reciever.com"}, s);
         assertTrue("more data to read from the server", s.hasFinished());
     }
 

@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Represents an Email that can be sent via the SyncMailSender.
  */
-public class JsmMailMessage 
+public class RJMMailMessage
 {
     private String[] bcc;
     private String[] cc;

@@ -7,15 +7,15 @@ package com.voxbiblia.rjmailer;
  * Time: 9:17:42 PM
  * To change this template use File | Settings | File Templates.
  */
-public class RJMParseException
-    extends RJMException
+public class RJMInputException
+        extends RJMException
 {
-    public RJMParseException(String msg)
+    public RJMInputException(String msg)
     {
         super(msg);
     }
 
-    public RJMParseException(String message, Throwable t)
+    public RJMInputException(String message, Throwable t)
     {
         super(message, t);
     }

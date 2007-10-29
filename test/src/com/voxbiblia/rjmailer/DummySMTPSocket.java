@@ -67,7 +67,8 @@ public class DummySMTPSocket extends Socket
                     throw new IllegalArgumentException("should have written LF");
                 }
             } else if (i != s.charAt(currentPos++)) {
-                throw new IllegalArgumentException("got wrong char");
+                throw new IllegalArgumentException("got wrong char, expected '"
+                        + s + "' got " + (char)i + " at pos " + (currentPos - 1));
             }
 
             //To change body of implemented methods use File | Settings | File Templates.

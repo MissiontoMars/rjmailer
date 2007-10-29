@@ -27,7 +27,7 @@ public class SyncMailSender
     String server;
     int port = DEFAULT_PORT;
 
-    public void send(JsmMailMessage mailMessage)
+    public void send(RJMMailMessage mailMessage)
     {
         SMTPProtocol protocol = new SMTPProtocol(server, port);
         try {
@@ -52,7 +52,7 @@ public class SyncMailSender
 
     }
 
-    static InputStream makeStream(JsmMailMessage mailMessage)
+    static InputStream makeStream(RJMMailMessage mailMessage)
     {
         Header header = new Header();
         BasicHeader basicHeader = new BasicHeader(header);
@@ -92,7 +92,7 @@ public class SyncMailSender
     private static final int LATIN1 = 1;
     private static final int UTF8 = 2;
 
-    static Charset determineCharset(JsmMailMessage msg)
+    static Charset determineCharset(RJMMailMessage msg)
     {
         int c = ASCII;
         String[] mmTo = msg.getTo();

@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * A ConversationHandler instance knows how to carry out an SMTP conversation
@@ -15,32 +16,102 @@ class ConversationHandler
 {
     private String ehloHostname;
     private static final byte[] EOL = {(byte)'\r', (byte)'\n'};
-    
+
+    /**
+     * Constructs a ConverstaionHandler that can carry out SMTP conversations
+     * to remote SMTP servers. This instance uses the given ehloHostname to
+     * identify itself to the remote server.
+     *
+     * @param ehloHostname used to itentify this ConversationHandler to the
+     * remote server during the Client initiation phase (see RFC2821 3.2)
+     */
     public ConversationHandler(String ehloHostname)
     {
         this.ehloHostname = ehloHostname;
     }
 
-    public String sendMail(JsmMailMessage message, String serverName)
+    /**
+     * Sends an email message to a specified server using the SMTP protocol.
+     *
+     * @param message The message to send
+     * @param serverName the name of the server to connect to
+     * @return the tracking information recived from the server upon accept
+     * @throws IOException
+     */
+    public String sendMail(RJMMailMessage message, String[] to, String serverName)
             throws IOException
     {
         Socket s = new Socket(serverName, 25);
-        return send(message, s);
+        return send(message, to, s);
     }
 
-    String send(JsmMailMessage message, Socket socket)
+    String send(RJMMailMessage msg, String[] to, Socket socket)
             throws IOException
     {
+        if (msg == null) {
+            throw new RJMInputException("Can not send null message");
+        }
         byte[] inBuf = new byte[1000];
         InputStream is = socket.getInputStream();
         OutputStream os = socket.getOutputStream();
         checkStatus(is, inBuf, 220);
-        sendCommand("EHLO", ehloHostname, os);
+        sendCommand("EHLO " + ehloHostname, os);
         checkStatus(is, inBuf, 250);
-        
+
+        String from = msg.getFrom();
+        if (from == null || from.length() < 1) {
+            throw new RJMInputException("Can not send email with null sender address");
+        }
+        sendCommand("MAIL FROM: <" + AddressUtil.getAddress(from) + ">", os);
+        checkStatus(is, inBuf, 250);
+
+        if (to == null || to.length < 1) {
+            throw new RJMInputException("Not enough addresses to send email to, " +
+                    "please supply at least one");
+        }
+        for (int i = 0; i < to.length; i++) {
+            sendCommand("RCPT TO: <" + to[i] +">", os);
+            checkStatus(is, inBuf, 250);
+        }
+        sendCommand("DATA", os);
+        writeHeaders(msg, os);
+
         return null;
     }
 
+    private static void writeHeaders(RJMMailMessage msg, OutputStream os)
+            throws IOException
+    {
+        writeHeader("From", msg.getFrom(), os);
+    
+    }
+
+    private static void writeHeader(String name, String value, OutputStream os)
+            throws IOException
+    {
+        os.write(toBytes("name"));
+    }
+
+    private static byte[] toBytes(String s)
+    {
+        try {
+            return s.getBytes("US-ASCII");
+        } catch (UnsupportedEncodingException e) {
+            throw new Error("no longer recognising US-ASCII");
+        }
+    }
+
+    /**
+     * Reads one ore more response lines from the server and checks the first
+     * three chars returned interpreted as digits against the expected status
+     * code. Throws an RJMException if a mismatch is found.
+     *
+     * @param is
+     * @param inBuf
+     * @param expected
+     * @throws IOException if communication fails for some reason
+     * @throws RJMException if there is a status code mismatch
+     */
     static void checkStatus(InputStream is, byte[] inBuf, int expected)
             throws IOException
     {
@@ -54,14 +125,10 @@ class ConversationHandler
         }
     }
 
-    void sendCommand(String cmd, String param, OutputStream out)
+    void sendCommand(String cmd, OutputStream out)
             throws IOException
     {
         out.write(cmd.getBytes("US-ASCII"));
-        if(param != null) {
-            out.write((byte)' ');
-            out.write(param.getBytes("US-ASCII"));
-        }
         out.write(EOL);
     }
 
