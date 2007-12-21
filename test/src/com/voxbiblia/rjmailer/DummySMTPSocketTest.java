@@ -54,7 +54,27 @@ public class DummySMTPSocketTest
         }
           */
         OutputStream os = dss.getOutputStream();
+        InputStream is = dss.getInputStream();
+        assertEquals('f', is.read());
+        assertEquals('o', is.read());
+        assertEquals('o', is.read());
+        assertEquals('\r', is.read());
+        assertEquals('\n', is.read());
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            is.read();
+            fail("should have gotten IAE");
+        } catch (IllegalArgumentException e) {
 
+        }
+        os.write('b');
+        os.write('a');
+        os.write('r');
+        os.write('\r');
+        os.write('\n');
+        os.write('b');
+        os.write('a');
+        os.write('z');
 
     }
 

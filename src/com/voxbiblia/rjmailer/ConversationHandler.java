@@ -36,7 +36,8 @@ class ConversationHandler
      * @param message The message to send
      * @param serverName the name of the server to connect to
      * @return the tracking information recived from the server upon accept
-     * @throws IOException
+     * @param to array of strings specifying recieving email addresses
+     * @throws IOException if communications fail
      */
     public String sendMail(RJMMailMessage message, String[] to, String serverName)
             throws IOException
@@ -74,8 +75,10 @@ class ConversationHandler
             checkStatus(is, inBuf, 250);
         }
         sendCommand("DATA", os);
+        checkStatus(is, inBuf, 354);
         writeHeaders(msg, os);
-
+        os.write(toBytes("\r\n" + msg.getText() + "\r\n.\r\n"));
+        checkStatus(is, inBuf, 250);
         return null;
     }
 
@@ -89,7 +92,7 @@ class ConversationHandler
     private static void writeHeader(String name, String value, OutputStream os)
             throws IOException
     {
-        os.write(toBytes("name"));
+        os.write(toBytes(name + ": " + value + "\r\n"));
     }
 
     private static byte[] toBytes(String s)
@@ -106,9 +109,9 @@ class ConversationHandler
      * three chars returned interpreted as digits against the expected status
      * code. Throws an RJMException if a mismatch is found.
      *
-     * @param is
-     * @param inBuf
-     * @param expected
+     * @param is where the status is read from
+     * @param inBuf a reusable buffer that the result is put into
+     * @param expected the integer value of the thre first ascii chars
      * @throws IOException if communication fails for some reason
      * @throws RJMException if there is a status code mismatch
      */

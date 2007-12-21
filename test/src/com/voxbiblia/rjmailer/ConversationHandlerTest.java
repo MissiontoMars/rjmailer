@@ -19,7 +19,8 @@ public class ConversationHandlerTest
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
                 "RCPT TO: <reciever@reciever.com>", "250 Ok",
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
-                "email data\n."
+                "From: sender@sender.com\n\nemail data\n.",
+                "250 Ok: queued as 62B14FFD8"
         });
 
         RJMMailMessage rmm = new RJMMailMessage();

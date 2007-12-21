@@ -49,31 +49,51 @@ public class DummySMTPSocket extends Socket
     private class DSOutputStream
         extends OutputStream
     {
+        int newlineCount = 0;
+        StringBuilder sb = new StringBuilder();
+
         public void write(int i) throws IOException
         {
+            sb.append((char)i);
             if ((currentResponse % 2) == 0) {
-                throw new IllegalArgumentException("writing when you should be reading");
+                throw new IllegalArgumentException("writing when you should be reading [" + sb.toString() + "]");
             }
             String s = responses[currentResponse];
-            if (currentPos == s.length()) {
-                currentPos++;
-                if (i != '\r') {
-                    throw new IllegalArgumentException("should have written CR");
+            if (i == '\r') {
+                if (currentPos == s.length()) {
+                        currentPos++;
+                } else if (s.charAt(currentPos) == '\n') {
+                    if (newlineCount == 0) {
+                        newlineCount++;
+                    } else {
+                        throw new IllegalArgumentException("got '\\r' in wrong place");
+                    }
                 }
-            } else if (currentPos == s.length() + 1) {
-                currentPos = 0;
-                currentResponse++;
-                if (i != '\n') {
-                    throw new IllegalArgumentException("should have written LF");
+            } else if (i == '\n') {
+                if (currentPos == s.length() + 1) {
+                    currentPos = 0;
+                    currentResponse++;
+                } else if (s.charAt(currentPos) == '\n') {
+                    if (newlineCount == 1) {
+                        newlineCount = 0;
+                        sb = new StringBuilder();
+                        currentPos++;
+                    } else {
+                        throw new IllegalArgumentException("got '\\n' in wrong place");
+                    }
                 }
             } else if (i != s.charAt(currentPos++)) {
                 throw new IllegalArgumentException("got wrong char, expected '"
-                        + s + "' got " + (char)i + " at pos " + (currentPos - 1));
+                        + toString(s.charAt(currentPos -1)) + "' got "+toString(i)+" at pos " + (currentPos - 1) + "; " + s);
             }
-
-            //To change body of implemented methods use File | Settings | File Templates.
         }
+        private String toString(int c)
+        {
+            return "'" + (char)c + "' (ascii " + c + ")";
+        }
+
     }
+
 
     public InputStream getInputStream()
     {
