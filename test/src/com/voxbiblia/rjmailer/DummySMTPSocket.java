@@ -1,9 +1,7 @@
 package com.voxbiblia.rjmailer;
 
 import java.net.Socket;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * A socket that one can read data from that is set up in the constructor.
@@ -12,10 +10,32 @@ public class DummySMTPSocket extends Socket
 {
     private String[] responses;
     private int currentResponse, currentPos;
+    private String data;
 
-    public DummySMTPSocket(String[] responses)
+    public DummySMTPSocket(String[] responses, File dataContent)
     {
         this.responses = responses;
+        if (dataContent != null) {
+            this.data = read(dataContent);
+        }
+    }
+
+    private String read(File dataContent)
+    {
+        byte[] data = new byte[(int)dataContent.length()];
+        try {
+            FileInputStream fis = new FileInputStream(dataContent);
+            if (fis.read(data) != dataContent.length()) {
+                throw new Error("read of wrong size");
+            }
+        } catch (IOException e) {
+            throw new Error(e);
+        }
+        try {
+            return new String(data, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e);
+        }
     }
 
     /**
@@ -59,6 +79,12 @@ public class DummySMTPSocket extends Socket
                 throw new IllegalArgumentException("writing when you should be reading [" + sb.toString() + "]");
             }
             String s = responses[currentResponse];
+            if ("IN_FILE".equals(s)) {
+                if (data == null) {
+                    throw new Error("when IN_FILE marker is in place, second argument can not be null");
+                }
+                s = data;
+            }
             if (i == '\r') {
                 if (currentPos == s.length()) {
                         currentPos++;
@@ -83,7 +109,7 @@ public class DummySMTPSocket extends Socket
                     }
                 }
             } else if (i != s.charAt(currentPos++)) {
-                throw new IllegalArgumentException("got wrong char, expected '"
+                throw new IllegalArgumentException("got wrong char, expected "
                         + toString(s.charAt(currentPos -1)) + "' got "+toString(i)+" at pos " + (currentPos - 1) + "; " + s);
             }
         }

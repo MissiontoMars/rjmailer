@@ -3,6 +3,7 @@ package com.voxbiblia.rjmailer;
 import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 
 /**
  * Tests ConversationHandler 
@@ -19,9 +20,9 @@ public class ConversationHandlerTest
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
                 "RCPT TO: <reciever@reciever.com>", "250 Ok",
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
-                "From: sender@sender.com\n\nemail data\n.",
+                "FROM_FILE",
                 "250 Ok: queued as 62B14FFD8"
-        });
+        }, new File("test/data/test1.txt"));
 
         RJMMailMessage rmm = new RJMMailMessage();
         rmm.setFrom("sender@sender.com");
