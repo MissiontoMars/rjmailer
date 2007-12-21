@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module relativePaths="true" type="JAVA_MODULE" version="4">
+<module version="4" relativePaths="true" type="JAVA_MODULE">
+  <component name="ModuleRootManager" />
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_4" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
@@ -8,12 +9,20 @@
     </content>
     <orderEntry type="jdk" jdkName="current" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="junit-4" level="application" />
+    <orderEntry type="library" name="junit-4.0" level="application" />
     <orderEntry type="module-library">
-      <library name="ristretto">
+      <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../Downloads/ristretto-1.0-bin/ristretto-1.0-common.jar!/" />
-          <root url="jar://$MODULE_DIR$/../../Downloads/ristretto-1.0-bin/ristretto-1.0-smtp.jar!/" />
+          <root url="jar://$MODULE_DIR$/../support/ristretto-1.0/ristretto-1.0-smtp.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../support/ristretto-1.0/ristretto-1.0-common.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
