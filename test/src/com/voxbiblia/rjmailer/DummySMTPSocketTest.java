@@ -9,7 +9,7 @@ import java.io.OutputStream;
 /**
  * Tests DummySMTPSocket
  */
-public class DumySMTPSocketTest
+public class DummySMTPSocketTest
     extends TestCase
 {
     public void testReadEnd()
@@ -43,6 +43,19 @@ public class DumySMTPSocketTest
             fail("have written, should not give IAE");
         }
         assertEquals(-1, is.read());
+    }
+
+    public void testReadMultiline()
+            throws IOException
+    {
+        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "bar\nbaz"});
+        /*for (int i = 0; i < 5; i++) {
+            dss.getInputStream().read();    
+        }
+          */
+        OutputStream os = dss.getOutputStream();
+
+
     }
 
     public void testWriteWrong()

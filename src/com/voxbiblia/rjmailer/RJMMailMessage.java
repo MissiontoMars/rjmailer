@@ -3,7 +3,7 @@ package com.voxbiblia.rjmailer;
 import java.util.Date;
 
 /**
- * Represents an Email that can be sent via the SyncMailSender.
+ * Represents an Email that can be sent via the MailSender.
  */
 public class RJMMailMessage
 {
