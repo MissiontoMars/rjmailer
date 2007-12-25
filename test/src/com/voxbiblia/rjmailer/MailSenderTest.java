@@ -63,7 +63,7 @@ public class MailSenderTest
         assertEquals(Charset.forName("US-ASCII"), SyncMailSender.determineCharset(jmm));
         jmm.setText("Lådbilsrace");
         assertEquals(Charset.forName("ISO-8859-1"), SyncMailSender.determineCharset(jmm));
-        jmm.setText("Valutatecken för euro: €");
+        jmm.setText("Currency sign for euro: €");
         assertEquals(Charset.forName("UTF-8"), SyncMailSender.determineCharset(jmm));
     }
 }

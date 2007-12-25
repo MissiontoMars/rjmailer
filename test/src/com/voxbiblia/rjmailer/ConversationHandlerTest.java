@@ -27,7 +27,7 @@ public class ConversationHandlerTest
         RJMMailMessage rmm = new RJMMailMessage();
         rmm.setFrom("sender@sender.com");
         rmm.setText("email data");
-        ch.send(rmm, new String[] {"reciever@reciever.com"}, s);
+        assertEquals("queued as 62B14FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
         assertTrue("more data to read from the server", s.hasFinished());
     }
 
