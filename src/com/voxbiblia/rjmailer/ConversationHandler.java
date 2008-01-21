@@ -78,8 +78,8 @@ class ConversationHandler
         checkStatus(is, inBuf, 354);
         writeHeaders(msg, os);
         os.write(toBytes("\r\n" + msg.getText() + "\r\n.\r\n"));
-        checkStatus(is, inBuf, 250);
-        return null;
+
+        return checkStatus(is, inBuf, 250).substring("250 ".length());
     }
 
     private static void writeHeaders(RJMMailMessage msg, OutputStream os)
@@ -115,7 +115,7 @@ class ConversationHandler
      * @throws IOException if communication fails for some reason
      * @throws RJMException if there is a status code mismatch
      */
-    static void checkStatus(InputStream is, byte[] inBuf, int expected)
+    static String checkStatus(InputStream is, byte[] inBuf, int expected)
             throws IOException
     {
         String line = getServerLine(is, inBuf);
@@ -126,6 +126,7 @@ class ConversationHandler
         while (line.length() > 3 && line.charAt(3) == '-') {
             line = getServerLine(is, inBuf);
         }
+        return line;
     }
 
     void sendCommand(String cmd, OutputStream out)
