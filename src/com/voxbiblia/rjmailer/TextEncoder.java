@@ -9,15 +9,21 @@ import java.io.UnsupportedEncodingException;
  */
 public class TextEncoder
 {
-    private static final char[] HEX_DIGITS = new char[] {'0','1','2','3','4','5','6','7',
-            '8','9','A','B','C','D','E','F'};
+    private static final char[] HEX_DIGITS = new char[] {'0','1','2','3','4',
+            '5','6','7','8','9','A','B','C','D','E','F'};
 
+    // as documented in RFC2045 6.7
     static String encodeQP(String indata, String encoding)
             throws UnsupportedEncodingException
     {
         byte[] bytes = indata.getBytes(encoding);
         StringBuffer sb = new StringBuffer();
+        int stringLength = 0;
         for (int i = 0; i < bytes.length; i++) {
+            if (stringLength++ > 73) {
+                sb.append("=\r\n");
+                stringLength = 0;
+            }
             byte b = bytes[i];
             if (b < 0 || b == 0x3d) {
                 int b1 = b < 0 ? b + 0x100 : b;
