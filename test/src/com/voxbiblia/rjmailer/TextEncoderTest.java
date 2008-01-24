@@ -31,6 +31,15 @@ public class TextEncoderTest
         assertTrue("Longer than 76 chars is not allowed", index < 76);
 
     }
+
+    public void testCanonicalize()
+    {
+        assertEquals("before\r\nafter", TextEncoder.canonicalize("before\nafter"));
+        assertEquals("before\r\nafter\r\nanother", TextEncoder.canonicalize("before\nafter\ranother"));
+        assertEquals("double\r\n\r\nnewlines", TextEncoder.canonicalize("double\n\nnewlines"));
+        assertEquals("double\r\n\r\nnewlines", TextEncoder.canonicalize("double\r\rnewlines"));
+        assertEquals("double\r\n\r\nnewlines", TextEncoder.canonicalize("double\r\n\rnewlines"));
+    }
 }
 
 
