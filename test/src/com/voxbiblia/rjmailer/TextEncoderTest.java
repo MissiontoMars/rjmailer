@@ -40,6 +40,11 @@ public class TextEncoderTest
         assertEquals("double\r\n\r\nnewlines", TextEncoder.canonicalize("double\r\rnewlines"));
         assertEquals("double\r\n\r\nnewlines", TextEncoder.canonicalize("double\r\n\rnewlines"));
     }
+    
+    public void testEncodeBase64()
+    {
+    	assertEquals("bGFsbGFyZQ==", TextEncoder.encodeBase64("lallare".getBytes()));
+    }
 }
 
 

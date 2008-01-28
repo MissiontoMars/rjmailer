@@ -90,4 +90,8 @@ public class TextEncoder
         return sb.toString();
     }
 
+    public static String encodeBase64(byte[] data)
+    {
+    	return "";
+    }
 }
