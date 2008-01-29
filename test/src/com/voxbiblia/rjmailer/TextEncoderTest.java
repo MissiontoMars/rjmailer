@@ -42,9 +42,27 @@ public class TextEncoderTest
     }
     
     public void testEncodeBase64()
+            throws Exception
     {
-    	assertEquals("bGFsbGFyZQ==", TextEncoder.encodeBase64("lallare".getBytes()));
+    	assertEquals("c3ZhbnNh", TextEncoder.encodeBase64("svansa".getBytes()));
+        assertEquals("c3ZhbnNhcg==", TextEncoder.encodeBase64("svansar".getBytes()));
+        assertEquals("c3ZhbnNhcnM=", TextEncoder.encodeBase64("svansars".getBytes()));
+        assertEquals("D9O/", TextEncoder.encodeBase64(new byte[] {(byte)15, (byte)211, (byte)191}));
+
     }
+
+/*
+    public void testDebugRunner()
+    {
+
+
+        assertEquals("D9O/", new String(AlternateBase64Encoder.encode(new byte[] {(byte)15, (byte)211, (byte)191})));
+        assertEquals("D9O/", TextEncoder.encodeBase64(new byte[] {(byte)15, (byte)211, (byte)191}));
+        assertEquals("c3ZhbnNhcnM=", new String(AlternateBase64Encoder.encode("svansars".getBytes())));
+        assertEquals("c3ZhbnNhcnM=", TextEncoder.encodeBase64("svansars".getBytes()));
+
+    }
+        */
 }
 
 

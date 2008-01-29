@@ -9,8 +9,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class TextEncoder
 {
-    private static final char[] HEX_DIGITS = new char[] {'0','1','2','3','4',
-            '5','6','7','8','9','A','B','C','D','E','F'};
+    private static final char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
 
     // as documented in RFC2045 6.7
     static String encodeQP(String indata, String encoding)
@@ -90,8 +89,46 @@ public class TextEncoder
         return sb.toString();
     }
 
+
+    private static char[] key = 
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
+
+
+    // as documented in RFC2045 6.8
     public static String encodeBase64(byte[] data)
     {
-    	return "";
+        StringBuffer sb = new StringBuffer((int)(data.length * 1.33) + 2);
+        int i = 0;
+        for (; i < (data.length - 2); i += 3) {
+            output((pos(data[i]) << 16) + (pos(data[i + 1]) << 8) + pos(data[i + 2]), sb, 0);
+        }
+        if (i == data.length - 2) {
+            output((pos(data[i]) << 16) + (pos(data[i + 1]) << 8), sb, 1);
+        } else if (i == data.length - 1) {
+            output(pos(data[i]) << 16, sb, 2);
+        }
+        
+        return sb.toString();
+    }
+
+
+    private static void output(int quantum, StringBuffer sb, int pad)
+    {
+        sb.append(key[(quantum >> 18) & 0x3f]);
+        sb.append(key[(quantum >> 12) & 0x3f]);
+        if (pad == 2) {
+            sb.append("==");
+        } else if (pad == 1) {
+            sb.append(key[(quantum >> 6) & 0x3f]);
+            sb.append('=');
+        } else {
+            sb.append(key[(quantum >> 6) & 0x3f]);
+            sb.append(key[quantum & 0x3f]);
+        }
+    }
+
+    private static int pos(byte b)
+    {
+        return b < 0 ? b + 0x100 : b;
     }
 }
