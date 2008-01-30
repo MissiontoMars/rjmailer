@@ -34,35 +34,27 @@ public class TextEncoderTest
 
     public void testCanonicalize()
     {
-        assertEquals("before\r\nafter", TextEncoder.canonicalize("before\nafter"));
-        assertEquals("before\r\nafter\r\nanother", TextEncoder.canonicalize("before\nafter\ranother"));
-        assertEquals("double\r\n\r\nnewlines", TextEncoder.canonicalize("double\n\nnewlines"));
-        assertEquals("double\r\n\r\nnewlines", TextEncoder.canonicalize("double\r\rnewlines"));
-        assertEquals("double\r\n\r\nnewlines", TextEncoder.canonicalize("double\r\n\rnewlines"));
+        assertEquals("before\r\nafter",
+                TextEncoder.canonicalize("before\nafter"));
+        assertEquals("before\r\nafter\r\nanother",
+                TextEncoder.canonicalize("before\nafter\ranother"));
+        assertEquals("double\r\n\r\nnewlines",
+                TextEncoder.canonicalize("double\n\nnewlines"));
+        assertEquals("double\r\n\r\nnewlines",
+                TextEncoder.canonicalize("double\r\rnewlines"));
+        assertEquals("double\r\n\r\nnewlines",
+                TextEncoder.canonicalize("double\r\n\rnewlines"));
     }
     
-    public void testEncodeBase64()
-            throws Exception
+
+    public void testEncodeHeader()
     {
-    	assertEquals("c3ZhbnNh", TextEncoder.encodeBase64("svansa".getBytes()));
-        assertEquals("c3ZhbnNhcg==", TextEncoder.encodeBase64("svansar".getBytes()));
-        assertEquals("c3ZhbnNhcnM=", TextEncoder.encodeBase64("svansars".getBytes()));
-        assertEquals("D9O/", TextEncoder.encodeBase64(new byte[] {(byte)15, (byte)211, (byte)191}));
-
+        assertEquals("=?ISO-8859-1?Q?Gr=F6t?=", TextEncoder.encodeHeader("Gröt"));
+        assertEquals("=?ISO-8859-1?Q?Egon_sover_l=E4nge?=",
+                TextEncoder.encodeHeader("Egon sover länge"));
+        assertEquals("=?UTF-8?Q?Lots_of_=E2=82=AC!?=",
+                TextEncoder.encodeHeader("Lots of €!"));
     }
-
-/*
-    public void testDebugRunner()
-    {
-
-
-        assertEquals("D9O/", new String(AlternateBase64Encoder.encode(new byte[] {(byte)15, (byte)211, (byte)191})));
-        assertEquals("D9O/", TextEncoder.encodeBase64(new byte[] {(byte)15, (byte)211, (byte)191}));
-        assertEquals("c3ZhbnNhcnM=", new String(AlternateBase64Encoder.encode("svansars".getBytes())));
-        assertEquals("c3ZhbnNhcnM=", TextEncoder.encodeBase64("svansars".getBytes()));
-
-    }
-        */
 }
 
 

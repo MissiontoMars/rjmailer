@@ -1,11 +1,13 @@
 package com.voxbiblia.rjmailer;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 /**
- * Encodes non-ascii strings in the Quoted Printable encoding.
+ * Tools to encode non-ascii data into email content, for example using the
+ * Quoted Printable character encoding.
  *
- *  
+ * @author Noa Resare (noa@resare.com)  
  */
 public class TextEncoder
 {
@@ -51,8 +53,6 @@ public class TextEncoder
      */
     static String canonicalize(String indata)
     {
-
-
         StringBuffer sb = new StringBuffer(indata.length());
         char[] chars = indata.toCharArray();
         int state = OUTSIDE;
@@ -89,46 +89,98 @@ public class TextEncoder
         return sb.toString();
     }
 
-
-    private static char[] key = 
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
-
-
-    // as documented in RFC2045 6.8
-    public static String encodeBase64(byte[] data)
+    /**
+     * Encodes Strings possibly including non-ascii characters using the
+     * algorithm described in RFC1522, suitable for inclusion in email headers.
+     *
+     * @param data the data to possibly encode
+     * @return a possibly encoded version of data
+     */
+    // TODO: add support for Base64 encoding
+    // TODO: encode only parts of the String
+    public static String encodeHeader(String data)
     {
-        StringBuffer sb = new StringBuffer((int)(data.length * 1.33) + 2);
-        int i = 0;
-        for (; i < (data.length - 2); i += 3) {
-            output((pos(data[i]) << 16) + (pos(data[i + 1]) << 8) + pos(data[i + 2]), sb, 0);
+        int encoding = check(data,0);
+        if (encoding == 0) {
+            return data;
         }
-        if (i == data.length - 2) {
-            output((pos(data[i]) << 16) + (pos(data[i + 1]) << 8), sb, 1);
-        } else if (i == data.length - 1) {
-            output(pos(data[i]) << 16, sb, 2);
+        String n = getCharset(encoding).name();
+        try {
+            return "=?" + n + "?Q?" + encodeQP(data, n).replace(' ', '_') + "?=";
+        } catch (UnsupportedEncodingException e) {
+            throw new Error("unsupported encodeing: " + n);
         }
-        
-        return sb.toString();
+
     }
 
+    private static final int ASCII = 0;
+    private static final int LATIN1 = 1;
+    private static final int UTF8 = 2;
 
-    private static void output(int quantum, StringBuffer sb, int pad)
+    private static Charset getCharset(int val)
     {
-        sb.append(key[(quantum >> 18) & 0x3f]);
-        sb.append(key[(quantum >> 12) & 0x3f]);
-        if (pad == 2) {
-            sb.append("==");
-        } else if (pad == 1) {
-            sb.append(key[(quantum >> 6) & 0x3f]);
-            sb.append('=');
-        } else {
-            sb.append(key[(quantum >> 6) & 0x3f]);
-            sb.append(key[quantum & 0x3f]);
+        switch(val) {
+            case ASCII:
+                return Charset.forName("US-ASCII");
+            case LATIN1:
+                return Charset.forName("ISO-8859-1");
+            case UTF8:
+                return Charset.forName("UTF-8");
+            default:
+                throw new Error("unknown charset id " + val);
         }
     }
 
-    private static int pos(byte b)
+    static Charset determineCharset(RJMMailMessage msg)
     {
-        return b < 0 ? b + 0x100 : b;
+        int c = ASCII;
+        String[] mmTo = msg.getTo();
+        if (mmTo != null) {
+            for (int i = 0; i < mmTo.length; i++) {
+                i = check(mmTo[i], i);
+            }
+        }
+        String[] mmCc = msg.getCc();
+        if (mmCc != null) {
+            for (int i = 0; i < mmCc.length; i++) {
+                i = check(mmCc[i], i);
+            }
+        }
+
+        c = check(msg.getReplyTo(), c);
+        c = check(msg.getFrom(), c);
+        c = check(msg.getSubject(), c);
+        c = check(msg.getText(), c);
+        return getCharset(c);
     }
+
+    /**
+     * Return the lowest charset constant that is needed to express this
+     * string.
+     *
+     * @param s a String to check for which charset is needed
+     * @param previous the highest previous value of the charset constant
+     * @return the previous "highest" charset needed
+     */
+    private static int check(String s, int previous)
+    {
+        if (previous == UTF8) {
+            return previous;
+        }
+        int required = ASCII;
+        if (s == null) {
+            return required;
+        }
+        char[] chars = s.toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            if (chars[i] > 0xfe) {
+                return UTF8;
+            }
+            if (chars[i] > 0x7f) {
+                required = LATIN1;
+            }
+        }
+        return required > previous ? required : previous;
+    }
+
 }
