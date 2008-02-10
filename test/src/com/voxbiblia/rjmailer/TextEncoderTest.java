@@ -47,13 +47,27 @@ public class TextEncoderTest
     }
     
 
+    public void testEncodeHeaderWord()
+    {
+        assertEquals("=?ISO-8859-1?Q?Gr=F6t?=", TextEncoder.encodeHeaderWord("Gröt"));
+        assertEquals("=?ISO-8859-1?Q?Egon_sover_l=E4nge?=",
+                TextEncoder.encodeHeaderWord("Egon sover länge"));
+        assertEquals("=?UTF-8?Q?Lots_of_=E2=82=AC!?=",
+                TextEncoder.encodeHeaderWord("Lots of €!"));
+    }
+
+
     public void testEncodeHeader()
     {
-        assertEquals("=?ISO-8859-1?Q?Gr=F6t?=", TextEncoder.encodeHeader("Gröt"));
-        assertEquals("=?ISO-8859-1?Q?Egon_sover_l=E4nge?=",
-                TextEncoder.encodeHeader("Egon sover länge"));
-        assertEquals("=?UTF-8?Q?Lots_of_=E2=82=AC!?=",
-                TextEncoder.encodeHeader("Lots of €!"));
+        assertEquals("Subject: subjekt\r\n", TextEncoder.encodeHeader("Subject", "subjekt"));
+        try {
+            TextEncoder.encodeHeader("Subject with colon:", "");
+            fail("should have thrown illegal argument exception");
+        } catch (IllegalArgumentException e) {
+            // ignore
+        }
+
+
     }
 }
 

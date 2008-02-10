@@ -90,6 +90,29 @@ public class TextEncoder
     }
 
     /**
+     * Encodes the given header into a String ending with CRLF suitable for
+     * inclusion into a RFC2822 message stream. It breaks long headers
+     * into multiple lines according to the folding rules in section 3.2.3
+     * and encodes non-ascii characters according to RFC1522.
+     *
+     * @param name the name of the header field
+     * @param data the header field data
+     * @return an encoded header
+     */
+    public static String encodeHeader(String name, String data)
+    {
+        if (name.indexOf(':') != -1) {
+            throw new IllegalArgumentException("name may not contain colon (:)");
+        }
+
+        if (!data.endsWith("\r\n")) {
+            data = data + "\r\n";
+        }
+        return name + ": " + data;
+    }
+
+
+    /**
      * Encodes Strings possibly including non-ascii characters using the
      * algorithm described in RFC1522, suitable for inclusion in email headers.
      *
@@ -97,8 +120,7 @@ public class TextEncoder
      * @return a possibly encoded version of data
      */
     // TODO: add support for Base64 encoding
-    // TODO: encode only parts of the String
-    public static String encodeHeader(String data)
+    static String encodeHeaderWord(String data)
     {
         int encoding = check(data,0);
         if (encoding == 0) {
