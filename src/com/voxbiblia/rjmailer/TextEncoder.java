@@ -111,6 +111,17 @@ public class TextEncoder
         return name + ": " + data;
     }
 
+    static int getNonAsciiPercentage(String data)
+    {
+        char[] chars = data.toCharArray();
+        int nonAsciiCount = 0;
+        for (int i = 0; i <chars.length; i++) {
+            if (chars[i] > 128) {
+                nonAsciiCount++;
+            }
+        }
+        return (int)((nonAsciiCount / (float)chars.length) * 100);
+    }
 
     /**
      * Encodes Strings possibly including non-ascii characters using the
@@ -119,7 +130,6 @@ public class TextEncoder
      * @param data the data to possibly encode
      * @return a possibly encoded version of data
      */
-    // TODO: add support for Base64 encoding
     static String encodeHeaderWord(String data)
     {
         int encoding = check(data,0);
@@ -127,8 +137,17 @@ public class TextEncoder
             return data;
         }
         String n = getCharset(encoding).name();
+        if (getNonAsciiPercentage(data) > 50) {
+            try {
+                return "=?" + n + "?B?" +
+                        Base64Encoder.encode(data.getBytes(n)) + "?=";
+            } catch (UnsupportedEncodingException e) {
+                throw new Error(e);
+            }
+        }
         try {
-            return "=?" + n + "?Q?" + encodeQP(data, n).replace(' ', '_') + "?=";
+            return "=?" + n + "?Q?" + encodeQP(data, n).replace(' ', '_') +
+                    "?=";
         } catch (UnsupportedEncodingException e) {
             throw new Error("unsupported encodeing: " + n);
         }

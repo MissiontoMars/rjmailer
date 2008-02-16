@@ -49,6 +49,7 @@ public class TextEncoderTest
 
     public void testEncodeHeaderWord()
     {
+        assertEquals("=?ISO-8859-1?B?5eT2xcTW?=", TextEncoder.encodeHeaderWord("åäöÅÄÖ"));
         assertEquals("=?ISO-8859-1?Q?Gr=F6t?=", TextEncoder.encodeHeaderWord("Gröt"));
         assertEquals("=?ISO-8859-1?Q?Egon_sover_l=E4nge?=",
                 TextEncoder.encodeHeaderWord("Egon sover länge"));
@@ -66,8 +67,13 @@ public class TextEncoderTest
         } catch (IllegalArgumentException e) {
             // ignore
         }
+    }
 
-
+    public void testGetNonAsciiPercentage()
+    {
+        assertEquals(0, TextEncoder.getNonAsciiPercentage("svenska tecken"));
+        assertEquals(25, TextEncoder.getNonAsciiPercentage("låda"));
+        assertEquals(100, TextEncoder.getNonAsciiPercentage("åäöÅÄÖ"));
     }
 }
 
