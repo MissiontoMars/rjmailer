@@ -44,9 +44,23 @@ public class DummySMTPSocket extends Socket
     private class DSInputStream
             extends InputStream
     {
+        int errorOffset = 0;
+        byte[] error;
+
+        public DSInputStream() {
+            try {
+                error = "500 ERROR\r\n".getBytes("US-ASCII");
+            } catch (UnsupportedEncodingException e) {
+                throw new Error(e);
+            }
+        }
 
         public int read() throws IOException
         {
+            if (errorMessage != null) {
+                return error[errorOffset++];
+            }
+
             if ((currentResponse % 2) == 1) {
                 throw new IllegalArgumentException("reading when you should be writing");
             }
@@ -66,22 +80,32 @@ public class DummySMTPSocket extends Socket
         }
     }
 
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    String errorMessage = null;
+
     private class DSOutputStream
         extends OutputStream
     {
         int newlineCount = 0;
         StringBuilder sb = new StringBuilder();
 
+
         public void write(int i) throws IOException
         {
+            baos.write(i);
             sb.append((char)i);
+            if (errorMessage != null) {
+                // if we have a pending error message, just let the client write
+                // everything without interference
+                return;
+            }
             if ((currentResponse % 2) == 0) {
-                throw new IllegalArgumentException("writing when you should be reading [" + sb.toString() + "]");
+                errorMessage = "writing when you should be reading [" + sb.toString() + "]";
             }
             String s = responses[currentResponse];
             if ("IN_FILE".equals(s)) {
                 if (data == null) {
-                    throw new Error("when IN_FILE marker is in place, second argument can not be null");
+                    errorMessage = "when IN_FILE marker is in place, second argument can not be null";
                 }
                 s = data;
             }
@@ -92,7 +116,7 @@ public class DummySMTPSocket extends Socket
                     if (newlineCount == 0) {
                         newlineCount++;
                     } else {
-                        throw new IllegalArgumentException("got '\\r' in wrong place");
+                        errorMessage = "got '\\r' in wrong place";
                     }
                 }
             } else if (i == '\n') {
@@ -105,12 +129,12 @@ public class DummySMTPSocket extends Socket
                         sb = new StringBuilder();
                         currentPos++;
                     } else {
-                        throw new IllegalArgumentException("got '\\n' in wrong place");
+                        errorMessage = "got '\\n' in wrong place";
                     }
                 }
             } else if (i != s.charAt(currentPos++)) {
-                throw new IllegalArgumentException("got wrong char, expected "
-                        + toString(s.charAt(currentPos -1)) + "' got "+toString(i)+" at pos " + (currentPos - 1) + "; " + s);
+                errorMessage = "got wrong char, expected "
+                        + toString(s.charAt(currentPos -1)) + "' got "+toString(i)+" at pos " + (currentPos - 1);
             }
         }
         private String toString(int c)
@@ -120,6 +144,20 @@ public class DummySMTPSocket extends Socket
 
     }
 
+    public void check()
+    {
+        if (errorMessage != null) {
+            System.err.println("error occured, writing data written to the dummy socket to 'debug.bin'");
+            try {
+                FileOutputStream fos = new FileOutputStream("debug.bin");
+                fos.write(baos.toByteArray());
+                fos.close();
+            } catch (IOException e) {
+                throw new Error(e);
+            }
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
 
     public InputStream getInputStream()
     {

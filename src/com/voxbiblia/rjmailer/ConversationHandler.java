@@ -1,10 +1,10 @@
 package com.voxbiblia.rjmailer;
 
-import java.net.Socket;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
 
 /**
  * A ConversationHandler instance knows how to carry out an SMTP conversation
@@ -77,7 +77,10 @@ class ConversationHandler
         sendCommand("DATA", os);
         checkStatus(is, inBuf, 354);
         writeHeaders(msg, os);
-        os.write(toBytes("\r\n" + msg.getText() + "\r\n.\r\n"));
+        String charset = TextEncoder.getCharset(msg.getText());
+
+        os.write(toBytes("\r\n" + TextEncoder.encodeQP(msg.getText(), charset)
+                + "\r\n.\r\n"));
 
         return checkStatus(is, inBuf, 250).substring("250 ".length());
     }
@@ -85,14 +88,11 @@ class ConversationHandler
     private static void writeHeaders(RJMMailMessage msg, OutputStream os)
             throws IOException
     {
-        writeHeader("From", msg.getFrom(), os);
-    
-    }
-
-    private static void writeHeader(String name, String value, OutputStream os)
-            throws IOException
-    {
-        os.write(toBytes(name + ": " + value + "\r\n"));
+        os.write(toBytes(TextEncoder.encodeHeader("From", msg.getFrom())));
+        String subject = msg.getSubject();
+        if (subject != null) {
+            os.write(toBytes(TextEncoder.encodeHeader("Subject", msg.getSubject())));
+        }
     }
 
     private static byte[] toBytes(String s)
@@ -114,6 +114,7 @@ class ConversationHandler
      * @param expected the integer value of the thre first ascii chars
      * @throws IOException if communication fails for some reason
      * @throws RJMException if there is a status code mismatch
+     * @return the last line returned from server
      */
     static String checkStatus(InputStream is, byte[] inBuf, int expected)
             throws IOException

@@ -23,12 +23,58 @@ public class ConversationHandlerTest
                 "IN_FILE",
                 "250 Ok: queued as 62B14FFD8"
         }, new File("test/data/test1.txt"));
+        try {
+            RJMMailMessage rmm = new RJMMailMessage();
+            rmm.setFrom("sender@sender.com");
+            rmm.setText("email data");
+            rmm.setSubject("rågrut");
+            assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
+            assertTrue("more data to read from the server", s.hasFinished());
+        } catch (RJMException e) {
+            s.check();
+        }
+    }
 
-        RJMMailMessage rmm = new RJMMailMessage();
-        rmm.setFrom("sender@sender.com");
-        rmm.setText("email data");
-        assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
-        assertTrue("more data to read from the server", s.hasFinished());
+    public void testSend2()
+            throws Exception
+    {
+        ConversationHandler ch = new ConversationHandler("localhost");
+        DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
+                "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
+                "MAIL FROM: <sender@sender.com>", "250 Ok",
+                "RCPT TO: <reciever@reciever.com>", "250 Ok",
+                "DATA", "354 End data with <CR><LF>.<CR><LF>",
+                "IN_FILE",
+                "250 Ok: queued as 62B15FFD8"
+        }, new File("test/data/test2.txt"));
+        try {
+            RJMMailMessage rmm = new RJMMailMessage();
+            rmm.setFrom("sender@sender.com");
+            rmm.setText("BWO är ett band som består av tre stycken äggmökar, " +
+                    "varav en blondlockig filur är frontkille och händelsevis " +
+                    "sångare. Det är ju bra, eftersom man knappast får några " +
+                    "tonårstjejsbeundrare genom att ställa fram den lederhosen" +
+                    "prydda toalettborsten Alexander Bardval vid micken. " +
+                    "Tyvärr kan denna blondlockiga äggmök inte ENGELSKA!!! " +
+                    "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA! " +
+                    "Uttalet påminner om.... åh, vilket sammanträffande... en " +
+                    "svensk som försöker prata engelska! Dessutom är låten " +
+                    "\"uill (ja, UILL) maj arms by strånginuff to....\" ett " +
+                    "sällan skådat haveri i paraplegisk tysk marschtakt " +
+                    "kombinerat med isande yl från en sk kör och något som " +
+                    "jag antar ska vara romantik. Det låter som en BEGRAVNING! " +
+                    "Det låter som om Frankenstein har DÖDAT SIN BRUD och ska " +
+                    "klättra upp på Empire State Building för att offra henne " +
+                    "till Zeus tillsammans med KING KONG!!");
+            rmm.setSubject("Harry Bellafånte har långa ord men inte så långa " +
+                    "att det räcker.");
+
+            assertEquals("Ok: queued as 62B15FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
+            assertTrue("more data to read from the server", s.hasFinished());
+        } catch (RJMException e) {
+            s.check();
+        }
+
     }
 
     public void testGetStatus()

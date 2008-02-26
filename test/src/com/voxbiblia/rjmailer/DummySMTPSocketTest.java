@@ -94,12 +94,14 @@ public class DummySMTPSocketTest
         try {
             //noinspection ResultOfMethodCallIgnored
             is.read();
+            dss.check();
             fail("should have gotten IAE");
         } catch (IllegalArgumentException e) {
 
         }
         try {
             os.write('X');
+            dss.check();
             fail("should have gotten IAE");
         } catch (IllegalArgumentException e) {
             
