@@ -14,7 +14,7 @@ public class TextEncoder
     private static final char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
 
     // as documented in RFC2045 6.7
-    static String encodeQP(String indata, String encoding)
+    static String encodeQP(String indata, String encoding )
             throws UnsupportedEncodingException
     {
         byte[] bytes = indata.getBytes(encoding);
@@ -22,7 +22,7 @@ public class TextEncoder
         int stringLength = 0;
 
         for (int i = 0; i < bytes.length; i++) {
-            if (stringLength++ > 73) {
+            if (stringLength++ > 76) {
                 sb.append("=\r\n");
                 stringLength = 0;
             }
@@ -105,10 +105,7 @@ public class TextEncoder
             throw new IllegalArgumentException("name may not contain colon (:)");
         }
 
-        if (!data.endsWith("\r\n")) {
-            data = data + "\r\n";
-        }
-        return name + ": " + data;
+        return  name + ": " + encodeHeaderWord(data, 76 - name.length()) + "\r\n";
     }
 
     static int getNonAsciiPercentage(String data)
@@ -127,31 +124,113 @@ public class TextEncoder
      * Encodes Strings possibly including non-ascii characters using the
      * algorithm described in RFC1522, suitable for inclusion in email headers.
      *
+     * If the resulting header word does not fit into the number of available
+     * chars up to the available number of chars are written to the returned
+     * String, followed by the CRLF sequence and the rest of data on one or more
+     * continuation lines. After the first line, each line is no longer than
+     * 78 chars plus the CRLF end of line sequence.  
+     *
      * @param data the data to possibly encode
+     * @param available the number of chars available for this word before
+     * a line break is needed.
      * @return a possibly encoded version of data
      */
-    static String encodeHeaderWord(String data)
+    static String encodeHeaderWord(String data, int available)
     {
-        int encoding = check(data,0);
+        int encoding;
+        if (data.length() > available) {
+            encoding = check(data.substring(0, available), 0);
+        } else {
+            encoding = check(data,0);
+        }
         if (encoding == 0) {
+            if (data.length() > available) {
+                return data.substring(0, available) + "\r\n " +
+                        encodeHeaderWord(data.substring(available), 77);
+            }
             return data;
         }
         String n = getCharset(encoding).name();
-        if (getNonAsciiPercentage(data) > 50) {
-            try {
-                return "=?" + n + "?B?" +
-                        Base64Encoder.encode(data.getBytes(n)) + "?=";
-            } catch (UnsupportedEncodingException e) {
-                throw new Error(e);
-            }
-        }
         try {
-            return "=?" + n + "?Q?" + encodeQP(data, n).replace(' ', '_') +
-                    "?=";
+            int capacity = available  - n.length() - 7;
+            if (getNonAsciiPercentage(data) > 50) {
+                int charCount = howMany(data, n, capacity, BASE_64);
+                if (charCount < data.length()) {
+                    byte[] bytes = data.substring(0,charCount).getBytes(n);
+                    String s = Base64Encoder.encode(bytes);
+                    return "=?" + n + "?B?" + s + "?=\r\n " +
+                            encodeHeaderWord(data.substring(charCount), 77);
+                }
+                String s = Base64Encoder.encode(data.getBytes(n));
+                return "=?" + n + "?B?" + s + "?=";
+            }
+            int charCount = howMany(data, n, capacity, QP);
+            if (charCount < data.length()) {
+                String qp = encodeQP(data.substring(0, charCount), n).replace(' ', '_');
+                return "=?" + n + "?Q?" + qp + "?=\r\n " +
+                        encodeHeaderWord(data.substring(charCount), 77);
+            }
+            return "=?" + n + "?Q?" + encodeQP(data, n).replace(' ', '_') + "?=";
         } catch (UnsupportedEncodingException e) {
-            throw new Error("unsupported encodeing: " + n);
+            throw new Error("unsupported encoding: " + n);
         }
+    }
 
+    static final int BASE_64 = 0;
+    static final int QP = 1;
+
+    /**
+     * Returns the largest number of chars from s that results in byteCount
+     * number of bytes, or less when encoded with charset.
+     *
+     * @param s the string to read the bytes from
+     * @param charset the character set to encode the characters into
+     * @param byteCount the number of bytes byteCount to encode into
+     * @param type the type of encoding, Base64 or Quoted Printable
+     * @return the number of chars that can be encoded
+     */
+    static int howMany(String s, String charset, int byteCount, int type)
+    {
+        if (charset.startsWith("ISO-8859")) {
+            if (type == BASE_64) {
+                int capacity = byteCount / 4 * 3;
+                return s.length() < capacity ? s.length() : capacity;
+            }
+            char[] chars = s.toCharArray();
+            for (int i = 0 ; i < chars.length; i++) {
+                if (chars[i] > 0x7f) {
+                    byteCount -= 3;
+                } else {
+                    byteCount--;
+                }
+                if (byteCount < 0) {
+                    return i;
+                } else if (byteCount == 0) {
+                    return i + 1;
+                }
+            }
+            return chars.length;
+        } else if ("UTF-8".equals(charset)) {
+            byteCount = byteCount / 4 * 3;
+            char[] chars = s.toCharArray();
+            for (int i = 0 ; i < chars.length; i++) {
+                int needed = 1;
+                if (chars[i] > 0x07ff) {
+                    needed = 3;
+                } else if (chars[i] > 0x007f) {
+                    needed = 2;
+                }
+                if (type == QP) needed *= 3;
+                byteCount -= needed;
+                if (byteCount < 0) {
+                    return i;
+                } else if (byteCount == 0) {
+                    return i + 1;
+                }
+            }
+            return chars.length;
+        }
+        throw new Error("don't know how to handle charset "+ charset);
     }
 
     private static final int ASCII = 0;
@@ -172,27 +251,9 @@ public class TextEncoder
         }
     }
 
-    static Charset determineCharset(RJMMailMessage msg)
+    public static String getCharset(String s)
     {
-        int c = ASCII;
-        String[] mmTo = msg.getTo();
-        if (mmTo != null) {
-            for (int i = 0; i < mmTo.length; i++) {
-                i = check(mmTo[i], i);
-            }
-        }
-        String[] mmCc = msg.getCc();
-        if (mmCc != null) {
-            for (int i = 0; i < mmCc.length; i++) {
-                i = check(mmCc[i], i);
-            }
-        }
-
-        c = check(msg.getReplyTo(), c);
-        c = check(msg.getFrom(), c);
-        c = check(msg.getSubject(), c);
-        c = check(msg.getText(), c);
-        return getCharset(c);
+        return getCharset(check(s, 0)).name();
     }
 
     /**
