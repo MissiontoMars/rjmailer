@@ -72,8 +72,8 @@ public class ConversationHandlerTest
             assertEquals("Ok: queued as 62B15FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
             assertTrue("more data to read from the server", s.hasFinished());
         } catch (RJMException e) {
-            s.check();
         }
+        s.check();
 
     }
 

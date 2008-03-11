@@ -11,6 +11,7 @@ public class DummySMTPSocket extends Socket
     private String[] responses;
     private int currentResponse, currentPos;
     private String data;
+    private byte[] expected;
 
     public DummySMTPSocket(String[] responses, File dataContent)
     {
@@ -80,27 +81,25 @@ public class DummySMTPSocket extends Socket
         }
     }
 
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ByteArrayOutputStream actual = new ByteArrayOutputStream();
     String errorMessage = null;
 
     private class DSOutputStream
         extends OutputStream
     {
         int newlineCount = 0;
-        StringBuilder sb = new StringBuilder();
 
 
         public void write(int i) throws IOException
         {
-            baos.write(i);
-            sb.append((char)i);
+            actual.write(i);
             if (errorMessage != null) {
                 // if we have a pending error message, just let the client write
                 // everything without interference
                 return;
             }
             if ((currentResponse % 2) == 0) {
-                errorMessage = "writing when you should be reading [" + sb.toString() + "]";
+                errorMessage = "writing when you should be reading";
             }
             String s = responses[currentResponse];
             if ("IN_FILE".equals(s)) {
@@ -109,6 +108,7 @@ public class DummySMTPSocket extends Socket
                 }
                 s = data;
             }
+
             if (i == '\r') {
                 if (currentPos == s.length()) {
                         currentPos++;
@@ -116,6 +116,7 @@ public class DummySMTPSocket extends Socket
                     if (newlineCount == 0) {
                         newlineCount++;
                     } else {
+                        expected = s.getBytes("US-ASCII");
                         errorMessage = "got '\\r' in wrong place";
                     }
                 }
@@ -123,18 +124,22 @@ public class DummySMTPSocket extends Socket
                 if (currentPos == s.length() + 1) {
                     currentPos = 0;
                     currentResponse++;
+                    check();
+                    actual.reset();
                 } else if (s.charAt(currentPos) == '\n') {
                     if (newlineCount == 1) {
                         newlineCount = 0;
-                        sb = new StringBuilder();
                         currentPos++;
                     } else {
+                        expected = s.getBytes("US-ASCII");
                         errorMessage = "got '\\n' in wrong place";
                     }
                 }
             } else if (i != s.charAt(currentPos++)) {
+                expected = s.getBytes("US-ASCII");
                 errorMessage = "got wrong char, expected "
-                        + toString(s.charAt(currentPos -1)) + "' got "+toString(i)+" at pos " + (currentPos - 1);
+                        + toString(s.charAt(currentPos -1)) + "' got "
+                        + toString(i) +" at pos " + (currentPos - 1);
             }
         }
         private String toString(int c)
@@ -147,15 +152,27 @@ public class DummySMTPSocket extends Socket
     public void check()
     {
         if (errorMessage != null) {
-            System.err.println("error occured, writing data written to the dummy socket to 'debug.bin'");
             try {
-                FileOutputStream fos = new FileOutputStream("debug.bin");
-                fos.write(baos.toByteArray());
-                fos.close();
+                writeToFile("actual.txt", actual.toByteArray());
+                writeToFile("expected.txt", expected);
             } catch (IOException e) {
                 throw new Error(e);
             }
             throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    private void writeToFile(String filename, byte[] data)
+            throws IOException
+    {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(filename);
+            fos.write(data);
+        } finally {
+            if (fos != null) {
+                fos.close();
+            }
         }
     }
 

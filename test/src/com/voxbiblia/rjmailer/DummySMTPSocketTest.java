@@ -49,7 +49,7 @@ public class DummySMTPSocketTest
     public void testReadMultiline()
             throws IOException
     {
-        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "bar\nbaz"}, null);
+        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "bar\r\nbaz"}, null);
         /*for (int i = 0; i < 5; i++) {
             dss.getInputStream().read();    
         }

@@ -20,6 +20,7 @@ public class TextEncoder
         byte[] bytes = indata.getBytes(encoding);
         StringBuffer sb = new StringBuffer();
         int stringLength = 0;
+        int endChars = 0;
 
         for (int i = 0; i < bytes.length; i++) {
             if (stringLength++ > 76) {
@@ -27,6 +28,16 @@ public class TextEncoder
                 stringLength = 0;
             }
             byte b = bytes[i];
+            if (b == '\r') {
+                endChars = 1;
+            } else if(b == '\n') {
+                if (endChars == 1) {
+                    stringLength = 0;
+                }
+                endChars = 0;
+            } else {
+                endChars = 0;
+            }
             if (b < 0 || b == 0x3d) {
                 int b1 = b < 0 ? b + 0x100 : b;
                 sb.append('=');
