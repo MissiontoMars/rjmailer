@@ -21,9 +21,8 @@ public class TextEncoderTest
     public void testQPLongLine()
             throws Exception
     {
-        String s80chars = "12345678901234567890123456789012345678901234567890" +
+        String s80chars = "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA!" +
                 "123456789012345678901234567890";
-        assertEquals(80, s80chars.length());
         String s = TextEncoder.encodeQP(s80chars, "UTF-8");
         int index = s.indexOf("\r\n");
         assertTrue("Long QP encoded lines must be broken into shorter lines",

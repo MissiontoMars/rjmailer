@@ -35,29 +35,6 @@ package com.voxbiblia.rjmailer;
  *
  * ***** END LICENSE BLOCK ***** */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.nio.charset.Charset;
-
-import org.columba.ristretto.auth.AuthenticationException;
-import org.columba.ristretto.auth.AuthenticationFactory;
-import org.columba.ristretto.auth.NoSuchAuthenticationException;
-import org.columba.ristretto.composer.MimeTreeRenderer;
-import org.columba.ristretto.io.CharSequenceSource;
-import org.columba.ristretto.io.FileSource;
-import org.columba.ristretto.log.RistrettoLogger;
-import org.columba.ristretto.message.Address;
-import org.columba.ristretto.message.BasicHeader;
-import org.columba.ristretto.message.Header;
-import org.columba.ristretto.message.LocalMimePart;
-import org.columba.ristretto.message.MimeHeader;
-import org.columba.ristretto.message.MimeType;
-import org.columba.ristretto.parser.AddressParser;
-import org.columba.ristretto.parser.ParserException;
-import org.columba.ristretto.smtp.SMTPException;
-import org.columba.ristretto.smtp.SMTPProtocol;
 
 /**
  * This is a simple command line smtp client. It shows the usage of the

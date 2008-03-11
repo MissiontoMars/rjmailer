@@ -32,6 +32,7 @@ public class TextEncoder
                 sb.append('=');
                 sb.append(HEX_DIGITS[b1 >> 4]);
                 sb.append(HEX_DIGITS[b1 & 0x0f]);
+                stringLength += 2;
             } else {
                 sb.append((char)b);
             }
