@@ -21,25 +21,37 @@ public class TextEncoderTest
     public void testQPLongLine()
             throws Exception
     {
-        String s80chars = "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA!" +
+        String someChars = "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA!" +
                 "123456789012345678901234567890";
-        String s = TextEncoder.encodeQP(s80chars, "UTF-8");
+        String s = TextEncoder.encodeQP(someChars, "UTF-8");
         String[] lines =  s.split("\r\n");
 
         assertTrue("Long QP encoded lines must be broken into shorter lines: "
                 + lines.length, lines.length > 1);
         assertTrue("Longer than 78 chars is not allowed: " + lines[0].length(),
                 lines[0].length() < 79);
-        s80chars = "VILKET ÄR ETT PRÅBLÄM NÄR MAN \r\nFÖRSÖKER SJUNGA PÅ ENGELSKA!" +
+        someChars = "VILKET ÄR ETT PRÅBLÄM NÄR MAN \r\nFÖRSÖKER SJUNGA PÅ ENGELSKA!" +
                 "123456789012345678901234567890";
-        s = TextEncoder.encodeQP(s80chars, "UTF-8");
+        s = TextEncoder.encodeQP(someChars, "UTF-8");
         lines =  s.split("\r\n");
-        /*
-        for (int i = 0; i < lines.length; i++) {
-            System.out.println("line " + lines[i].length() + ": " + lines[i]);
-        }
-        */
         assertTrue("not detecting existing newlines", lines[1].length() > 30);
+    }
+
+    public void testQPCornerLongLine()
+            throws Exception
+    {
+        String s = "12345678901234567890" + "12345678901234567890" +
+                   "12345678901234567890" + "123456789012345678";
+        String sOut = TextEncoder.encodeQP(s, "UTF-8");
+        assertEquals(sOut,s);
+        String s1 = s + "9";
+        sOut = TextEncoder.encodeQP(s1, "UTF-8");
+        String[] lines = sOut.split("\r\n");
+        assertEquals(2, lines.length);
+        s = s + "€";
+        sOut = TextEncoder.encodeQP(s, "UTF-8");
+        lines = sOut.split("\r\n");
+        assertTrue("first line is too long: " + lines[0], lines[0].length() < 79);
     }
 
 
