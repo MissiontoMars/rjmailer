@@ -23,16 +23,13 @@ public class ConversationHandlerTest
                 "IN_FILE",
                 "250 Ok: queued as 62B14FFD8"
         }, new File("test/data/test1.txt"));
-        try {
-            RJMMailMessage rmm = new RJMMailMessage();
-            rmm.setFrom("sender@sender.com");
-            rmm.setText("email data");
-            rmm.setSubject("rågrut");
-            assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
-            assertTrue("more data to read from the server", s.hasFinished());
-        } catch (RJMException e) {
-            s.check();
-        }
+
+        RJMMailMessage rmm = new RJMMailMessage();
+        rmm.setFrom("sender@sender.com");
+        rmm.setText("email data");
+        rmm.setSubject("rågrut");
+        assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
+        assertTrue("more data to read from the server", s.hasFinished());
     }
 
     public void testSend2()
@@ -47,7 +44,7 @@ public class ConversationHandlerTest
                 "IN_FILE",
                 "250 Ok: queued as 62B15FFD8"
         }, new File("test/data/test2.txt"));
-        try {
+
             RJMMailMessage rmm = new RJMMailMessage();
             rmm.setFrom("sender@sender.com");
             rmm.setText("BWO är ett band som består av tre stycken äggmökar, \n" +
@@ -71,9 +68,7 @@ public class ConversationHandlerTest
 
             assertEquals("Ok: queued as 62B15FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
             assertTrue("more data to read from the server", s.hasFinished());
-        } catch (RJMException e) {
-        }
-        s.check();
+
 
     }
 

@@ -17,33 +17,33 @@ public class DummySMTPSocketTest
             throws IOException
     {
         DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "bar"}, null);
-        InputStream is = dss.getInputStream();
-        OutputStream os = dss.getOutputStream();
-        assertEquals('f', is.read());
-        assertEquals('o', is.read());
-        assertEquals('o', is.read());
-        assertEquals('\r', is.read());
-        assertEquals('\n', is.read());
+        InputStream fromServer = dss.getInputStream();
+        OutputStream toServer = dss.getOutputStream();
+        assertEquals('f', fromServer.read());
+        assertEquals('o', fromServer.read());
+        assertEquals('o', fromServer.read());
+        assertEquals('\r', fromServer.read());
+        assertEquals('\n', fromServer.read());
 
         try {
             //noinspection ResultOfMethodCallIgnored
-            is.read();
+            fromServer.read();
             fail("should have gotten IAE");
         } catch (IllegalArgumentException e) {
 
         }
-        os.write('b');
-        os.write('a');
-        os.write('r');
-        os.write('\r');
-        os.write('\n');        
+        toServer.write('b');
+        toServer.write('a');
+        toServer.write('r');
+        toServer.write('\r');
+        toServer.write('\n');
         try {
             //noinspection ResultOfMethodCallIgnored
-            is.read();
+            fromServer.read();
         } catch (IllegalArgumentException e) {
             fail("have written, should not give IAE");
         }
-        assertEquals(-1, is.read());
+        assertEquals(-1, fromServer.read());
     }
 
     public void testReadMultiline()
@@ -94,14 +94,12 @@ public class DummySMTPSocketTest
         try {
             //noinspection ResultOfMethodCallIgnored
             is.read();
-            dss.check();
             fail("should have gotten IAE");
         } catch (IllegalArgumentException e) {
 
         }
         try {
             os.write('X');
-            dss.check();
             fail("should have gotten IAE");
         } catch (IllegalArgumentException e) {
             

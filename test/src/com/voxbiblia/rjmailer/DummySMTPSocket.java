@@ -2,24 +2,207 @@ package com.voxbiblia.rjmailer;
 
 import java.net.Socket;
 import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * A socket that one can read data from that is set up in the constructor.
  */
 public class DummySMTPSocket extends Socket
 {
-    private String[] responses;
-    private int currentResponse, currentPos;
-    private String data;
-    private byte[] expected;
+    private static final int WRITING_TO_SERVER = 0;
+    private static final int READING_FROM_SERVER = 1;
 
-    public DummySMTPSocket(String[] responses, File dataContent)
+    // indicates which line we are at
+    private int state = WRITING_TO_SERVER;
+
+    private List fromServer, toServer;
+
+
+    public DummySMTPSocket(String[] conversation, File dataContent)
     {
-        this.responses = responses;
-        if (dataContent != null) {
-            this.data = read(dataContent);
+        fromServer = new ArrayList();
+        toServer = new ArrayList();
+        int i = 0;
+        while  (true) {
+            if (i > conversation.length - 1) {
+                break;
+            }
+            fromServer.add(conversation[i++]);
+            if (i > conversation.length - 1) {
+                break;
+            }
+            String s = conversation[i++];
+            if ("IN_FILE".equals(s)) {
+                s = read(dataContent);
+            }
+            toServer.add(s);
         }
     }
+
+    /**
+     * Returns true if the conversation on this socket has been
+     * finished, else false.
+     *
+     * @return true if the conversation is finshed, else false
+     */
+    public boolean hasFinished()
+    {
+        return fromServer.size() == 0 && toServer.size() == 0;
+    }
+
+    public byte[] getToServer()
+    {
+        byte[] bs = getNextLine(pop(toServer));
+        if (bs == null) {
+            return null;
+        }
+        if (state == WRITING_TO_SERVER) {
+            throw new IllegalArgumentException();
+        }
+        state = WRITING_TO_SERVER;
+        return bs;
+    }
+
+    public byte[] getFromServer()
+    {
+        byte[] bs = getNextLine(pop(fromServer));
+        if (bs == null && toServer.size() == 0) {
+            return null;
+        }
+        if (state == READING_FROM_SERVER) {
+            throw new IllegalArgumentException();
+        }
+        state = READING_FROM_SERVER;
+        return bs;
+    }
+
+    private String pop(List l)
+    {
+        if (l.size() == 0) {
+            return null;
+        }
+        return (String)l.remove(0);
+    }
+
+    private byte[] getNextLine(String s)
+    {
+        if (s == null) {
+            return null;
+        }
+        if (!s.endsWith("\r\n")) {
+            s = s + "\r\n";
+        }
+        try {
+            return s.getBytes("US-ASCII");
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e);
+        }
+    }
+
+    public void wrongChar(int position)
+    {
+        throw new IllegalArgumentException("got wrong char at position "+ position);
+    }
+
+    private static class DSOutputStream
+            extends OutputStream
+    {
+        private DummySMTPSocket parent;
+        private byte[] data = null;
+        private int pos;
+        private int endSeq = 0;
+        private ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        public DSOutputStream(DummySMTPSocket parent)
+        {
+            this.parent = parent;
+        }
+
+        public void write(int actual)
+                throws IOException 
+        {
+            baos.write((byte)actual);
+            if (data == null || data.length == pos) {
+                data = parent.getToServer();
+                if (data == null) {
+                    return;
+                }
+                pos = 0;
+            }
+
+            byte expected = data[pos++];
+            if (actual == '\r') {
+                endSeq = 1;
+            } else if (actual == '\n') {
+                if (endSeq == 1) {
+                    data = null;
+                }
+                endSeq = 0;
+            } else if (actual != expected) {
+                endSeq = 0;
+                parent.wrongChar(pos);
+            } else {
+                endSeq = 0;
+            }
+        }
+    }
+
+    /**
+     * An input stream that reads from the canned conversation
+     */
+    private static class DSInputStream
+            extends InputStream
+    {
+        private DummySMTPSocket parent;
+        private byte[] data = null;
+        private int pos = 0;
+
+        public DSInputStream(DummySMTPSocket parent)
+        {
+            this.parent = parent;
+        }
+
+        public int read()
+                throws IOException
+        {
+            if (data == null || pos == data.length) {
+                data = parent.getFromServer();
+                if (data == null) {
+                    return -1;
+                }
+                pos = 0;
+            }
+            return data[pos++];
+        }
+    }
+
+    /*
+    private void writeToFile(String filename, byte[] data)
+            throws IOException
+    {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(filename);
+            fos.write(data);
+        } finally {
+            if (fos != null) {
+                fos.close();
+            }
+        }
+    }
+    */
+
+    public InputStream getInputStream()
+    {
+        return new DSInputStream(this);
+    }
+
+    public OutputStream getOutputStream()
+    {
+        return new DSOutputStream(this);
+    }
+
 
     private String read(File dataContent)
     {
@@ -39,155 +222,4 @@ public class DummySMTPSocket extends Socket
         }
     }
 
-    /**
-     * An input stream that reads from the canned responses
-     */
-    private class DSInputStream
-            extends InputStream
-    {
-        int errorOffset = 0;
-        byte[] error;
-
-        public DSInputStream() {
-            try {
-                error = "500 ERROR\r\n".getBytes("US-ASCII");
-            } catch (UnsupportedEncodingException e) {
-                throw new Error(e);
-            }
-        }
-
-        public int read() throws IOException
-        {
-            if (errorMessage != null) {
-                return error[errorOffset++];
-            }
-
-            if ((currentResponse % 2) == 1) {
-                throw new IllegalArgumentException("reading when you should be writing");
-            }
-            if (responses.length == currentResponse) {
-                return -1;
-            }
-            String s = responses[currentResponse];
-            if (currentPos == s.length()) {
-                currentPos++;
-                return '\r';
-            } else if (currentPos == s.length() + 1) {
-                currentPos = 0;
-                currentResponse++;
-                return '\n';
-            }
-            return s.charAt(currentPos++);
-        }
-    }
-
-    ByteArrayOutputStream actual = new ByteArrayOutputStream();
-    String errorMessage = null;
-
-    private class DSOutputStream
-        extends OutputStream
-    {
-        int newlineCount = 0;
-
-
-        public void write(int i) throws IOException
-        {
-            actual.write(i);
-            if (errorMessage != null) {
-                // if we have a pending error message, just let the client write
-                // everything without interference
-                return;
-            }
-            if ((currentResponse % 2) == 0) {
-                errorMessage = "writing when you should be reading";
-            }
-            String s = responses[currentResponse];
-            if ("IN_FILE".equals(s)) {
-                if (data == null) {
-                    errorMessage = "when IN_FILE marker is in place, second argument can not be null";
-                }
-                s = data;
-            }
-
-            if (i == '\r') {
-                if (currentPos == s.length()) {
-                        currentPos++;
-                } else if (s.charAt(currentPos) == '\n') {
-                    if (newlineCount == 0) {
-                        newlineCount++;
-                    } else {
-                        expected = s.getBytes("US-ASCII");
-                        errorMessage = "got '\\r' in wrong place";
-                    }
-                }
-            } else if (i == '\n') {
-                if (currentPos == s.length() + 1) {
-                    currentPos = 0;
-                    currentResponse++;
-                    check();
-                    actual.reset();
-                } else if (s.charAt(currentPos) == '\n') {
-                    if (newlineCount == 1) {
-                        newlineCount = 0;
-                        currentPos++;
-                    } else {
-                        expected = s.getBytes("US-ASCII");
-                        errorMessage = "got '\\n' in wrong place";
-                    }
-                }
-            } else if (i != s.charAt(currentPos++)) {
-                expected = s.getBytes("US-ASCII");
-                errorMessage = "got wrong char, expected "
-                        + toString(s.charAt(currentPos -1)) + "' got "
-                        + toString(i) +" at pos " + (currentPos - 1);
-            }
-        }
-        private String toString(int c)
-        {
-            return "'" + (char)c + "' (ascii " + c + ")";
-        }
-
-    }
-
-    public void check()
-    {
-        if (errorMessage != null) {
-            try {
-                writeToFile("actual.txt", actual.toByteArray());
-                writeToFile("expected.txt", expected);
-            } catch (IOException e) {
-                throw new Error(e);
-            }
-            throw new IllegalArgumentException(errorMessage);
-        }
-    }
-
-    private void writeToFile(String filename, byte[] data)
-            throws IOException
-    {
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(filename);
-            fos.write(data);
-        } finally {
-            if (fos != null) {
-                fos.close();
-            }
-        }
-    }
-
-    public InputStream getInputStream()
-    {
-        return new DSInputStream();
-    }
-
-    public OutputStream getOutputStream()
-    {
-        return new DSOutputStream();
-    }
-
-    public boolean hasFinished()
-    {
-        return currentResponse == responses.length;
-    }
 }
