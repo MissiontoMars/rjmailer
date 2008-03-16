@@ -44,7 +44,7 @@ public class TextEncoderTest
                    "12345678901234567890" + "123456789012345";
         String s0 = s + "6";
         String sOut = TextEncoder.encodeQP(s0, "UTF-8");
-        assertEquals(s0 , sOut);
+        assertEquals(s0, sOut);
         String s1 = s + "67";
         sOut = TextEncoder.encodeQP(s1, "UTF-8");
         String[] lines = sOut.split("\r\n");
@@ -79,6 +79,9 @@ public class TextEncoderTest
         String s = "gurka  \r\nsvan";
         String sOut = TextEncoder.encodeQP(s, "ISO-8859-1");
         assertEquals("WSP at end of line not allowed in QP", -1, sOut.indexOf(" \r\n"));
+        s = "gurka\t\r\nsvan";
+        sOut = TextEncoder.encodeQP(s, "ISO-8859-1");
+        assertEquals("WSP at end of line not allowed in QP", -1, sOut.indexOf("\t\r\n"));
     }
 
     public void testCanonicalize()

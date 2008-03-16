@@ -20,14 +20,14 @@ public class TextEncoder
     static String encodeQP(String indata, String encoding)
             throws UnsupportedEncodingException
     {
-        byte[] bytes = indata.getBytes(encoding);
+        byte[] bs = indata.getBytes(encoding);
         StringBuffer sb = new StringBuffer();
         int available = MAX_LINE_LENGTH;
         int endChars = 0;
 
-        for (int i = 0; i < bytes.length; i++) {
+        for (int i = 0; i < bs.length; i++) {
 
-            byte b = bytes[i];
+            byte b = bs[i];
             if (b == '\r') {
                 endChars = 1;
             } else if(b == '\n') {
@@ -38,9 +38,31 @@ public class TextEncoder
             } else {
                 endChars = 0;
             }
-            if (b < 0 || b == 0x3d) {
+
+            boolean writeQuoted = false;
+            if (b == '\r' || b == '\n') {
+                writeQuoted = false;
+            } else if (b == ' ' || b == '\t') {
+                // special case, check if there is only white space until end
+                // of line
+                writeQuoted = true;
+                for (int j = i; j < bs.length; j++) {
+                    byte b0 = bs[j];
+                    if (b0 == '\r' && bs.length > j + 1 && bs[j + 1] == '\n') {
+                        break;
+                    }
+                    if (b0 != ' ' && b0 != '\t') {
+                        writeQuoted = false;
+                        break;
+                    }
+                }
+            }  else if (b < 33 || b == '=' || b > 126) {
+                writeQuoted = true;
+            }
+
+            if (writeQuoted) {
                 int b1 = b < 0 ? b + 0x100 : b;
-                if (available < 6 && bytes.length > i + 1) {
+                if (available < 6 && bs.length > i + 1) {
                     sb.append("=\r\n");
                     available = MAX_LINE_LENGTH;
                 }
@@ -49,7 +71,7 @@ public class TextEncoder
                 sb.append(HEX_DIGITS[b1 & 0x0f]);
                 available -= 3;
             } else {
-                if (available < 2 && bytes.length > i + 1) {
+                if (available < 2 && bs.length > i + 1) {
                     sb.append("=\r\n");
                     available = MAX_LINE_LENGTH;
                 }
@@ -60,7 +82,7 @@ public class TextEncoder
         return sb.toString();
     }
 
-    
+
     private static final int OUTSIDE = 1;
     private static final int GOT_CR = 2;
     private static final int GOT_LF = 3;
