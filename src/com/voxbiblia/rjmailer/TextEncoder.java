@@ -12,27 +12,27 @@ import java.nio.charset.Charset;
 public class TextEncoder
 {
     private static final char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
+    // the maxmium length of a line excluding the new line pair
+    private static final int MAX_LINE_LENGTH = 76;
+
 
     // as documented in RFC2045 6.7
-    static String encodeQP(String indata, String encoding )
+    static String encodeQP(String indata, String encoding)
             throws UnsupportedEncodingException
     {
         byte[] bytes = indata.getBytes(encoding);
         StringBuffer sb = new StringBuffer();
-        int stringLength = 0;
+        int available = MAX_LINE_LENGTH;
         int endChars = 0;
 
         for (int i = 0; i < bytes.length; i++) {
-            if (stringLength++ > 76) {
-                sb.append("=\r\n");
-                stringLength = 0;
-            }
+
             byte b = bytes[i];
             if (b == '\r') {
                 endChars = 1;
             } else if(b == '\n') {
                 if (endChars == 1) {
-                    stringLength = 0;
+                    available = MAX_LINE_LENGTH;
                 }
                 endChars = 0;
             } else {
@@ -40,17 +40,27 @@ public class TextEncoder
             }
             if (b < 0 || b == 0x3d) {
                 int b1 = b < 0 ? b + 0x100 : b;
+                if (available < 6 && bytes.length > i + 1) {
+                    sb.append("=\r\n");
+                    available = MAX_LINE_LENGTH;
+                }
                 sb.append('=');
                 sb.append(HEX_DIGITS[b1 >> 4]);
                 sb.append(HEX_DIGITS[b1 & 0x0f]);
-                stringLength += 2;
+                available -= 3;
             } else {
+                if (available < 2 && bytes.length > i + 1) {
+                    sb.append("=\r\n");
+                    available = MAX_LINE_LENGTH;
+                }
                 sb.append((char)b);
+                available--;
             }
         }
         return sb.toString();
     }
 
+    
     private static final int OUTSIDE = 1;
     private static final int GOT_CR = 2;
     private static final int GOT_LF = 3;

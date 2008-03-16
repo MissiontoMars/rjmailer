@@ -41,20 +41,45 @@ public class TextEncoderTest
             throws Exception
     {
         String s = "12345678901234567890" + "12345678901234567890" +
-                   "12345678901234567890" + "123456789012345678";
-        String sOut = TextEncoder.encodeQP(s, "UTF-8");
-        assertEquals(sOut,s);
-        String s1 = s + "9";
+                   "12345678901234567890" + "123456789012345";
+        String s0 = s + "6";
+        String sOut = TextEncoder.encodeQP(s0, "UTF-8");
+        assertEquals(s0 , sOut);
+        String s1 = s + "67";
         sOut = TextEncoder.encodeQP(s1, "UTF-8");
         String[] lines = sOut.split("\r\n");
         assertEquals(2, lines.length);
-        s = s + "€";
-        sOut = TextEncoder.encodeQP(s, "UTF-8");
-        lines = sOut.split("\r\n");
-        assertTrue("first line is too long: " + lines[0], lines[0].length() < 79);
+        assertEquals(76, lines[0].length());
+
+        checkLineLength(77);
+        checkLineLength(76);
+        checkLineLength(74);
+        checkLineLength(72);
+        checkLineLength(69);
+        checkLineLength(70);
+
     }
 
+    private void checkLineLength(int baseLength)
+            throws Exception
+    {
+        String s = "12345678901234567890" + "12345678901234567890" +
+                   "12345678901234567890" + "12345678901234567890";
+        String s2 = s.substring(0, baseLength) + "€";
+        String sOut = TextEncoder.encodeQP(s2, "UTF-8");
+        String[] lines = sOut.split("\r\n");
+        // according to RFC2045 6.7 a QP line can not be longer than 76 chars
+        // excluding CRLF
+        assertTrue("first line is too long: " + lines[0], lines[0].length() < 77);
+    }
 
+    public void testQPWhitespaceAtEnd()
+            throws Exception
+    {
+        String s = "gurka  \r\nsvan";
+        String sOut = TextEncoder.encodeQP(s, "ISO-8859-1");
+        assertEquals("WSP at end of line not allowed in QP", -1, sOut.indexOf(" \r\n"));
+    }
 
     public void testCanonicalize()
     {

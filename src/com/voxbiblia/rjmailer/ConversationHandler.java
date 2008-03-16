@@ -88,6 +88,7 @@ class ConversationHandler
     private static void writeHeaders(RJMMailMessage msg, OutputStream os)
             throws IOException
     {
+        // TODO: headers to add; orig-date, from, message-id
         os.write(toBytes(TextEncoder.encodeHeader("From", msg.getFrom())));
         String subject = msg.getSubject();
         if (subject != null) {
