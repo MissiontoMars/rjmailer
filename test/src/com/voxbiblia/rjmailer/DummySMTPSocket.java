@@ -4,6 +4,7 @@ import java.net.Socket;
 import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A socket that one can read data from that is set up in the constructor.
@@ -12,17 +13,19 @@ public class DummySMTPSocket extends Socket
 {
     private static final int WRITING_TO_SERVER = 0;
     private static final int READING_FROM_SERVER = 1;
+    private static final int GOT_SERVER_ITEM = 2;
 
     // indicates which line we are at
     private int state = WRITING_TO_SERVER;
 
-    private List fromServer, toServer;
-
+    private List fromServer, toServer, innerTo;
+    private ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
     public DummySMTPSocket(String[] conversation, File dataContent)
     {
         fromServer = new ArrayList();
         toServer = new ArrayList();
+        innerTo = new ArrayList();
         int i = 0;
         while  (true) {
             if (i > conversation.length - 1) {
@@ -51,16 +54,42 @@ public class DummySMTPSocket extends Socket
         return fromServer.size() == 0 && toServer.size() == 0;
     }
 
+    /**
+     * Used by the output stream to save what the client writes to
+     * the server, for debug comparisons.
+     *
+     * @param b an int containing a byte of data
+     */
+    public void storeWritten(int b)
+    {
+        baos.write(b);
+    }
+
+
     public byte[] getToServer()
     {
-        byte[] bs = getNextLine(pop(toServer));
+        String s = pop(innerTo);
+        if (s == null) {
+            baos.reset();
+            s = pop(toServer);
+            if (state == READING_FROM_SERVER) {
+                state = GOT_SERVER_ITEM;
+            } else if (state == GOT_SERVER_ITEM) {
+                state = WRITING_TO_SERVER;
+            }
+            if (s != null && s.contains("\n")) {
+                String[] lines = s.split("\n");
+                innerTo.addAll(Arrays.asList(lines));
+                s = pop(innerTo);
+            }
+        }
+        byte[] bs = getNextLine(s);
         if (bs == null) {
             return null;
         }
         if (state == WRITING_TO_SERVER) {
             throw new IllegalArgumentException();
         }
-        state = WRITING_TO_SERVER;
         return bs;
     }
 
@@ -90,7 +119,9 @@ public class DummySMTPSocket extends Socket
         if (s == null) {
             return null;
         }
-        if (!s.endsWith("\r\n")) {
+        if (s.endsWith("\r")) {
+            s = s + "\n";
+        } else if (!s.endsWith("\r\n")) {
             s = s + "\r\n";
         }
         try {
@@ -102,6 +133,7 @@ public class DummySMTPSocket extends Socket
 
     public void wrongChar(int position)
     {
+        
         throw new IllegalArgumentException("got wrong char at position "+ position);
     }
 
@@ -112,7 +144,6 @@ public class DummySMTPSocket extends Socket
         private byte[] data = null;
         private int pos;
         private int endSeq = 0;
-        private ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         public DSOutputStream(DummySMTPSocket parent)
         {
@@ -122,14 +153,16 @@ public class DummySMTPSocket extends Socket
         public void write(int actual)
                 throws IOException 
         {
-            baos.write((byte)actual);
             if (data == null || data.length == pos) {
                 data = parent.getToServer();
                 if (data == null) {
-                    return;
+                    throw new IllegalArgumentException("trying to write to server " +
+                            "when there is no data in the dummy socket to match " +
+                            "to the written data");
                 }
                 pos = 0;
             }
+            parent.storeWritten(actual);
 
             byte expected = data[pos++];
             if (actual == '\r') {

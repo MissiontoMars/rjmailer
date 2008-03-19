@@ -32,6 +32,32 @@ public class ConversationHandlerTest
         assertTrue("more data to read from the server", s.hasFinished());
     }
 
+    public void testSendBodyError()
+            throws Exception
+    {
+        ConversationHandler ch = new ConversationHandler("localhost");
+        DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
+                "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
+                "MAIL FROM: <sender@sender.com>", "250 Ok",
+                "RCPT TO: <reciever@reciever.com>", "250 Ok",
+                "DATA", "354 End data with <CR><LF>.<CR><LF>",
+                "IN_FILE",
+                "250 Ok: queued as 62B14FFD8"
+        }, new File("test/data/test1.txt"));
+
+        RJMMailMessage rmm = new RJMMailMessage();
+        rmm.setFrom("sender@sender.com");
+        rmm.setText("email dataa");
+        rmm.setSubject("rågrut");
+        try {
+            assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
+            fail("should have thrown IAE");
+        } catch (IllegalArgumentException e) {
+            // ignore
+        }
+
+    }
+
     public void testSend2()
             throws Exception
     {
