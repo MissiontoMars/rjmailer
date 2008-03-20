@@ -19,6 +19,7 @@ public class DummySMTPSocket extends Socket
     private int state = WRITING_TO_SERVER;
 
     private List fromServer, toServer, innerTo;
+    private String currentExpected;
     private ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
     public DummySMTPSocket(String[] conversation, File dataContent)
@@ -72,6 +73,7 @@ public class DummySMTPSocket extends Socket
         if (s == null) {
             baos.reset();
             s = pop(toServer);
+            currentExpected = s;
             if (state == READING_FROM_SERVER) {
                 state = GOT_SERVER_ITEM;
             } else if (state == GOT_SERVER_ITEM) {
@@ -133,8 +135,32 @@ public class DummySMTPSocket extends Socket
 
     public void wrongChar(int position)
     {
-        
+        try {
+            writeToFile("expected.txt", currentExpected.getBytes("US-ASCII"));
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e);
+        }
+        writeToFile("actual.txt", baos.toByteArray());
         throw new IllegalArgumentException("got wrong char at position "+ position);
+    }
+
+    private void writeToFile(String filename, byte[] data)
+    {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(filename);
+            fos.write(data);
+        } catch (IOException e) {
+            throw new Error(e);
+        } finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
     }
 
     private static class DSOutputStream

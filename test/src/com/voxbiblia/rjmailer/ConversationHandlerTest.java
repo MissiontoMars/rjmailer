@@ -73,21 +73,23 @@ public class ConversationHandlerTest
 
             RJMMailMessage rmm = new RJMMailMessage();
             rmm.setFrom("sender@sender.com");
+            // contains space at end of line
             rmm.setText("BWO är ett band som består av tre stycken äggmökar, \n" +
-                    "varav en blondlockig filur är frontkille och händelsevis \n" +
-                    "sångare. Det är ju bra, eftersom man knappast får några \n" +
-                    "tonårstjejsbeundrare genom att ställa fram den lederhosen \n" +
-                    "prydda toalettborsten Alexander Bardval vid micken. \n" +
-                    "Tyvärr kan denna blondlockiga äggmök inte ENGELSKA!!! \n" +
-                    "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA! \n" +
-                    "Uttalet påminner om.... åh, vilket sammanträffande... en \n" +
-                    "svensk som försöker prata engelska! Dessutom är låten \n" +
-                    "\"uill (ja, UILL) maj arms by strånginuff to....\" ett \n" +
-                    "sällan skådat haveri i paraplegisk tysk marschtakt \n" +
-                    "kombinerat med isande yl från en sk kör och något som \n" +
-                    "jag antar ska vara romantik. Det låter som en BEGRAVNING! \n" +
-                    "Det låter som om Frankenstein har DÖDAT SIN BRUD och ska \n" +
-                    "klättra upp på Empire State Building för att offra henne \n" +
+                    "varav en blondlockig filur är frontkille och händelsevis\n" +
+                    "sångare. Det är ju bra, eftersom man knappast får några\n" +
+                    "tonårstjejsbeundrare genom att ställa fram den lederhosen\n" +
+                    "prydda toalettborsten Alexander Bardval vid micken.\n" +
+                    "Tyvärr kan denna blondlockiga äggmök inte ENGELSKA!!!\n" +
+                    "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA!\n" +
+                    // a really long line, requiring a soft linebreak
+                    "Uttalet påminner om.... åh, vilket sammanträffande... en " +
+                    "svensk som försöker prata engelska! Dessutom är låten\n" +
+                    "\"uill (ja, UILL) maj arms by strånginuff to....\" ett\n" +
+                    "sällan skådat haveri i paraplegisk tysk marschtakt\n" +
+                    "kombinerat med isande yl från en sk kör och något som\n" +
+                    "jag antar ska vara romantik. Det låter som en BEGRAVNING!\n" +
+                    "Det låter som om Frankenstein har DÖDAT SIN BRUD och ska\n" +
+                    "klättra upp på Empire State Building för att offra henne\n" +
                     "till Zeus tillsammans med KING KONG!!");
             rmm.setSubject("Harry Bellafånte har långa ord men inte så långa " +
                     "att det räcker.");
