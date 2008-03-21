@@ -37,19 +37,19 @@ class ConversationHandler
      * Sends an email message to a specified server using the SMTP protocol.
      *
      * @param message The message to send
-     * @param serverName the name of the server to connect to
+     * @param server the name of the server to connect to
      * @return the tracking information recived from the server upon accept
      * @param to array of strings specifying recieving email addresses
      * @throws IOException if communications fail
      */
-    public String sendMail(RJMMailMessage message, String[] to, String serverName)
+    public String sendMail(RJMMessage message, String[] to, String server)
             throws IOException
     {
-        Socket s = new Socket(serverName, 25);
+        Socket s = new Socket(server, 25);
         return send(message, to, s);
     }
 
-    String send(RJMMailMessage msg, String[] to, Socket socket)
+    String send(RJMMessage msg, String[] to, Socket socket)
             throws IOException
     {
         if (msg == null) {
@@ -64,14 +64,15 @@ class ConversationHandler
 
         String from = msg.getFrom();
         if (from == null || from.length() < 1) {
-            throw new RJMInputException("Can not send email with null sender address");
+            throw new RJMInputException("Can not send email with null sender " +
+                    "address");
         }
         sendCommand("MAIL FROM: <" + AddressUtil.getAddress(from) + ">", os);
         checkStatus(is, inBuf, 250);
 
         if (to == null || to.length < 1) {
-            throw new RJMInputException("Not enough addresses to send email to, " +
-                    "please supply at least one");
+            throw new RJMInputException("Not enough addresses to send email " +
+                    "to, please supply at least one");
         }
         for (int i = 0; i < to.length; i++) {
             sendCommand("RCPT TO: <" + to[i] +">", os);
@@ -88,10 +89,9 @@ class ConversationHandler
         return checkStatus(is, inBuf, 250).substring("250 ".length());
     }
 
-    private void writeHeaders(RJMMailMessage msg, OutputStream os)
+    private void writeHeaders(RJMMessage msg, OutputStream os)
             throws IOException
     {
-        // TODO: headers to add; orig-date, from
         os.write(toBytes(TextEncoder.encodeHeader("From", msg.getFrom())));
         String subject = msg.getSubject();
         if (subject != null) {

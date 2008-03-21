@@ -21,7 +21,8 @@ public class ConversationHandlerTest
         m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
         m.put("@@DATE@@", ch.fieldGenerator.getNextDate());
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
-                "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
+                "EHLO localhost", "250-smtpd.voxbiblia.com\r\n" +
+                    "250-VRFY\r\n250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
                 "RCPT TO: <reciever@reciever.com>", "250 Ok",
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
@@ -29,11 +30,12 @@ public class ConversationHandlerTest
                 "250 Ok: queued as 62B14FFD8"
         }, new File("test/data/test1.txt"), m);
 
-        RJMMailMessage rmm = new RJMMailMessage();
+        RJMMessage rmm = new RJMMessage();
         rmm.setFrom("sender@sender.com");
         rmm.setText("email data");
         rmm.setSubject("rågrut");
-        assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
+        assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm,
+                new String[] {"reciever@reciever.com"}, s));
         assertTrue("more data to read from the server", s.hasFinished());
     }
 
@@ -42,7 +44,8 @@ public class ConversationHandlerTest
     {
         ConversationHandler ch = new ConversationHandler("localhost");
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
-                "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
+                "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
+                    "250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
                 "RCPT TO: <reciever@reciever.com>", "250 Ok",
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
@@ -50,12 +53,13 @@ public class ConversationHandlerTest
                 "250 Ok: queued as 62B14FFD8"
         }, new File("test/data/test1.txt"));
 
-        RJMMailMessage rmm = new RJMMailMessage();
+        RJMMessage rmm = new RJMMessage();
         rmm.setFrom("sender@sender.com");
         rmm.setText("email dataa");
         rmm.setSubject("rågrut");
         try {
-            assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
+            assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm,
+                    new String[] {"reciever@reciever.com"}, s));
             fail("should have thrown IAE");
         } catch (IllegalArgumentException e) {
             // ignore
@@ -71,7 +75,8 @@ public class ConversationHandlerTest
         m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
         m.put("@@DATE@@", ch.fieldGenerator.getNextDate());
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
-                "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
+                "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
+                    "250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
                 "RCPT TO: <reciever@reciever.com>", "250 Ok",
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
@@ -79,7 +84,7 @@ public class ConversationHandlerTest
                 "250 Ok: queued as 62B15FFD8"
         }, new File("test/data/test2.txt"), m);
 
-            RJMMailMessage rmm = new RJMMailMessage();
+            RJMMessage rmm = new RJMMessage();
             rmm.setFrom("sender@sender.com");
             // contains space at end of line
             rmm.setText("BWO är ett band som består av tre stycken äggmökar, \n" +
@@ -102,7 +107,8 @@ public class ConversationHandlerTest
             rmm.setSubject("Harry Bellafånte har långa ord men inte så långa " +
                     "att det räcker.");
 
-            assertEquals("Ok: queued as 62B15FFD8", ch.send(rmm, new String[] {"reciever@reciever.com"}, s));
+            assertEquals("Ok: queued as 62B15FFD8", ch.send(rmm,
+                    new String[] {"reciever@reciever.com"}, s));
             assertTrue("more data to read from the server", s.hasFinished());
 
 

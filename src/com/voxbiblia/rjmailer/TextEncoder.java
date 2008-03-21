@@ -9,9 +9,10 @@ import java.nio.charset.Charset;
  *
  * @author Noa Resare (noa@resare.com)  
  */
-public class TextEncoder
+class TextEncoder
 {
     private static final char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
+    private static final String EOL = "\r\n";
     // the maxmium length of a line excluding the new line pair
     private static final int MAX_LINE_LENGTH = 76;
 
@@ -63,7 +64,7 @@ public class TextEncoder
             if (writeQuoted) {
                 int b1 = b < 0 ? b + 0x100 : b;
                 if (available < 6 && bs.length > i + 1) {
-                    sb.append("=\r\n");
+                    sb.append("=" + EOL);
                     available = MAX_LINE_LENGTH;
                 }
                 sb.append('=');
@@ -72,7 +73,7 @@ public class TextEncoder
                 available -= 3;
             } else {
                 if (available < 2 && bs.length > i + 1) {
-                    sb.append("=\r\n");
+                    sb.append("=" + EOL);
                     available = MAX_LINE_LENGTH;
                 }
                 sb.append((char)b);
@@ -114,14 +115,14 @@ public class TextEncoder
                 if (c == '\n') {
                     state = GOT_LF;
                 } else if (c == '\r') {
-                    sb.append("\r\n");
+                    sb.append(EOL);
                 } else {
-                    sb.append("\r\n");
+                    sb.append(EOL);
                     sb.append(c);
                     state = OUTSIDE;
                 }
             } else { // GOT_LF
-                sb.append("\r\n");
+                sb.append(EOL);
                 if (c == '\r') {
                     state = GOT_CR;
                 } else if (c != '\n') {
@@ -146,10 +147,10 @@ public class TextEncoder
     public static String encodeHeader(String name, String data)
     {
         if (name.indexOf(':') != -1) {
-            throw new IllegalArgumentException("name may not contain colon (:)");
+            throw new IllegalArgumentException("name may not contain colon");
         }
 
-        return  name + ": " + encodeHeaderWord(data, 76 - name.length()) + "\r\n";
+        return  name + ": " + encodeHeaderWord(data, 76 - name.length()) + EOL;
     }
 
     static int getNonAsciiPercentage(String data)
@@ -189,7 +190,7 @@ public class TextEncoder
         }
         if (encoding == 0) {
             if (data.length() > available) {
-                return data.substring(0, available) + "\r\n " +
+                return data.substring(0, available) + EOL +
                         encodeHeaderWord(data.substring(available), 77);
             }
             return data;
@@ -210,11 +211,13 @@ public class TextEncoder
             }
             int charCount = howMany(data, n, capacity, QP);
             if (charCount < data.length()) {
-                String qp = encodeQP(data.substring(0, charCount), n).replace(' ', '_');
+                String qp = encodeQP(data.substring(0, charCount), n)
+                        .replace(' ', '_');
                 return "=?" + n + "?Q?" + qp + "?=\r\n " +
                         encodeHeaderWord(data.substring(charCount), 77);
             }
-            return "=?" + n + "?Q?" + encodeQP(data, n).replace(' ', '_') + "?=";
+            return "=?" + n + "?Q?" + encodeQP(data, n).replace(' ', '_') +
+                    "?=";
         } catch (UnsupportedEncodingException e) {
             throw new Error("unsupported encoding: " + n);
         }

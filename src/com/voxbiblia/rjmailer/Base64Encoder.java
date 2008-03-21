@@ -27,7 +27,8 @@ public class Base64Encoder
         StringBuffer sb = new StringBuffer((int)(data.length * 1.33) + 2);
         int i = 0;
         for (; i < (data.length - 2); i += 3) {
-            output((pos(data[i]) << 16) + (pos(data[i + 1]) << 8) + pos(data[i + 2]), sb, 0);
+            output((pos(data[i]) << 16) + (pos(data[i + 1]) << 8) +
+                    pos(data[i + 2]), sb, 0);
         }
         if (i == data.length - 2) {
             output((pos(data[i]) << 16) + (pos(data[i + 1]) << 8), sb, 1);

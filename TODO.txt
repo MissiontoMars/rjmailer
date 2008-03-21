@@ -1,3 +1,3 @@
-- non ascii characters in headers
-- non ascii characters in body
-- 
+TODO add to address
+TODO handle non-ascii chars in email real names
+TODO add correct MIME header for QP and Base64 encoded bodies

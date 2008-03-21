@@ -18,7 +18,8 @@ public class DummySMTPSocketTest
     public void testReadEnd()
             throws IOException
     {
-        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "bar"}, null);
+        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "bar"},
+                null);
         InputStream fromServer = dss.getInputStream();
         OutputStream toServer = dss.getOutputStream();
         assertEquals('f', fromServer.read());
@@ -51,7 +52,8 @@ public class DummySMTPSocketTest
     public void testReadMultiline()
             throws IOException
     {
-        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "bar\r\nbaz"}, null);
+        DummySMTPSocket dss = new DummySMTPSocket(
+                new String[] {"foo", "bar\r\nbaz"}, null);
         /*for (int i = 0; i < 5; i++) {
             dss.getInputStream().read();    
         }
@@ -84,7 +86,8 @@ public class DummySMTPSocketTest
     public void testWriteWrong()
             throws IOException
     {
-        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "bar"}, null);
+        DummySMTPSocket dss = new DummySMTPSocket(
+                new String[] {"foo", "bar"}, null);
         InputStream is = dss.getInputStream();
         OutputStream os = dss.getOutputStream();
         assertEquals('f', is.read());
@@ -112,7 +115,8 @@ public class DummySMTPSocketTest
     public void testFromFile()
             throws Exception
     {
-        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "IN_FILE"},
+        DummySMTPSocket dss = new DummySMTPSocket(
+                new String[] {"foo", "IN_FILE"},
                 new File("test/data/test0.txt"));
         /*for (int i = 0; i < 5; i++) {
             dss.getInputStream().read();
@@ -148,7 +152,8 @@ public class DummySMTPSocketTest
     {
         Map m = new HashMap();
         m.put("@FOO@", "u");
-        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "IN_FILE"},
+        DummySMTPSocket dss = new DummySMTPSocket(
+                new String[] {"foo", "IN_FILE"},
                 new File("test/data/test3.txt"), m);
         /*for (int i = 0; i < 5; i++) {
             dss.getInputStream().read();

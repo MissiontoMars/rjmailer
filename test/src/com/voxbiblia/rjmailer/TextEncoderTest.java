@@ -21,8 +21,8 @@ public class TextEncoderTest
     public void testQPLongLine()
             throws Exception
     {
-        String someChars = "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA!" +
-                "123456789012345678901234567890";
+        String someChars = "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ " +
+                "ENGELSKA!123456789012345678901234567890";
         String s = TextEncoder.encodeQP(someChars, "UTF-8");
         String[] lines =  s.split("\r\n");
 
@@ -30,8 +30,8 @@ public class TextEncoderTest
                 + lines.length, lines.length > 1);
         assertTrue("Longer than 78 chars is not allowed: " + lines[0].length(),
                 lines[0].length() < 79);
-        someChars = "VILKET ÄR ETT PRÅBLÄM NÄR MAN \r\nFÖRSÖKER SJUNGA PÅ ENGELSKA!" +
-                "123456789012345678901234567890";
+        someChars = "VILKET ÄR ETT PRÅBLÄM NÄR MAN \r\nFÖRSÖKER SJUNGA PÅ " +
+                "ENGELSKA!123456789012345678901234567890";
         s = TextEncoder.encodeQP(someChars, "UTF-8");
         lines =  s.split("\r\n");
         assertTrue("not detecting existing newlines", lines[1].length() > 30);
@@ -70,7 +70,7 @@ public class TextEncoderTest
         String[] lines = sOut.split("\r\n");
         // according to RFC2045 6.7 a QP line can not be longer than 76 chars
         // excluding CRLF
-        assertTrue("first line is too long: " + lines[0], lines[0].length() < 77);
+        assertTrue("first line is too long", lines[0].length() < 77);
     }
 
     public void testQPWhitespaceAtEnd()
@@ -78,10 +78,12 @@ public class TextEncoderTest
     {
         String s = "gurka  \r\nsvan";
         String sOut = TextEncoder.encodeQP(s, "ISO-8859-1");
-        assertEquals("WSP at end of line not allowed in QP", -1, sOut.indexOf(" \r\n"));
+        assertEquals("WSP at end of line not allowed in QP", -1,
+                sOut.indexOf(" \r\n"));
         s = "gurka\t\r\nsvan";
         sOut = TextEncoder.encodeQP(s, "ISO-8859-1");
-        assertEquals("WSP at end of line not allowed in QP", -1, sOut.indexOf("\t\r\n"));
+        assertEquals("WSP at end of line not allowed in QP", -1,
+                sOut.indexOf("\t\r\n"));
     }
 
     public void testCanonicalize()
@@ -117,9 +119,9 @@ public class TextEncoderTest
     public void testEncodedHeaderWordWrap()
     {
         String s = TextEncoder.encodeHeaderWord(NEEDS_UTF8, 20);
-        int firstLineLen = s.indexOf("\r\n");
-        assertTrue(s, firstLineLen < 21);
-        int secondLineLen = s.indexOf("\r\n", firstLineLen + 1) - firstLineLen - 2;
+        int lineLen = s.indexOf("\r\n");
+        assertTrue(s, lineLen < 21);
+        int secondLineLen = s.indexOf("\r\n", lineLen + 1) - lineLen - 2;
         assertTrue(s, secondLineLen < 79);
     }
 
@@ -139,12 +141,14 @@ public class TextEncoderTest
     public void testEncoderHeaderWrap()
     {
         String s = TextEncoder.encodeHeader("Subject", "this is a really " +
-                "really long long long header with some extra data at the end " +
-                "really long long long header with some extra data at the end " +
-                "but still not finished");
+                "really long long long header with some extra data at the " +
+                "end really long long long header with some extra data at " +
+                "the end but still not finished");
         assertTrue(s.length() > 78);
-        assertEquals(78, s.indexOf("\r\n"));
-        assertEquals(158, s.indexOf("\r\n", 80));
+        String[] ss = s.split("\r\n");
+
+        assertTrue(ss[0].length() < 79);
+        assertTrue(ss[1].length() < 79);
     }
 
     public void testEncoderNonAscii()

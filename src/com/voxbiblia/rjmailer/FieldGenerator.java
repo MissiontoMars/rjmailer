@@ -10,7 +10,7 @@ import java.util.Random;
  *
  * @author Noa Resare (noa@resare.com)
  */
-public class FieldGenerator
+class FieldGenerator
 {
     private String ehloHostname, nextMessageId, nextDate;
     private final Random random = new Random();

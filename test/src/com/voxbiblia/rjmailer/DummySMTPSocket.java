@@ -26,7 +26,8 @@ public class DummySMTPSocket extends Socket
         this(conversation, dataContent, new HashMap());
     }
 
-    public DummySMTPSocket(String[] conversation, File dataContent, Map substitutions)
+    public DummySMTPSocket(String[] conversation, File dataContent,
+                           Map substitutions)
     {
         this.substitutions = substitutions;
         fromServer = new ArrayList();
@@ -153,7 +154,8 @@ public class DummySMTPSocket extends Socket
             throw new Error(e);
         }
         writeToFile("actual.txt", baos.toByteArray());
-        throw new IllegalArgumentException("got wrong char at position "+ position);
+        throw new IllegalArgumentException("got wrong char at position "+
+                position);
     }
 
     private void writeToFile(String filename, byte[] data)
@@ -194,9 +196,9 @@ public class DummySMTPSocket extends Socket
             if (data == null || data.length == pos) {
                 data = parent.getToServer();
                 if (data == null) {
-                    throw new IllegalArgumentException("trying to write to server " +
-                            "when there is no data in the dummy socket to match " +
-                            "to the written data");
+                    throw new IllegalArgumentException("trying to write to " +
+                            "server when there is no data in the dummy " +
+                            "socket to match to the written data");
                 }
                 pos = 0;
             }

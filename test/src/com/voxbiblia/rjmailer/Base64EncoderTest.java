@@ -12,9 +12,12 @@ public class Base64EncoderTest
             throws Exception
     {
     	assertEquals("c3ZhbnNh", Base64Encoder.encode("svansa".getBytes()));
-        assertEquals("c3ZhbnNhcg==", Base64Encoder.encode("svansar".getBytes()));
-        assertEquals("c3ZhbnNhcnM=", Base64Encoder.encode("svansars".getBytes()));
-        assertEquals("D9O/", Base64Encoder.encode(new byte[] {(byte)15, (byte)211, (byte)191}));
+        assertEquals("c3ZhbnNhcg==",
+                Base64Encoder.encode("svansar".getBytes()));
+        assertEquals("c3ZhbnNhcnM=",
+                Base64Encoder.encode("svansars".getBytes()));
+        assertEquals("D9O/", Base64Encoder.encode(new byte[] {(byte)15,
+                (byte)211, (byte)191}));
 
     }
 
