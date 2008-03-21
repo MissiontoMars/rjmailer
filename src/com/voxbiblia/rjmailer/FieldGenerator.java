@@ -1,5 +1,8 @@
 package com.voxbiblia.rjmailer;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -9,8 +12,11 @@ import java.util.Random;
  */
 public class FieldGenerator
 {
-    private String ehloHostname, nextMessageId;
-    private Random random = new Random();
+    private String ehloHostname, nextMessageId, nextDate;
+    private final Random random = new Random();
+    private static SimpleDateFormat sdf = new SimpleDateFormat(
+            "EEE, dd MMM yyyy HH:mm:ss ZZZZ", Locale.US);
+
 
     /**
      * Creates a new FieldGenerator using the given ehloHostname for the domain
@@ -25,7 +31,8 @@ public class FieldGenerator
 
     /**
      * Returns a unique value for use int the Message-ID SMTP field. The
-     * generation algorithm is described in RFC2822 3.6.4.
+     * generation algorithm is described in RFC2822 3.6.4. This message is
+     * thread safe.
      *
      * @return a unique string in Message-ID format
      */
@@ -37,6 +44,22 @@ public class FieldGenerator
             return s;
         }
         return generateMessageId();
+    }
+
+
+    /**
+     * Returns the current date and time in the fomat described in RFC2822 3.3
+     *
+     * @return a String with the current date and time
+     */
+    public String getDate()
+    {
+        if (nextDate != null) {
+            String s = nextDate;
+            nextDate = null;
+            return s;
+        }
+        return sdf.format(new Date());
     }
 
     /**
@@ -51,10 +74,24 @@ public class FieldGenerator
         return nextMessageId;
     }
 
+    String getNextDate()
+    {
+        nextDate = generateDate();
+        return nextDate;
+    }
+
+    private String generateDate()
+    {
+        return sdf.format(new Date());
+    }
+
+
     private String generateMessageId()
     {
         byte[] bs = new byte[12];
-        random.nextBytes(bs);
+        synchronized (random) {
+            random.nextBytes(bs);
+        }
         long now = System.currentTimeMillis();
         byte[] nowBytes = new byte[6];
         nowBytes[0] = (byte)(now >> 40 & 0xff);
@@ -68,8 +105,5 @@ public class FieldGenerator
                 "@" + ehloHostname;
     }
 
-    public String getDate()
-    {
-        return null;
-    }
+
 }

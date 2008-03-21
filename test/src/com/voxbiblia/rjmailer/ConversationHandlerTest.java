@@ -19,6 +19,7 @@ public class ConversationHandlerTest
         ConversationHandler ch = new ConversationHandler("localhost");
         Map m = new HashMap();
         m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
+        m.put("@@DATE@@", ch.fieldGenerator.getNextDate());
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
@@ -68,6 +69,7 @@ public class ConversationHandlerTest
         ConversationHandler ch = new ConversationHandler("localhost");
         Map m = new HashMap();
         m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
+        m.put("@@DATE@@", ch.fieldGenerator.getNextDate());
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",

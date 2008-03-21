@@ -82,7 +82,7 @@ class ConversationHandler
         writeHeaders(msg, os);
         String charset = TextEncoder.getCharset(msg.getText());
         String data = TextEncoder.canonicalize(msg.getText());
-        os.write(toBytes("\r\n\r\n" + TextEncoder.encodeQP(data, charset)  
+        os.write(toBytes("\r\n" + TextEncoder.encodeQP(data, charset)  
                 + "\r\n.\r\n"));
 
         return checkStatus(is, inBuf, 250).substring("250 ".length());
@@ -95,9 +95,12 @@ class ConversationHandler
         os.write(toBytes(TextEncoder.encodeHeader("From", msg.getFrom())));
         String subject = msg.getSubject();
         if (subject != null) {
-            os.write(toBytes(TextEncoder.encodeHeader("Subject", msg.getSubject())));
+            os.write(toBytes(TextEncoder.encodeHeader("Subject",
+                    msg.getSubject())));
         }
-        os.write(toBytes("Message-ID: <" + fieldGenerator.getMessageId() + ">"));
+        os.write(toBytes("Date: " + fieldGenerator.getDate() + "\r\n"));
+        os.write(toBytes("Message-ID: <" + fieldGenerator.getMessageId() +
+                ">\r\n"));
     }
 
     private static byte[] toBytes(String s)
