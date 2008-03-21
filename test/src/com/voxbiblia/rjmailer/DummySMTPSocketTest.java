@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.File;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Tests DummySMTPSocket
@@ -140,4 +142,41 @@ public class DummySMTPSocketTest
         os.write('z');
 
     }
+
+    public void testWithSubstitutions()
+            throws Exception
+    {
+        Map m = new HashMap();
+        m.put("@FOO@", "u");
+        DummySMTPSocket dss = new DummySMTPSocket(new String[] {"foo", "IN_FILE"},
+                new File("test/data/test3.txt"), m);
+        /*for (int i = 0; i < 5; i++) {
+            dss.getInputStream().read();
+        }
+          */
+        OutputStream os = dss.getOutputStream();
+        InputStream is = dss.getInputStream();
+        assertEquals('f', is.read());
+        assertEquals('o', is.read());
+        assertEquals('o', is.read());
+        assertEquals('\r', is.read());
+        assertEquals('\n', is.read());
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            is.read();
+            fail("should have gotten IAE");
+        } catch (IllegalArgumentException e) {
+
+        }
+        os.write('b');
+        os.write('a');
+        os.write('r');
+        os.write('\r');
+        os.write('\n');
+        os.write('b');
+        os.write('u');
+        os.write('z');
+
+    }
+
 }

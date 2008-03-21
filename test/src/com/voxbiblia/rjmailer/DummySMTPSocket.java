@@ -2,9 +2,7 @@ package com.voxbiblia.rjmailer;
 
 import java.net.Socket;
 import java.io.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 
 /**
  * A socket that one can read data from that is set up in the constructor.
@@ -21,9 +19,16 @@ public class DummySMTPSocket extends Socket
     private List fromServer, toServer, innerTo;
     private String currentExpected;
     private ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    private Map substitutions;
 
     public DummySMTPSocket(String[] conversation, File dataContent)
     {
+        this(conversation, dataContent, new HashMap());
+    }
+
+    public DummySMTPSocket(String[] conversation, File dataContent, Map substitutions)
+    {
+        this.substitutions = substitutions;
         fromServer = new ArrayList();
         toServer = new ArrayList();
         innerTo = new ArrayList();
@@ -83,6 +88,13 @@ public class DummySMTPSocket extends Socket
                 String[] lines = s.split("\n");
                 innerTo.addAll(Arrays.asList(lines));
                 s = pop(innerTo);
+            }
+        }
+        Iterator i = substitutions.keySet().iterator();
+        if (s != null) {
+            while (i.hasNext()) {
+                String key = (String)i.next();
+                s = s.replaceFirst(key, (String)substitutions.get(key));
             }
         }
         byte[] bs = getNextLine(s);
