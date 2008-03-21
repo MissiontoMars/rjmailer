@@ -82,7 +82,7 @@ class ConversationHandler
         writeHeaders(msg, os);
         String charset = TextEncoder.getCharset(msg.getText());
         String data = TextEncoder.canonicalize(msg.getText());
-        os.write(toBytes("\r\n" + TextEncoder.encodeQP(data, charset)  
+        os.write(toBytes("\r\n\r\n" + TextEncoder.encodeQP(data, charset)  
                 + "\r\n.\r\n"));
 
         return checkStatus(is, inBuf, 250).substring("250 ".length());

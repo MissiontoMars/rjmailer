@@ -4,6 +4,8 @@ import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Tests ConversationHandler 
@@ -15,6 +17,8 @@ public class ConversationHandlerTest
             throws Exception            
     {
         ConversationHandler ch = new ConversationHandler("localhost");
+        Map m = new HashMap();
+        m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
@@ -22,7 +26,7 @@ public class ConversationHandlerTest
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
                 "IN_FILE",
                 "250 Ok: queued as 62B14FFD8"
-        }, new File("test/data/test1.txt"));
+        }, new File("test/data/test1.txt"), m);
 
         RJMMailMessage rmm = new RJMMailMessage();
         rmm.setFrom("sender@sender.com");
@@ -62,6 +66,8 @@ public class ConversationHandlerTest
             throws Exception
     {
         ConversationHandler ch = new ConversationHandler("localhost");
+        Map m = new HashMap();
+        m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
@@ -69,7 +75,7 @@ public class ConversationHandlerTest
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
                 "IN_FILE",
                 "250 Ok: queued as 62B15FFD8"
-        }, new File("test/data/test2.txt"));
+        }, new File("test/data/test2.txt"), m);
 
             RJMMailMessage rmm = new RJMMailMessage();
             rmm.setFrom("sender@sender.com");
