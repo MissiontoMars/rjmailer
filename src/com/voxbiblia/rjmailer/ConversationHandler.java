@@ -16,6 +16,8 @@ class ConversationHandler
 {
     private String ehloHostname;
     private static final byte[] EOL = {(byte)'\r', (byte)'\n'};
+    // default access so that test case code can access it
+    FieldGenerator fieldGenerator;
 
     /**
      * Constructs a ConverstaionHandler that can carry out SMTP conversations
@@ -28,6 +30,7 @@ class ConversationHandler
     public ConversationHandler(String ehloHostname)
     {
         this.ehloHostname = ehloHostname;
+        fieldGenerator = new FieldGenerator(ehloHostname);
     }
 
     /**
@@ -85,15 +88,16 @@ class ConversationHandler
         return checkStatus(is, inBuf, 250).substring("250 ".length());
     }
 
-    private static void writeHeaders(RJMMailMessage msg, OutputStream os)
+    private void writeHeaders(RJMMailMessage msg, OutputStream os)
             throws IOException
     {
-        // TODO: headers to add; orig-date, from, message-id
+        // TODO: headers to add; orig-date, from
         os.write(toBytes(TextEncoder.encodeHeader("From", msg.getFrom())));
         String subject = msg.getSubject();
         if (subject != null) {
             os.write(toBytes(TextEncoder.encodeHeader("Subject", msg.getSubject())));
         }
+        os.write(toBytes("Message-ID: <" + fieldGenerator.getMessageId() + ">"));
     }
 
     private static byte[] toBytes(String s)

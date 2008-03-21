@@ -1,5 +1,6 @@
 From: sender@sender.com
 Subject: =?ISO-8859-1?Q?r=E5grut?=
+Message-ID: <@MSG_ID@>
 
 email data
 .
