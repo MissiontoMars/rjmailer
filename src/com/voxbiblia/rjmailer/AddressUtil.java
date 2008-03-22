@@ -1,5 +1,8 @@
 package com.voxbiblia.rjmailer;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * A small utility clas that with convinience methods for handling RFC2822
  * addresses.
@@ -45,6 +48,24 @@ class AddressUtil
         return field;
     }
 
+
+    public static String[] getToAddresses(RJMMessage msg)
+    {
+        List l = new ArrayList();
+        String[] ss = msg.getTo();
+        if (ss != null) {
+            for (int i = 0; i < ss.length; i++) {
+                l.add(getAddress(ss[i]));
+            }
+        }
+        ss = msg.getBcc();
+        if (ss != null) {
+            for (int i = 0; i < ss.length; i++) {
+                l.add(getAddress(ss[i]));
+            }
+        }
+        return (String[]) l.toArray(new String[l.size()]);
+    }
 
     /**
      * Returns the domain part of the address specified in field.

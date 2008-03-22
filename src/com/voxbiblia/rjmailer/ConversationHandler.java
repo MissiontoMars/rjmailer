@@ -101,6 +101,14 @@ class ConversationHandler
         os.write(toBytes("Date: " + fieldGenerator.getDate() + "\r\n"));
         os.write(toBytes("Message-ID: <" + fieldGenerator.getMessageId() +
                 ">\r\n"));
+        String charset = TextEncoder.getCharset(msg.getText());
+        os.write(toBytes("Mime-Version: 1.0\r\n"));
+        if (!charset.equals("US-ASCII")) {
+            os.write(toBytes("Content-Type: text/plain; charset=" + charset
+                    +"\r\n"));
+
+        }
+        os.write(toBytes("Content-Transfer-Encoding: quoted-printable\r\n"));
     }
 
     private static byte[] toBytes(String s)

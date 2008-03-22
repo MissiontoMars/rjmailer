@@ -3,6 +3,9 @@ Subject: =?ISO-8859-1?Q?Harry_Bellaf=E5nte_har_l=E5nga_ord_men_inte_s=E5_l?=
  =?ISO-8859-1?Q?=E5nga_att_det_r=E4cker.?=
 Date: @@DATE@@
 Message-ID: <@@MSG_ID@@>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
 BWO =E4r ett band som best=E5r av tre stycken =E4ggm=F6kar,=20 
 varav en blondlockig filur =E4r frontkille och h=E4ndelsevis
