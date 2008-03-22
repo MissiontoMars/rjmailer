@@ -34,6 +34,7 @@ public class ConversationHandlerTest
         rmm.setFrom("sender@sender.com");
         rmm.setText("email data");
         rmm.setSubject("rågrut");
+        rmm.setTo("reciever@reciever.com");
         assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm,
                 new String[] {"reciever@reciever.com"}, s));
         assertTrue("more data to read from the server", s.hasFinished());
@@ -83,35 +84,34 @@ public class ConversationHandlerTest
                 "IN_FILE",
                 "250 Ok: queued as 62B15FFD8"
         }, new File("test/data/test2.txt"), m);
+        RJMMessage rmm = new RJMMessage();
+        rmm.setFrom("sender@sender.com");
+        rmm.setTo("\"The Receiver\" <the@receiver.co>");
 
-            RJMMessage rmm = new RJMMessage();
-            rmm.setFrom("sender@sender.com");
-            // contains space at end of line
-            rmm.setText("BWO är ett band som består av tre stycken äggmökar, \n" +
-                    "varav en blondlockig filur är frontkille och händelsevis\n" +
-                    "sångare. Det är ju bra, eftersom man knappast får några\n" +
-                    "tonårstjejsbeundrare genom att ställa fram den lederhosen\n" +
+        // contains space at end of line
+        rmm.setText("BWO är ett band som består av tre stycken äggmökar, \n" +
+                "varav en blondlockig filur är frontkille och händelsevis\n" +
+                "sångare. Det är ju bra, eftersom man knappast får några\n" +
+                "tonårstjejsbeundrare genom att ställa fram den lederhosen\n" +
                     "prydda toalettborsten Alexander Bardval vid micken.\n" +
-                    "Tyvärr kan denna blondlockiga äggmök inte ENGELSKA!!!\n" +
-                    "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA!\n" +
-                    // a really long line, requiring a soft linebreak
-                    "Uttalet påminner om.... åh, vilket sammanträffande... en " +
-                    "svensk som försöker prata engelska! Dessutom är låten\n" +
-                    "\"uill (ja, UILL) maj arms by strånginuff to....\" ett\n" +
-                    "sällan skådat haveri i paraplegisk tysk marschtakt\n" +
-                    "kombinerat med isande yl från en sk kör och något som\n" +
-                    "jag antar ska vara romantik. Det låter som en BEGRAVNING!\n" +
-                    "Det låter som om Frankenstein har DÖDAT SIN BRUD och ska\n" +
-                    "klättra upp på Empire State Building för att offra henne\n" +
-                    "till Zeus tillsammans med KING KONG!!");
-            rmm.setSubject("Harry Bellafånte har långa ord men inte så långa " +
-                    "att det räcker.");
+                "Tyvärr kan denna blondlockiga äggmök inte ENGELSKA!!!\n" +
+                "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA!\n" +
+                // a really long line, requiring a soft linebreak
+                "Uttalet påminner om.... åh, vilket sammanträffande... en " +
+                "svensk som försöker prata engelska! Dessutom är låten\n" +
+                "\"uill (ja, UILL) maj arms by strånginuff to....\" ett\n" +
+                "sällan skådat haveri i paraplegisk tysk marschtakt\n" +
+                "kombinerat med isande yl från en sk kör och något som\n" +
+                "jag antar ska vara romantik. Det låter som en BEGRAVNING!\n" +
+                "Det låter som om Frankenstein har DÖDAT SIN BRUD och ska\n" +
+                "klättra upp på Empire State Building för att offra henne\n" +
+                "till Zeus tillsammans med KING KONG!!");
+        rmm.setSubject("Harry Bellafånte har långa ord men inte så långa " +
+                "att det räcker.");
 
-            assertEquals("Ok: queued as 62B15FFD8", ch.send(rmm,
-                    new String[] {"reciever@reciever.com"}, s));
-            assertTrue("more data to read from the server", s.hasFinished());
-
-
+        assertEquals("Ok: queued as 62B15FFD8", ch.send(rmm,
+                new String[] {"reciever@reciever.com"}, s));
+        assertTrue("more data to read from the server", s.hasFinished());
     }
 
     public void testGetStatus()

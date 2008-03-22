@@ -1,3 +1,4 @@
-TODO add to address
-TODO handle non-ascii chars in email real names
-TODO add correct MIME header for QP and Base64 encoded bodies
+TODO handle corner cases where headers containing addresses are really long
+- when the display name fits exactly into the first header line but address
+part doesn't
+TODO handle lines containing only a dot in text email

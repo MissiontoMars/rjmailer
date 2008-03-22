@@ -23,6 +23,11 @@ class AddressUtil
      */
     public static String getAddress(String field)
     {
+        // special case, if the field only consists of an email address
+        // the short form without angle brackets is sometimes used
+        if (!field.contains("<")) {
+            return field;
+        }
         char[] chars = field.toCharArray();
         boolean inDQUOTE = false;
         boolean escaped = false;
@@ -48,6 +53,38 @@ class AddressUtil
         return field;
     }
 
+    /**
+     * This method returns the display name part of an address. Please note
+     * that it only supports display names enclosed in double quotes, and not
+     * the unquoted single word variant.
+     *
+     * @param field the header body to extract the display name from.
+     * @return the display name
+     */
+    public static String getDisplayName(String field)
+    {
+        if (!field.contains("\"")) {
+            return null;
+        }
+        boolean escaped = false;
+        char[] chars = field.toCharArray();
+        int firstQuote = -1;
+        for (int i = 0 ; i < chars.length; i++) {
+            char c = chars[i];
+            if (escaped) {
+                escaped = false;
+            } else if (c == '\\') {
+                escaped = true;
+            } else if (c == '"') {
+                if (firstQuote == -1) {
+                    firstQuote = i + 1;
+                } else {
+                    return field.substring(firstQuote, i);
+                }
+            }
+        }
+        throw new Error("malformed field: "+ field);
+    }
 
     public static String[] getToAddresses(RJMMessage msg)
     {
@@ -79,5 +116,41 @@ class AddressUtil
         String address = getAddress(field);
         int atPos = address.indexOf('@');
         return address.substring(atPos + 1);
+    }
+
+    static String encodeAddressHeader(String field, String address)
+    {
+        return encodeAddressHeader(field, new String[] {address});
+    }
+
+    static String encodeAddressHeader(String field, String[] addresses)
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append(field);
+        sb.append(": ");
+        int available = 78 - field.length() - 4;
+        appendAddress(addresses[0], available, sb);
+        for (int i = 1 ; i < addresses.length; i++) {
+            sb.append(", ");
+            appendAddress(addresses[i], available, sb);
+        }
+        sb.append("\r\n");
+        return sb.toString();
+
+    }
+
+    private static void appendAddress(String address, int available,
+                                      StringBuffer sb)
+    {
+        String dn = getDisplayName(address);
+        String charset = TextEncoder.getCharset(dn);
+        if (!charset.equals("US-ASCII")) {
+            String s = TextEncoder.encodeHeaderWord(dn, available);
+            sb.append('"').append(s).append("\" <");
+            sb.append(getAddress(address)).append(">");
+        } else {
+            sb.append(address);
+        }
+
     }
 }

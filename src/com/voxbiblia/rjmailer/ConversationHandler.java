@@ -92,7 +92,12 @@ class ConversationHandler
     private void writeHeaders(RJMMessage msg, OutputStream os)
             throws IOException
     {
-        os.write(toBytes(TextEncoder.encodeHeader("From", msg.getFrom())));
+        os.write(toBytes(AddressUtil.encodeAddressHeader("From", msg.getFrom())));
+        String[] to = msg.getTo();
+        if (to != null) {
+            os.write(toBytes(AddressUtil.encodeAddressHeader("To", to)));            
+        }
+
         String subject = msg.getSubject();
         if (subject != null) {
             os.write(toBytes(TextEncoder.encodeHeader("Subject",

@@ -19,9 +19,13 @@ class TextEncoder
 
     // as documented in RFC2045 6.7
     static String encodeQP(String indata, String encoding)
-            throws UnsupportedEncodingException
     {
-        byte[] bs = indata.getBytes(encoding);
+        byte[] bs;
+        try {
+            bs = indata.getBytes(encoding);
+        } catch (UnsupportedEncodingException e) {
+            throw new Error(e);
+        }
         StringBuffer sb = new StringBuffer();
         int available = MAX_LINE_LENGTH;
         int endChars = 0;
@@ -82,7 +86,6 @@ class TextEncoder
         }
         return sb.toString();
     }
-
 
     private static final int OUTSIDE = 1;
     private static final int GOT_CR = 2;
@@ -165,6 +168,7 @@ class TextEncoder
         return (int)((nonAsciiCount / (float)chars.length) * 100);
     }
 
+
     /**
      * Encodes Strings possibly including non-ascii characters using the
      * algorithm described in RFC1522, suitable for inclusion in email headers.
@@ -233,7 +237,7 @@ class TextEncoder
      * @param s the string to read the bytes from
      * @param charset the character set to encode the characters into
      * @param byteCount the number of bytes byteCount to encode into
-     * @param type the type of encoding, Base64 or Quoted Printable
+     * @param type the type of encoding, BASE_64 or QP
      * @return the number of chars that can be encoded
      */
     static int howMany(String s, String charset, int byteCount, int type)
