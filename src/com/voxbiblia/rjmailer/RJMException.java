@@ -6,6 +6,12 @@ package com.voxbiblia.rjmailer;
 public class RJMException
     extends RuntimeException
 {
+    /**
+	 * Used to shut up eclipse build warnings
+	 */
+	private static final long serialVersionUID = 1L;
+
+	
     public RJMException(String msg)
     {
         super(msg);

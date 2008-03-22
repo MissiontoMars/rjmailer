@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="com/voxbiblia/rjmailer/samples/" kind="src" path="src"/>
-	<classpathentry kind="src" path="test/src"/>
+	<classpathentry excluding="com/voxbiblia/rjmailer/samples/" kind="src" output="classes/rjmailer/production" path="src"/>
+	<classpathentry kind="src" output="classes/rjmailer/test" path="test/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/usr/share/java/junit-4.3.1.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/junit-4"/>
+	<classpathentry kind="output" path="classes/rjmailer"/>
 </classpath>
