@@ -18,10 +18,10 @@ public class RJMSender
         this.server = server;
     }
 
-    public void send(RJMMessage message)
+    public String send(RJMMessage message)
             throws IOException
     {
         String to = AddressUtil.getAddress(message.getTo()[0]);
-        conversationHandler.sendMail(message, new String[] {to}, server);
+        return conversationHandler.sendMail(message, new String[] {to}, server);
     }
 }

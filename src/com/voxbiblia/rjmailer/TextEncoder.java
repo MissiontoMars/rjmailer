@@ -16,9 +16,14 @@ class TextEncoder
     // the maxmium length of a line excluding the new line pair
     private static final int MAX_LINE_LENGTH = 76;
 
+    static String encodeQP(String indata, String encoding)
+    {
+        return encodeQP(indata, encoding, true);
+    }
 
     // as documented in RFC2045 6.7
-    static String encodeQP(String indata, String encoding)
+
+    static String encodeQP(String indata, String encoding, boolean convertEndSpace)
     {
         byte[] bs;
         try {
@@ -48,18 +53,22 @@ class TextEncoder
             if (b == '\r' || b == '\n') {
                 writeQuoted = false;
             } else if (b == ' ' || b == '\t') {
-                // special case, check if there is only white space until end
-                // of line
-                writeQuoted = true;
-                for (int j = i; j < bs.length; j++) {
-                    byte b0 = bs[j];
-                    if (b0 == '\r' && bs.length > j + 1 && bs[j + 1] == '\n') {
-                        break;
+                if (convertEndSpace) {
+                    // special case, check if there is only white space until end
+                    // of line
+                    writeQuoted = true;
+                    for (int j = i; j < bs.length; j++) {
+                        byte b0 = bs[j];
+                        if (b0 == '\r' && bs.length > j + 1 && bs[j + 1] == '\n') {
+                            break;
+                        }
+                        if (b0 != ' ' && b0 != '\t') {
+                            writeQuoted = false;
+                            break;
+                        }
                     }
-                    if (b0 != ' ' && b0 != '\t') {
-                        writeQuoted = false;
-                        break;
-                    }
+                } else {
+                    writeQuoted = false;
                 }
             }  else if (b < 33 || b == '=' || b > 126) {
                 writeQuoted = true;
@@ -215,12 +224,12 @@ class TextEncoder
             }
             int charCount = howMany(data, n, capacity, QP);
             if (charCount < data.length()) {
-                String qp = encodeQP(data.substring(0, charCount), n)
+                String qp = encodeQP(data.substring(0, charCount), n, false)
                         .replace(' ', '_');
                 return "=?" + n + "?Q?" + qp + "?=\r\n " +
                         encodeHeaderWord(data.substring(charCount), 77);
             }
-            return "=?" + n + "?Q?" + encodeQP(data, n).replace(' ', '_') +
+            return "=?" + n + "?Q?" + encodeQP(data, n, false).replace(' ', '_') +
                     "?=";
         } catch (UnsupportedEncodingException e) {
             throw new Error("unsupported encoding: " + n);

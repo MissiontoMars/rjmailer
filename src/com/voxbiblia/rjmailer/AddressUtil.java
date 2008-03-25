@@ -2,9 +2,10 @@ package com.voxbiblia.rjmailer;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
- * A small utility clas that with convinience methods for handling RFC2822
+ * A small utility class that with convinience methods for handling RFC2822
  * addresses.
  *
  * @author Noa Resare (noa@resare.com)
@@ -123,34 +124,69 @@ class AddressUtil
         return encodeAddressHeader(field, new String[] {address});
     }
 
+    private static final int MAX_LINE = 78;
+
     static String encodeAddressHeader(String field, String[] addresses)
     {
+        List l = new ArrayList();
+
+        l.add(field + ":");
+
+        for (int i = 0 ; i < addresses.length; i++) {
+            appendAddress(addresses[i], l);
+        }
+        removeLastComma(l);
+
+        int available = MAX_LINE;
         StringBuffer sb = new StringBuffer();
-        sb.append(field);
-        sb.append(": ");
-        int available = 78 - field.length() - 4;
-        appendAddress(addresses[0], available, sb);
-        for (int i = 1 ; i < addresses.length; i++) {
-            sb.append(", ");
-            appendAddress(addresses[i], available, sb);
+        Iterator tokens = l.iterator();
+        sb.append(tokens.next());
+        while(tokens.hasNext()) {
+            String t = (String)tokens.next();
+            int consumes = t.length();
+            if (t.contains("\r\n")) {
+                consumes -= t.lastIndexOf("\r\n") + 2;
+            }
+            if (available - t.length() < 0) {
+                sb.append("\r\n");
+                available = MAX_LINE - consumes - 1;
+            } else {
+
+            }
+            sb.append(" ").append(t);
         }
         sb.append("\r\n");
         return sb.toString();
-
     }
 
-    private static void appendAddress(String address, int available,
-                                      StringBuffer sb)
+    private static void removeLastComma(List l)
+    {
+        String last = (String)l.get(l.size() -1);
+        l.set(l.size() - 1, last.substring(0,last.length() - 1));
+    }
+
+    private static void appendAddress(String address, List tokenList)
+
     {
         String dn = getDisplayName(address);
-        String charset = TextEncoder.getCharset(dn);
-        if (!charset.equals("US-ASCII")) {
-            String s = TextEncoder.encodeHeaderWord(dn, available);
-            sb.append('"').append(s).append("\" <");
-            sb.append(getAddress(address)).append(">");
+        if (dn != null) {
+            if (!"US-ASCII".equals(TextEncoder.getCharset(dn))) {
+                dn = TextEncoder.encodeHeaderWord(dn, MAX_LINE - 2);
+            }
+            tokenList.add('"' + dn + '"');
+            String s = '<' + getAddress(address) + ">,";
+            if (s.length() > 998) {
+                throw new RJMInputException("address is far too long, " +
+                        "refusing to create malformed email message");
+            }
+            tokenList.add(s);
         } else {
-            sb.append(address);
+            String s = getAddress(address) + ",";
+            if (s.length() > 998) {
+                throw new RJMInputException("address is far too long, " +
+                        "refusing to create malformed email message");
+            }
+            tokenList.add(s);
         }
-
     }
 }

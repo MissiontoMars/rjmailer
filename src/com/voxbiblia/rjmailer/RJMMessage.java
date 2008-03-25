@@ -1,6 +1,9 @@
 package com.voxbiblia.rjmailer;
 
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Represents an Email that can be sent via the MailSender.
@@ -14,7 +17,7 @@ public class RJMMessage
     private Date sentDate;
     private String subject;
     private String text;
-    private String[] to;
+    private List to = new ArrayList();
 
     public String[] getBcc()
     {
@@ -98,16 +101,31 @@ public class RJMMessage
 
     public String[] getTo()
     {
-        return to;
+        if (to.size() == 0) {
+            return null;
+        }
+        return (String[])to.toArray(new String[to.size()]);
     }
 
     public void setTo(String[] to)
     {
-        this.to = to;
+        this.to.clear();
+        this.to.addAll(Arrays.asList(to));
+    }
+
+    public void addTo(String displayName, String addr)
+    {
+        addTo("\"" + displayName.replace("\"", "\\\"") + "\" <" + addr + ">");
+    }
+
+    public void addTo(String to)
+    {
+        this.to.add(to);
     }
 
     public void setTo(String to)
     {
-        this.to = new String[] {to};
+        this.to.clear();
+        this.to.add(to);
     }
 }

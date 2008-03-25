@@ -194,6 +194,13 @@ public class TextEncoderTest
         assertEquals(3, TextEncoder.howMany("arlöv", "ISO-8859-1", 3, QP));
         assertEquals(2, TextEncoder.howMany("arlöv", "ISO-8859-1", 2, QP));
     }
+
+    public void testEncodeHeaderWord0()
+    {
+        String s = "KET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ";
+        String sOut = TextEncoder.encodeHeaderWord(s, 78);
+        assertTrue(sOut, sOut.length() < 78);
+    }
 }
 
 

@@ -82,6 +82,33 @@ public class AddressUtilTest
                 "långt display name tralla lalla la\" <efraim@ehud.com>";
         String s = AddressUtil.encodeAddressHeader("To", to);
         String[] lines = s.split("\r\n");
-        assertTrue("" + lines[0].length(), lines[0].length() < 79);
+        for (int i = 0 ; i < lines.length; i++) {
+            assertTrue("i: "+ i + ", " + lines[i].length(), lines[i].length() < 79);
+        }
+
+        to = "\"BWO är ett band som består av tre stycken äggmökar, " +
+                "varav en blondlockig filur är frontkille och händelsevis" +
+                "sångare. Det är ju bra, eftersom man knappast får några" +
+                "tonårstjejsbeundrare genom att ställa fram den lederhosen" +
+                    "prydda toalettborsten Alexander Bardval vid micken." +
+                "Tyvärr kan denna blondlockiga äggmök inte ENGELSKA!!!" +
+                "VILKET ÄR ETT PRÅBLÄM NÄR MAN FÖRSÖKER SJUNGA PÅ ENGELSKA!" +
+                // a really long line, requiring a soft linebreak
+                "Uttalet påminner om.... åh, vilket sammanträffande... en " +
+                "svensk som försöker prata engelska! Dessutom är låten" +
+                "uill (ja, UILL) maj arms by strånginuff to.... ett" +
+                "sällan skådat haveri i paraplegisk tysk marschtakt" +
+                "kombinerat med isande yl från en sk kör och något som" +
+                "jag antar ska vara romantik. Det låter som en BEGRAVNING!" +
+                "Det låter som om Frankenstein har DÖDAT SIN BRUD och ska" +
+                "klättra upp på Empire State Building för att offra henne" +
+                "till Zeus tillsammans med KING KONG!!\" <foo@bar.bar>";
+        s = AddressUtil.encodeAddressHeader("To", to);
+        lines = s.split("\r\n");
+        for (int i = 0 ; i < lines.length; i++) {
+
+            assertTrue(s, lines[i].length() < 79);
+        }
+
     }
 }

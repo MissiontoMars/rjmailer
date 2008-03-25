@@ -12,10 +12,10 @@ public class MailSender
     {
         RJMSender s = new RJMSender("johanna.resare.com", "valfrid.resare.com");
         RJMMessage m = new RJMMessage();
-        m.setFrom("Noa Resare <noa@resare.com>");
-        m.setTo("Noa Resare <noa@resare.com>");
+        m.setFrom("\"Greger långhalm\" <noa@resare.com>");
+        m.setTo("\"Märy Mauri\" <noa@resare.com>");
         m.setSubject("lårbenshals");
-        m.setText("utan svenska tecken");
-        s.send(m);
+        m.setText("Här kommer innehållet, får se om QP kommer till användning");
+        System.out.println("result from the server: " + s.send(m));
     }
 }
