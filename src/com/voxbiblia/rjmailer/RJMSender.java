@@ -1,7 +1,5 @@
 package com.voxbiblia.rjmailer;
 
-import java.io.IOException;
-
 /**
  * Sends email.
  *
@@ -19,9 +17,8 @@ public class RJMSender
     }
 
     public String send(RJMMessage message)
-            throws IOException
     {
-        String to = AddressUtil.getAddress(message.getTo()[0]);
-        return conversationHandler.sendMail(message, new String[] {to}, server);
+        String[] tos = AddressUtil.getToAddresses(message);
+        return conversationHandler.sendMail(message, tos, server);
     }
 }

@@ -1,9 +1,9 @@
 package com.voxbiblia.rjmailer;
 
-import java.util.Date;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Represents an Email that can be sent via the MailSender.

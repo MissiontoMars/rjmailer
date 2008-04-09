@@ -2,10 +2,18 @@
 <project name="rjmailer" default="dist">
     <property name="version" value="0.1"/>
 
+    <path id="class.path">
+        <fileset dir="../support">
+            <include name="spring-framework-2.0.5/dist/modules/spring-core.jar"/>
+            <include name="spring-framework-2.0.5/dist/modules/spring-support.jar"/>
+        </fileset>
+    </path>
+
     <target name="compile" >
         <mkdir dir="classes/production/${ant.project.name}"/>
         <javac destdir="classes/production/${ant.project.name}"
-            encoding="UTF-8" target="1.4" source="1.4" debug="yes">
+            classpathref="class.path"  encoding="UTF-8"
+            target="1.4" source="1.4" debug="yes">
             <src path="src"/>
         </javac>
     </target>

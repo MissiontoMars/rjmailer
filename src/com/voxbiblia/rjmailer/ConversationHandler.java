@@ -40,13 +40,15 @@ class ConversationHandler
      * @param server the name of the server to connect to
      * @return the tracking information recived from the server upon accept
      * @param to array of strings specifying recieving email addresses
-     * @throws IOException if communications fail
      */
     public String sendMail(RJMMessage message, String[] to, String server)
-            throws IOException
     {
-        Socket s = new Socket(server, 25);
-        return send(message, to, s);
+        try {
+            Socket s = new Socket(server, 25);
+            return send(message, to, s);
+        } catch (IOException e) {
+            throw new RJMException(e);
+        }
     }
 
     String send(RJMMessage msg, String[] to, Socket socket)
