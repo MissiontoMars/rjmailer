@@ -1,9 +1,14 @@
 TODO handle corner cases where headers containing addresses are really long
 - when the display name fits exactly into the first header line but address
 part doesn't
-TODO handle lines containing only a dot in text email
 TODO add mime attachment creation functionality
 TODO clean up the execption throwing
 - analyze when exceptional stuff happens and create a few Exception
 subclasses.
 TODO clean up existing and add missing javadocs
+TODO set a timeout for each smtp session
+
+Exceptional stuff
+
+- generic email format problem
+- missing 

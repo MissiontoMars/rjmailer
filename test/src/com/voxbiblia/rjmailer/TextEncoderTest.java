@@ -201,6 +201,18 @@ public class TextEncoderTest
         String sOut = TextEncoder.encodeHeaderWord(s, 78);
         assertTrue(sOut, sOut.length() < 78);
     }
+
+    public void testLoneDot()
+    {
+        // first, make sure that dots are not universally converted
+        String s = "yngve.";
+        String sOut = TextEncoder.encodeQP(s, "ISO-8859-1");
+        assertTrue("encodes all dots", sOut.indexOf(".") != -1);
+
+        s = "apanap\r\n.\r\nanother";
+        sOut = TextEncoder.encodeQP(s, "ISO-8859-1");
+        assertEquals("did not handle lone dot", -1, sOut.indexOf("\r\n.\r\n"));
+    }
 }
 
 

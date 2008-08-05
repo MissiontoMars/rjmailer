@@ -17,10 +17,11 @@ public class RJMSpringSender
      * Constructs a new RJMSpringSender connecting to the given server with the
      * given ehloHostname.
      *
-     * @param server the hostname (or ip number) of the SMTP server used to
+     * @param server the hostname (or IP number) of the SMTP server used to
      * send email.
      * @param ehloHostname the identification the client gives when connecting
-     * to the server 
+     * to the server. This name is also used when constructing message id
+     * fields.
      */
     public RJMSpringSender(String server, String ehloHostname)
     {

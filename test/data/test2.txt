@@ -5,6 +5,7 @@ Subject: =?ISO-8859-1?Q?Harry_Bellaf=E5nte_har_l=E5nga_ord_men_inte_s=E5_l?=
 Date: @@DATE@@
 Message-ID: <@@MSG_ID@@>
 Mime-Version: 1.0
+X-Mailer: rjmailer (@@VERSION@@)
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 

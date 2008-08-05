@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.Properties;
 
 /**
  * A ConversationHandler instance knows how to carry out an SMTP conversation
@@ -110,12 +111,32 @@ class ConversationHandler
                 ">\r\n"));
         String charset = TextEncoder.getCharset(msg.getText());
         os.write(toBytes("Mime-Version: 1.0\r\n"));
+        os.write(toBytes("X-Mailer: rjmailer (" + getVersion() + ")\r\n"));
         if (!charset.equals("US-ASCII")) {
             os.write(toBytes("Content-Type: text/plain; charset=" + charset
                     +"\r\n"));
 
         }
         os.write(toBytes("Content-Transfer-Encoding: quoted-printable\r\n"));
+    }
+
+    private static String version;
+
+    static String getVersion()
+    {
+        if (version == null) {
+            ClassLoader cl = ClassLoader.getSystemClassLoader();
+
+            InputStream is  = cl.getResourceAsStream("com/voxbiblia/rjmailer/version.properties");
+            Properties p = new Properties();
+            try {
+                p.load(is);
+            } catch (IOException e) {
+                throw new Error("could not load version from jar");
+            }
+            version = p.getProperty("rjmailer.version");
+        }
+        return version;
     }
 
     private static byte[] toBytes(String s)

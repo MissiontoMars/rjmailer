@@ -7,7 +7,7 @@ import java.nio.charset.Charset;
  * Tools to encode non-ascii data into email content, for example using the
  * Quoted Printable character encoding.
  *
- * @author Noa Resare (noa@resare.com)  
+ * @author Noa Resare (noa@voxbiblia.com)
  */
 class TextEncoder
 {
@@ -16,13 +16,21 @@ class TextEncoder
     // the maxmium length of a line excluding the new line pair
     private static final int MAX_LINE_LENGTH = 76;
 
-    static String encodeQP(String indata, String encoding)
+    /**
+     * Encodes the given string with the Quoted Printable content transfer encoding
+     * as decumented in RFC2045 section 6.7. Please note that the lines in data
+     * is expeted to be delimited by the standard CRLF sequence and nothing else
+     *
+     * @param indata the lines to encode
+     * @param encoding the character encoding to use
+     * @return the encoded data
+     */
+    public static String encodeQP(String indata, String encoding)
     {
         return encodeQP(indata, encoding, true);
     }
 
     // as documented in RFC2045 6.7
-
     static String encodeQP(String indata, String encoding, boolean convertEndSpace)
     {
         byte[] bs;
@@ -52,6 +60,11 @@ class TextEncoder
             boolean writeQuoted = false;
             if (b == '\r' || b == '\n') {
                 writeQuoted = false;
+            } else if (b == '.') {
+                if (i > 1 && bs[i-2] == '\r' && bs[i-1] == '\n'
+                        && (i + 2) < bs.length && bs[i+1] == '\r' && bs[i+2] == '\n') {
+                    writeQuoted = true;
+            }
             } else if (b == ' ' || b == '\t') {
                 if (convertEndSpace) {
                     // special case, check if there is only white space until end

@@ -4,6 +4,7 @@ Subject: =?ISO-8859-1?Q?r=E5grut?=
 Date: @@DATE@@
 Message-ID: <@@MSG_ID@@>
 Mime-Version: 1.0
+X-Mailer: rjmailer (@@VERSION@@)
 Content-Transfer-Encoding: quoted-printable
 
 email data

@@ -20,6 +20,7 @@ public class ConversationHandlerTest
         Map m = new HashMap();
         m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
         m.put("@@DATE@@", ch.fieldGenerator.getNextDate());
+        m.put("@@VERSION@@", ConversationHandler.getVersion());
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n" +
                     "250-VRFY\r\n250 8BITMIME",
@@ -75,6 +76,7 @@ public class ConversationHandlerTest
         Map m = new HashMap();
         m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
         m.put("@@DATE@@", ch.fieldGenerator.getNextDate());
+        m.put("@@VERSION@@", ConversationHandler.getVersion());
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
                     "250 8BITMIME",
@@ -139,5 +141,10 @@ public class ConversationHandlerTest
         bais = new ByteArrayInputStream(resp);
         ConversationHandler.checkStatus(bais, new byte[100], 250);
         assertEquals('X', bais.read());
+    }
+
+    public void testGetVersion()
+    {
+        assertNotNull(ConversationHandler.getVersion());
     }
 }
