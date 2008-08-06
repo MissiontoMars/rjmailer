@@ -11,12 +11,10 @@ import java.util.List;
  */
 class ResolverProxy
 {
-    Object resolver;
-    Class resolverClass;
-    Class mxQueryClass;
-    Class mxRecord;
-    Method resolve;
-    Method getExchange;
+    private Object resolver;
+    private Class mxQueryClass;
+    private Method resolve;
+    private Method getExchange;
 
     /**
      * Checks if the jresolver library is found in the classpath.
@@ -36,9 +34,9 @@ class ResolverProxy
     public ResolverProxy(String server)
     {
         try {
-            resolverClass = Class.forName("com.voxbiblia.jresolver.Resolver");
+            Class resolverClass = Class.forName("com.voxbiblia.jresolver.Resolver");
             mxQueryClass = Class.forName("com.voxbiblia.jresolver.MXQuery");
-            mxRecord = Class.forName("com.voxbiblia.jresolver.MXRecord");
+            Class mxRecord = Class.forName("com.voxbiblia.jresolver.MXRecord");
             resolve = resolverClass.getMethod("resolve", new Class[] {mxQueryClass});
             Constructor cons = resolverClass.getConstructor(new Class[] {String.class});
             resolver = cons.newInstance(new Object[] {server});
@@ -78,7 +76,7 @@ class ResolverProxy
         }
     }
 
-    Object getMXQuery(String name)
+    private Object getMXQuery(String name)
     {
         try {
             return mxQueryClass.getConstructor(new Class[] {String.class})
@@ -88,7 +86,7 @@ class ResolverProxy
         }
     }
 
-    String convertMXRecord(Object o)
+    private String convertMXRecord(Object o)
     {
         try {
             return (String)getExchange.invoke(o, null);

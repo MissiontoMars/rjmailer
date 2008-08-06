@@ -25,7 +25,8 @@ public class RJMSpringSender
      */
     public RJMSpringSender(String server, String ehloHostname)
     {
-        super(server, ehloHostname);
+        super(ehloHostname);
+        setSmtpServer(server);
     }
 
     public void send(SimpleMailMessage simpleMailMessage) throws MailException
