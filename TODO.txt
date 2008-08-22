@@ -5,6 +5,7 @@ TODO add mime attachment creation functionality
 TODO clean up the execption throwing
 - analyze when exceptional stuff happens and create a few Exception
 subclasses.
+- 
 TODO clean up existing and add missing javadocs
 TODO set a timeout for each smtp session
 
@@ -12,5 +13,12 @@ TODO optimize use case when a single domain occurs in several recipient addresse
 
 Exceptional stuff
 
-- generic email format problem
-- missing 
+- resolver timeout
+- servfail when looking up mx
+- no such domain when looking up mx
+- problem with a specific mx, points to name that doesn't resolve (nxdomain, servfail)
+- connection refused on port 25
+- connection timeout on port 25
+- recipient rejected
+- message rejected
+  
