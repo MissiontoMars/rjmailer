@@ -24,7 +24,17 @@ public class RJMSender
         conversationHandler = new ConversationHandler(ehloHostname);
     }
 
-    public RJMResult[] send(RJMMessage message)
+    public RJMResult send(RJMMessage message)
+    {
+        String[] tos = AddressUtil.getToAddresses(message);
+        if (tos.length > 1) {
+            throw new IllegalArgumentException("Please use the sendMulti() " +
+                    "method to send messages with multiple recipients");
+        }
+        return sendMulti(message)[0];
+    }
+
+    public RJMResult[] sendMulti(RJMMessage message)
     {
         if (!calledAfterPropertiesSet) {
             afterPropertiesSet();

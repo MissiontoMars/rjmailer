@@ -56,4 +56,19 @@ public class RJMSenderTest
         assertEquals("meep@a.con", l.get(0));
     }
 
+    public void testSendWithMulti()
+    {
+        RJMMessage m = new RJMMessage();
+        m.addTo("a@b.c", "Greger Lundholm");
+        m.addTo("d@e.f", "Meepy Stone");
+        RJMSender s = new RJMSender("ehloName");
+        s.setSmtpServer("localhost");
+        try {
+            s.send(m);
+            fail("send should not accept multiple recipients");
+        } catch(IllegalArgumentException e) {
+            // expected
+        }
+    }
+
 }

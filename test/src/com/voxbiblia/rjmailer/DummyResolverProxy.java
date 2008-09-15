@@ -19,8 +19,17 @@ public class DummyResolverProxy
 
     public List resolveMX(String name)
     {
+        Object o = responses.get(name);
         List l = new ArrayList();
-        l.add(responses.get(name));
+        if (o instanceof String) {
+            l.add(responses.get(name));
+            return l;
+        } else {
+            String[] sa = (String[])o;
+            for (int i = 0; i < sa.length; i++ ) {
+                l.add(sa[i]);
+            }
+        }
         return l;
     }
 }
