@@ -5,9 +5,9 @@ import junit.framework.TestCase;
 import java.util.*;
 
 /**
- * Tests MessageStatus.
+ * Tests SendState.
  */
-public class MessageStatusTest
+public class SendStateTest
     extends TestCase
 {
     public void testSimple()
@@ -16,7 +16,7 @@ public class MessageStatusTest
         emails.add("user0@dom0.con");
         emails.add("user1@dom0.con");
         emails.add("user0@dom1.con");
-        MessageStatus ms = new MessageStatus();
+
 
         Map result = new HashMap();
         result.put("dom0.con", "mx0.dom0.con");
@@ -25,12 +25,11 @@ public class MessageStatusTest
         ResolverProxy rp = new DummyResolverProxy(result);
         
 
-        ms.setResolverProxy(rp);
-        ms.addRecipients(emails);
+        SendState ss = new SendState(emails, rp);
 
-        String mx0 = ms.getNextMX();
-        assertEquals("mx0.dom0.con", mx0);
-        List l = ms.getMXRecipients(mx0);
+        MXData d = ss.next();
+        assertEquals("mx0.dom0.con", d.getServer());
+        List l = d.getRecipients();
         assertEquals(2, l.size());
         Iterator li = l.iterator();
 
@@ -50,22 +49,35 @@ public class MessageStatusTest
         assertTrue(hasUser0);
         assertTrue(hasUser1);
 
-        String mx1 = ms.getNextMX();
+        d = ss.next();
+        String mx1 = d.getServer();
         assertEquals("mx0.dom1.con", mx1);
-        ms.success(l, "250 message accepted", mx1);
+        ss.deliveryResult(mx1,(String)d.getRecipients().get(0), 250,
+                "message accepted 42");
 
-        l = ms.getMXRecipients(mx1);
+        l = d.getRecipients();
         assertEquals(1, l.size());
         assertEquals("user0@dom1.con", l.get(0));
-        ms.softRecipientFailure("user0@dom1.con", mx1);
+        ss.deliveryResult(mx1, "user0@dom1.con", 400, "Could not connect to server");
 
-        mx1 = ms.getNextMX();
+        d = ss.next();
+        mx1 = d.getServer();
         assertEquals("mx1.dom1.con", mx1);
-        l = ms.getMXRecipients(mx1);
+        l = d.getRecipients();
         assertEquals(1, l.size());
         assertEquals("user0@dom1.con", l.get(0));
+        ss.deliveryResult(mx1, "user0@dom1.con", 250, "message accepted 44");
 
-        assertNull(ms.getNextMX());
+        assertNull(ss.next());
+        List rs = ss.getResults();
+        assertEquals(2, rs.size());
+        RJMResult r = (RJMResult)rs.get(0);
+        assertEquals("mx0.dom1.con", r.getRecievingServer());
+        assertEquals("250 message accepted 42", r.getRecievingServer());
+
+        r = (RJMResult)rs.get(1);
+        assertEquals("mx0.dom1.con", r.getRecievingServer());
+        assertEquals("250 message accepted 42", r.getRecievingServer());
 
     }
 
@@ -75,7 +87,7 @@ public class MessageStatusTest
         emails.add("user0@dom0.con");
         emails.add("user1@dom0.con");
         emails.add("user0@dom1.con");
-        MessageStatus ms = new MessageStatus();
+
 
         Map result = new HashMap();
         result.put("dom0.con", "mx0.dom0.con");
@@ -83,13 +95,11 @@ public class MessageStatusTest
 
         ResolverProxy rp = new DummyResolverProxy(result);
 
+        SendState ms = new SendState(emails, rp);
 
-        ms.setResolverProxy(rp);
-        ms.addRecipients(emails);
-
-        String mx = ms.getNextMX();
-        assertEquals("mx0.dom0.con", mx);
-        List l = ms.getMXRecipients(mx);
+        MXData d = ms.next();
+        assertEquals("mx0.dom0.con", d.getServer());
+        List l = d.getRecipients();
         assertEquals(2, l.size());
         Iterator li = l.iterator();
 
@@ -109,24 +119,26 @@ public class MessageStatusTest
         assertTrue(hasUser0);
         assertTrue(hasUser1);
 
-        mx = ms.getNextMX();
+        d = ms.next();
+        String mx = d.getServer();
         assertEquals("mx0.dom1.con", mx);
-        ms.success(l, "250 message accepted", mx);
+        ms.deliveryResult(mx, (String)l.get(0), 250, "message accepted");
 
-        l = ms.getMXRecipients(mx);
+        l = d.getRecipients();
         assertEquals(1, l.size());
         assertEquals("user0@dom1.con", l.get(0));
-        ms.softRecipientFailure("user0@dom1.con", mx);
+        ms.deliveryResult(mx, "user0@dom1.con", 400, "Connection failed");
 
-        mx = ms.getNextMX();
+
+        d = ms.next();
+        mx = d.getServer();
         assertEquals("mx1.dom1.con", mx);
-        l = ms.getMXRecipients(mx);
+        l = d.getRecipients();
         assertEquals(1, l.size());
         assertEquals("user0@dom1.con", l.get(0));
-        ms.softRecipientFailure("user0@dom1.con", mx);
+        ms.deliveryResult(mx, "user0@dom1.con", 400, "Connection failed");
 
-        assertNull(ms.getNextMX());
-
+        assertNull(ms.next());
     }
 
 }

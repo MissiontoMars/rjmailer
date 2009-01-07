@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * A ResolverProxy implementation resolves MX queries using the DNS system.
  */
-public interface ResolverProxy
+interface ResolverProxy
 {
     List resolveMX(String name);
 }
