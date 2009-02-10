@@ -7,53 +7,109 @@ import java.util.*;
  */
 class SendState
 {
-    private LinkedList mxs = new LinkedList();
-    private Map emailsPerMx = new HashMap();
+       private Map recipients = new HashMap();
+    private Map mxToRecipients = new HashMap();
+    private Map results = new HashMap();
 
-    public SendState(List recipients, ResolverProxy resolver)
+    public SendState(ResolverProxy resolverProxy, List recipients)
     {
         Iterator i = recipients.iterator();
-        Map mxCache = new HashMap();
         while (i.hasNext()) {
-            String e = (String)i.next();
-            String domain = AddressUtil.getDomain(e);
-            List mxList = (List) mxCache.get(domain);
-            if (mxList == null) {
-                mxList = resolver.resolveMX(AddressUtil.getDomain(e));
-                mxCache.put(domain, mxList);
-            }
-            String mx = (String)mxList.get(0);
-            if (!mxs.contains(mx)) {
-                mxs.add(mx);
-            }
-            List l = (List)emailsPerMx.get(mx);
-            if (l == null) {
-                l = new ArrayList();
-                emailsPerMx.put(mx, l);
-            }
-            l.add(e);
+            String s = (String)i.next();
+            this.recipients.put(s, new RecipientState(resolverProxy.resolveMX(s)));
         }
     }
 
-    public MXData next()
+    public MXData nextMXRecipientData()
     {
-        if (mxs.size() == 0) {
-            return null;
+        if (mxToRecipients.isEmpty()) {
+            Iterator i = recipients.keySet().iterator();
+            while (i.hasNext()) {
+                String recipient = (String)i.next();
+                RecipientState rs = (RecipientState)recipients.get(recipient);
+                String mx = rs.nextMX();
+                if (mx != null) {
+                    List l = (List)mxToRecipients.get(mx);
+                    if (l == null) {
+                        l = new ArrayList();
+                        mxToRecipients.put(mx, l);
+                    }
+                    l.add(recipient);
+                }
+            }
+            if (mxToRecipients.isEmpty()) {
+                return null;
+            }
         }
-        String mx = (String)mxs.removeFirst();
-        MXData d = new MXData();
-        d.setServer(mx);
-        d.setRecipients((List)emailsPerMx.get(mx));
+        String mx = (String)mxToRecipients.keySet().iterator().next();
+        MXData d = new MXData(mx, (List)mxToRecipients.get(mx));
+        mxToRecipients.remove(mx);
         return d;
     }
 
-    public void deliveryResult(String mx, String email, int status, String message)
-    {
 
+    public void hardFailure(String email, String mx, String failure)
+    {
+        recipients.remove(email);
+        //noinspection ThrowableInstanceNeverThrown
+        results.put(email, new SMTPException(failure, mx));
     }
 
-    public List getResults()
+    /**
+     * Return a map with recipient addresses as keys and either RJMResult
+     * instances for successful deliveries or RJMExceptions in case of failure.
+     *
+     * @return a result Map
+     */
+    public Map getResults()
     {
-        return null;
+        return results;
+    }
+
+    public void softRecipientFailure(String email, String mx, String failure)
+    {
+        RecipientState rs = (RecipientState)recipients.get(email);
+        if (rs.softFailure(failure)) {
+            //noinspection ThrowableInstanceNeverThrown
+            results.put(email, new SMTPException(failure + " No more mail servers to try", mx));
+            recipients.remove(email);
+        }
+    }
+
+    public void success(String email, String mx, String result)
+    {
+        recipients.remove(email);
+        results.put(email, new RJMResult(mx, result));
+    }
+
+
+    private static class RecipientState
+    {
+        private LinkedList mailExchangers;
+
+        private List softFailures = new ArrayList();
+
+        public RecipientState(List mailExchangers)
+        {
+            this.mailExchangers = new LinkedList(mailExchangers);
+        }
+
+        public String nextMX()
+        {
+            return (String)mailExchangers.removeFirst();
+        }
+
+        // returns true if there are no more mailExchangers to try
+        public boolean softFailure(String failureMessage)
+        {
+            softFailures.add(failureMessage);
+            return mailExchangers.isEmpty();
+        }
+
+        public List getSoftFailures()
+        {
+            return softFailures;
+        }
+
     }
 }

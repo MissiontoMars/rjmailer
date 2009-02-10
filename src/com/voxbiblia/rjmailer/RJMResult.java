@@ -2,14 +2,11 @@ package com.voxbiblia.rjmailer;
 
 /**
  * Instances of this class contains information about a sent message.
- *
- * 
  */
 public class RJMResult
 {
     private String recievingServer;
     private String result;
-    private boolean tls;
 
     public RJMResult(String recievingServer, String result)
     {
@@ -35,15 +32,5 @@ public class RJMResult
     public void setResult(String result)
     {
         this.result = result;
-    }
-
-    public boolean isTls()
-    {
-        return tls;
-    }
-
-    public void setTls(boolean tls)
-    {
-        this.tls = tls;
     }
 }

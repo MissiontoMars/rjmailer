@@ -11,10 +11,9 @@ public class RJMException
 	 */
 	private static final long serialVersionUID = 1L;
 
-	
-    public RJMException(String msg)
+    public RJMException(String message)
     {
-        super(msg);
+        super(message);
     }
 
     public RJMException(String message, Throwable t)
@@ -26,4 +25,5 @@ public class RJMException
     {
         super(t);
     }
+
 }
