@@ -16,11 +16,12 @@ class SendState
         Iterator i = recipients.iterator();
         while (i.hasNext()) {
             String s = (String)i.next();
-            this.recipients.put(s, new RecipientState(resolverProxy.resolveMX(s)));
+            List mxes = resolverProxy.resolveMX(AddressUtil.getDomain(s));
+            this.recipients.put(s, new RecipientState(mxes));
         }
     }
 
-    public MXData nextMXRecipientData()
+    public MXData nextMXData()
     {
         if (mxToRecipients.isEmpty()) {
             Iterator i = recipients.keySet().iterator();
@@ -66,7 +67,7 @@ class SendState
         return results;
     }
 
-    public void softRecipientFailure(String email, String mx, String failure)
+    public void softFailure(String email, String mx, String failure)
     {
         RecipientState rs = (RecipientState)recipients.get(email);
         if (rs.softFailure(failure)) {

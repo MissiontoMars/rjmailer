@@ -26,7 +26,7 @@ public class SMTPException
         super(t);
     }
 
-    public String getMX()
+    public String getServer()
     {
         return mx;
     }
