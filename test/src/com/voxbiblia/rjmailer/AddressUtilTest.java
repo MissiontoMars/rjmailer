@@ -3,7 +3,6 @@ package com.voxbiblia.rjmailer;
 import junit.framework.TestCase;
 
 import java.util.List;
-import java.util.Arrays;
 
 /**
  * Tests AddressUtil
@@ -38,8 +37,7 @@ public class AddressUtilTest
     {
         RJMMessage m = new RJMMessage();
         m.setTo(new String[] {"test0@test.co", "\"Foo Bar\" <test1@test.co>"});
-        String[] addresses = AddressUtil.getToAddresses(m);
-        List l = Arrays.asList(addresses);
+        List l = AddressUtil.getToAddresses(m);
         assertTrue(l.contains("test0@test.co"));
         assertFalse(l.contains("doesnt@exist"));
         assertTrue(l.contains("test1@test.co"));
@@ -49,8 +47,7 @@ public class AddressUtilTest
     {
         RJMMessage m = new RJMMessage();
         m.setBcc(new String[] {"test0@test.co", "\"Foo Bar\" <test1@test.co>"});
-        String[] addresses = AddressUtil.getToAddresses(m);
-        List l = Arrays.asList(addresses);
+        List l = AddressUtil.getToAddresses(m);
         assertTrue(l.contains("test0@test.co"));
         assertFalse(l.contains("doesnt@exist"));
         assertTrue(l.contains("test1@test.co"));

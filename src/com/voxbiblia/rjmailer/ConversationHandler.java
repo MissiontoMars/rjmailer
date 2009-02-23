@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -42,7 +43,7 @@ class ConversationHandler
      * @return the tracking information recived from the server upon accept
      * @param to array of strings specifying recieving email addresses
      */
-    public String sendMail(RJMMessage message, String[] to, String server)
+    public String sendMail(RJMMessage message, List to, String server)
     {
         try {
             Socket s = new Socket(server, 25);
@@ -52,12 +53,17 @@ class ConversationHandler
         }
     }
 
-    String send(RJMMessage msg, String[] to, Socket socket)
+    String send(RJMMessage msg, List to, Socket socket)
             throws IOException
     {
         if (msg == null) {
             throw new RJMInputException("Can not send null message");
         }
+        if (to == null || to.isEmpty()) {
+            throw new RJMInputException("Not enough addresses to send email " +
+                    "to, please supply at least one");
+        }
+        
         byte[] inBuf = new byte[1000];
         InputStream is = socket.getInputStream();
         OutputStream os = socket.getOutputStream();
@@ -73,12 +79,8 @@ class ConversationHandler
         sendCommand("MAIL FROM: <" + AddressUtil.getAddress(from) + ">", os);
         checkStatus(is, inBuf, 250);
 
-        if (to == null || to.length < 1) {
-            throw new RJMInputException("Not enough addresses to send email " +
-                    "to, please supply at least one");
-        }
-        for (int i = 0; i < to.length; i++) {
-            sendCommand("RCPT TO: <" + to[i] +">", os);
+        for (int i = 0; i < to.size(); i++) {
+            sendCommand("RCPT TO: <" + to.get(i) +">", os);
             checkStatus(is, inBuf, 250);
         }
         sendCommand("DATA", os);

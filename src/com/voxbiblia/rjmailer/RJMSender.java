@@ -26,8 +26,8 @@ public class RJMSender
 
     public RJMResult send(RJMMessage message)
     {
-        String[] tos = AddressUtil.getToAddresses(message);
-        if (tos.length > 1) {
+        List tos = AddressUtil.getToAddresses(message);
+        if (tos.isEmpty()) {
             throw new IllegalArgumentException("Please use the sendMulti() " +
                     "method to send messages with multiple recipients");
         }
@@ -39,7 +39,7 @@ public class RJMSender
         if (!calledAfterPropertiesSet) {
             afterPropertiesSet();
         }
-        String[] tos = AddressUtil.getToAddresses(message);
+        List tos = AddressUtil.getToAddresses(message);
         if (resolverProxy != null) {
             resolveAndSend(message, tos);
         }
@@ -71,17 +71,23 @@ public class RJMSender
         }
     }
 
-    private RJMResult[] resolveAndSend(RJMMessage message, String[] tos)
+    private Map resolveAndSend(RJMMessage message, List tos)
     {
-        List results = new ArrayList();
-        for (int i = 0; i < tos.length; i++) {
-            List servers = resolverProxy.resolveMX(AddressUtil.getDomain(tos[i]));
-            String mx = (String)servers.get(0);
-            String s = conversationHandler.sendMail(message, new String[] {tos[i]},
-                    mx);
-            results.add(new RJMResult(mx, s));
+        SendState ss = new SendState(resolverProxy, tos);
+        
+        MXData d = ss.nextMXData();
+        while (d != null) {
+            List l = d.getRecipients();
+            String result = conversationHandler.sendMail(message, 
+                    d.getRecipients(), d.getServer());
+            for (int i = 0; i < tos.size(); i++) {
+                ss.success((String)l.get(i),d.getServer(), result);
+            }
+
+
+            d = ss.nextMXData();
         }
-        return (RJMResult[])results.toArray(new RJMResult[results.size()]);
+        return ss.getResults();
     }
 
     // returns a map with string keys and list values where the value is a list

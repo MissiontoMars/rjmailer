@@ -4,8 +4,9 @@ import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.util.Map;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Tests ConversationHandler 
@@ -37,7 +38,7 @@ public class ConversationHandlerTest
         rmm.setSubject("rågrut");
         rmm.setTo("reciever@reciever.com");
         assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm,
-                new String[] {"reciever@reciever.com"}, s));
+                Collections.singletonList("reciever@reciever.com"), s));
         assertTrue("more data to read from the server", s.hasFinished());
     }
 
@@ -61,7 +62,7 @@ public class ConversationHandlerTest
         rmm.setSubject("rågrut");
         try {
             assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm,
-                    new String[] {"reciever@reciever.com"}, s));
+                    Collections.singletonList("reciever@reciever.com"), s));
             fail("should have thrown IAE");
         } catch (IllegalArgumentException e) {
             // ignore
@@ -112,7 +113,7 @@ public class ConversationHandlerTest
                 "att det räcker.");
 
         assertEquals("Ok: queued as 62B15FFD8", ch.send(rmm,
-                new String[] {"reciever@reciever.com"}, s));
+                Collections.singletonList("reciever@reciever.com"), s));
         assertTrue("more data to read from the server", s.hasFinished());
     }
 

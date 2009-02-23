@@ -87,7 +87,7 @@ class AddressUtil
         throw new Error("malformed field: "+ field);
     }
 
-    public static String[] getToAddresses(RJMMessage msg)
+    public static List getToAddresses(RJMMessage msg)
     {
         List l = new ArrayList();
         String[] ss = msg.getTo();
@@ -102,7 +102,7 @@ class AddressUtil
                 l.add(getAddress(ss[i]));
             }
         }
-        return (String[]) l.toArray(new String[l.size()]);
+        return l;
     }
 
     /**
