@@ -14,9 +14,11 @@ public class MailSender
         s.setNameServer("johanna.resare.com");
         RJMMessage m = new RJMMessage();
         m.setFrom("\"Greger långhalm\" <noa@resare.com>");
-        m.setTo("\"Märy Mauri\" <noa@me.com>");
+        m.setTo("\"Märy Mauri\" <noa@voxbiblia.com>");
         m.setSubject("lårbenshals");
         m.setText("Här kommer innehållet, får se om QP kommer till användning");
-        System.out.println("result from the server: " + s.send(m));
+        RJMResult r = s.send(m);
+        System.out.println("result from the server: " + r.getResult());
+        System.out.println("connected to : " + r.getRecievingServer());
     }
 }

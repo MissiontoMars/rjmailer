@@ -44,13 +44,16 @@ public class RJMSender
             afterPropertiesSet();
         }
         List tos = AddressUtil.getToAddresses(message);
+
         if (resolverProxy != null) {
             return resolveAndSend(message, tos);
         }
-        //String result = conversationHandler.sendMail(message, tos, smtpServer);
-        //return new RJMResult[] { new RJMResult(smtpServer, result)};
-        throw new Error("single smtp server sending is not yet implemented");
-
+        String result = conversationHandler.sendMail(message, tos, smtpServer);
+        Map results = new HashMap();
+        for (int i = 0; i < tos.size(); i++) {
+            results.put(tos.get(i), new RJMResult(smtpServer, result));
+        }
+        return results;
     }
 
     private void afterPropertiesSet()
