@@ -7,7 +7,7 @@ import java.util.*;
  */
 class SendState
 {
-       private Map recipients = new HashMap();
+    private Map recipients = new HashMap();
     private Map mxToRecipients = new HashMap();
     private Map results = new HashMap();
 
@@ -97,6 +97,9 @@ class SendState
 
         public String nextMX()
         {
+            if (mailExchangers.isEmpty()) {
+                return null;
+            }
             return (String)mailExchangers.removeFirst();
         }
 

@@ -27,24 +27,30 @@ public class RJMSender
     public RJMResult send(RJMMessage message)
     {
         List tos = AddressUtil.getToAddresses(message);
-        if (tos.isEmpty()) {
+        if (tos.size() > 1) {
             throw new IllegalArgumentException("Please use the sendMulti() " +
                     "method to send messages with multiple recipients");
         }
-        return sendMulti(message)[0];
+        Object o = sendMulti(message).get(tos.get(0));
+        if (o instanceof RJMException) {
+            throw (RJMException)o;
+        }
+        return (RJMResult)o;
     }
 
-    public RJMResult[] sendMulti(RJMMessage message)
+    public Map sendMulti(RJMMessage message)
     {
         if (!calledAfterPropertiesSet) {
             afterPropertiesSet();
         }
         List tos = AddressUtil.getToAddresses(message);
         if (resolverProxy != null) {
-            resolveAndSend(message, tos);
+            return resolveAndSend(message, tos);
         }
-        String result = conversationHandler.sendMail(message, tos, smtpServer);
-        return new RJMResult[] { new RJMResult(smtpServer, result)};
+        //String result = conversationHandler.sendMail(message, tos, smtpServer);
+        //return new RJMResult[] { new RJMResult(smtpServer, result)};
+        throw new Error("single smtp server sending is not yet implemented");
+
     }
 
     private void afterPropertiesSet()
@@ -76,6 +82,9 @@ public class RJMSender
         SendState ss = new SendState(resolverProxy, tos);
         
         MXData d = ss.nextMXData();
+        if (d == null) {
+            throw new RJMException("Invalid state, no MXData");
+        }
         while (d != null) {
             List l = d.getRecipients();
             String result = conversationHandler.sendMail(message, 
