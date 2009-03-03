@@ -31,20 +31,31 @@ public class RJMSender
             throw new IllegalArgumentException("Please use the sendMulti() " +
                     "method to send messages with multiple recipients");
         }
-        return sendMulti(message)[0];
+        Map result = sendMulti(message);
+        Object o = result.entrySet().iterator().next();
+        if (o instanceof RuntimeException) {
+            throw (RuntimeException)o;
+        }
+        return (RJMResult)o;
     }
 
-    public RJMResult[] sendMulti(RJMMessage message)
+
+    public Map sendMulti(RJMMessage message)
     {
         if (!calledAfterPropertiesSet) {
             afterPropertiesSet();
         }
         List tos = AddressUtil.getToAddresses(message);
+
         if (resolverProxy != null) {
-            resolveAndSend(message, tos);
+            return resolveAndSend(message, tos);
         }
         String result = conversationHandler.sendMail(message, tos, smtpServer);
-        return new RJMResult[] { new RJMResult(smtpServer, result)};
+        Map results = new HashMap();
+        for (int i = 0; i < tos.size(); i++) {
+            results.put(tos.get(i), new RJMResult(smtpServer, result));
+        }
+        return results;
     }
 
     private void afterPropertiesSet()
