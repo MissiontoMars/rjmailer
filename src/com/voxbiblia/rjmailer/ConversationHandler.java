@@ -49,7 +49,7 @@ class ConversationHandler
             Socket s = new Socket(server, 25);
             return send(message, to, s);
         } catch (IOException e) {
-            throw new RJMException(e);
+            throw new RJMException("Could not connect to port 25 of " + server, e);
         }
     }
 
