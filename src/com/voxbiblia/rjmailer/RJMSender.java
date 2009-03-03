@@ -32,7 +32,7 @@ public class RJMSender
                     "method to send messages with multiple recipients");
         }
         Map result = sendMulti(message);
-        Object o = result.entrySet().iterator().next();
+        Object o = result.values().iterator().next();
         if (o instanceof RuntimeException) {
             throw (RuntimeException)o;
         }
