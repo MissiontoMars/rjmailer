@@ -2,6 +2,7 @@ package com.voxbiblia.rjmailer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +74,11 @@ class ResolverProxyImpl
             }
             return result;
         } catch (Exception e) {
+            if (e instanceof InvocationTargetException
+                    && e.getCause() instanceof RuntimeException) {
+                throw new RJMDomainException("Failed to resolve mx " + name,
+                        e.getCause());
+            }
             throw new Error(e);
         }
     }
