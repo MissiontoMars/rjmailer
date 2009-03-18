@@ -9,7 +9,6 @@ subclasses.
 TODO clean up existing and add missing javadocs
 TODO set a timeout for each smtp session
 
-TODO optimize use case when a single domain occurs in several recipient addresses
 
 Exceptional stuff
 
