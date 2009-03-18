@@ -11,10 +11,10 @@ public class MailSender
             throws IOException
     {
         RJMSender s = new RJMSender("valfrid.resare.com");
-        s.setNameServer("johanna.resare.com");
+        s.setNameServer("208.67.222.222");
         RJMMessage m = new RJMMessage();
         m.setFrom("\"Greger långhalm\" <noa@resare.com>");
-        m.setTo("\"Märy Mauri\" <noa@voxbiblia.com>");
+        m.setTo("\"Märy Mauri\" <noa@www.resare.com>");
         m.setSubject("lårbenshals");
         m.setText("Här kommer innehållet, får se om QP kommer till användning");
         RJMResult r = s.send(m);
