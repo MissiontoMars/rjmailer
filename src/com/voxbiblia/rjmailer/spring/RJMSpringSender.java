@@ -6,6 +6,8 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 
+import java.util.Arrays;
+
 /**
  * Implementation of Spring framework's MailSender interface using RJMailer.
  */
@@ -36,16 +38,16 @@ public class RJMSpringSender
 
     public void send(SimpleMailMessage[] simpleMailMessages) throws MailException
     {
-        for (int i = 0; i < simpleMailMessages.length; i++) {
-            send(simpleMailMessages[i]);
+        for (SimpleMailMessage simpleMailMessage : simpleMailMessages) {
+            send(simpleMailMessage);
         }
     }
 
     static RJMMessage convertSimpleMessage(SimpleMailMessage smm)
     {
         RJMMessage m = new RJMMessage();
-        m.setBcc(smm.getBcc());
-        m.setCc(smm.getCc());
+        m.setBcc(Arrays.asList(smm.getBcc()));
+        m.setCc(Arrays.asList(smm.getCc()));
         m.setFrom(smm.getFrom());
         m.setReplyTo(smm.getReplyTo());
         m.setSubject(smm.getSubject());

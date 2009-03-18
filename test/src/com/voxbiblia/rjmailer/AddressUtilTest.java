@@ -2,6 +2,7 @@ package com.voxbiblia.rjmailer;
 
 import junit.framework.TestCase;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -46,7 +47,7 @@ public class AddressUtilTest
     public void testGetAddressBcc()
     {
         RJMMessage m = new RJMMessage();
-        m.setBcc(new String[] {"test0@test.co", "\"Foo Bar\" <test1@test.co>"});
+        m.setBcc(Arrays.asList("test0@test.co", "\"Foo Bar\" <test1@test.co>"));
         List l = AddressUtil.getToAddresses(m);
         assertTrue(l.contains("test0@test.co"));
         assertFalse(l.contains("doesnt@exist"));
@@ -60,7 +61,7 @@ public class AddressUtilTest
 
     public void testEncodeAddressHeader()
     {
-        String[] to = new String[] { "a@b.c", "d@e.f"};
+        List<String> to = Arrays.asList("a@b.c", "d@e.f");
         assertEquals("To: a@b.c, d@e.f\r\n",
                 AddressUtil.encodeAddressHeader("To", to));
         assertEquals("From: noa@noa.noa\r\n",
@@ -102,9 +103,9 @@ public class AddressUtilTest
                 "till Zeus tillsammans med KING KONG!!\" <foo@bar.bar>";
         s = AddressUtil.encodeAddressHeader("To", to);
         lines = s.split("\r\n");
-        for (int i = 0 ; i < lines.length; i++) {
+        for (String line : lines) {
 
-            assertTrue(s, lines[i].length() < 79);
+            assertTrue(s, line.length() < 79);
         }
 
     }

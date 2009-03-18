@@ -26,7 +26,7 @@ public class RJMSender
 
     public RJMResult send(RJMMessage message)
     {
-        List tos = AddressUtil.getToAddresses(message);
+        List<String> tos = AddressUtil.getToAddresses(message);
         if (tos.size() > 1) {
             throw new IllegalArgumentException("Please use the sendMulti() " +
                     "method to send messages with multiple recipients");
@@ -38,20 +38,20 @@ public class RJMSender
         return (RJMResult)o;
     }
 
-    public Map sendMulti(RJMMessage message)
+    public Map<String, SendResult> sendMulti(RJMMessage message)
     {
         if (!calledAfterPropertiesSet) {
             afterPropertiesSet();
         }
-        List tos = AddressUtil.getToAddresses(message);
+        List<String> tos = AddressUtil.getToAddresses(message);
 
         if (resolverProxy != null) {
             return resolveAndSend(message, tos);
         }
         String result = conversationHandler.sendMail(message, tos, smtpServer);
-        Map results = new HashMap();
-        for (int i = 0; i < tos.size(); i++) {
-            results.put(tos.get(i), new RJMResult(smtpServer, result));
+        Map<String, SendResult> results = new HashMap<String, SendResult>();
+        for (String to : tos) {
+            results.put(to, new RJMResult(smtpServer, result));
         }
         return results;
     }
@@ -80,7 +80,7 @@ public class RJMSender
         }
     }
 
-    private Map resolveAndSend(RJMMessage message, List tos)
+    private Map<String, SendResult> resolveAndSend(RJMMessage message, List tos)
     {
         SendState ss = new SendState(resolverProxy, tos);
         
@@ -104,18 +104,19 @@ public class RJMSender
 
     // returns a map with string keys and list values where the value is a list
     // of recipients
-    Map makeMXMap(String[] tos)
+    Map<String, List<String>> makeMXMap(String[] tos)
     {
-        Map m = new HashMap();
-        for (int i = 0; i < tos.length; i++) {
-            String domain = AddressUtil.getDomain(tos[i]);
-            String mx = (String)resolverProxy.resolveMX(domain).get(0);
-            List l = (List)m.get(mx);
+        Map<String, List<String>> m = new HashMap<String,List<String>>();
+
+        for (String to : tos) {
+            String domain = AddressUtil.getDomain(to);
+            String mx = resolverProxy.resolveMX(domain).get(0);
+            List<String> l = m.get(mx);
             if (l == null) {
-                l = new ArrayList();
+                l = new ArrayList<String>();
                 m.put(mx, l);
             }
-            l.add(tos[i]);
+            l.add(to);
         }
         return m;
     }

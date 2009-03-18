@@ -8,9 +8,9 @@ import java.util.List;
 class MXData
 {
     private String server;
-    private List recipients;
+    private List<String> recipients;
 
-    public MXData(String server, List recipients)
+    public MXData(String server, List<String> recipients)
     {
         this.server = server;
         this.recipients = recipients;
@@ -21,7 +21,7 @@ class MXData
         return server;
     }
 
-    public List getRecipients()
+    public List<String> getRecipients()
     {
         return recipients;
     }

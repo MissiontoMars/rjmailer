@@ -24,7 +24,7 @@ public class Base64Encoder
      */
     public static String encode(byte[] data)
     {
-        StringBuffer sb = new StringBuffer((int)(data.length * 1.33) + 2);
+        StringBuilder sb = new StringBuilder((int)(data.length * 1.33) + 2);
         int i = 0;
         for (; i < (data.length - 2); i += 3) {
             output((pos(data[i]) << 16) + (pos(data[i + 1]) << 8) +
@@ -50,7 +50,7 @@ public class Base64Encoder
      * @param pad can indicate that quantum only holds 1 or 2 bytes of data
      * in which case padding occurs according to spec.
      */
-    private static void output(int quantum, StringBuffer sb, int pad)
+    private static void output(int quantum, StringBuilder sb, int pad)
     {
         sb.append(key[(quantum >> 18) & 0x3f]);
         sb.append(key[(quantum >> 12) & 0x3f]);

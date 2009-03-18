@@ -7,5 +7,5 @@ import java.util.List;
  */
 interface ResolverProxy
 {
-    List resolveMX(String name);
+    List<String> resolveMX(String name);
 }

@@ -10,43 +10,49 @@ import java.util.List;
  */
 public class RJMMessage
 {
-    private String[] bcc;
-    private String[] cc;
+    private List<String> bcc;
+    private List<String> cc;
     private String from;
     private String replyTo;
     private Date sentDate;
     private String subject;
     private String text;
-    private List to = new ArrayList();
+    private List<String> to = new ArrayList<String>();
 
-    public String[] getBcc()
+    public List<String> getBcc()
     {
         return bcc;
     }
 
-    public void setBcc(String[] bcc)
+    public void setBcc(List<String> bcc)
     {
         this.bcc = bcc;
     }
 
     public void setBcc(String bcc)
     {
-        this.bcc = new String[] {bcc};
+        if (this.bcc == null) {
+            this.bcc = new ArrayList<String>();
+        }
+        this.bcc.add(bcc);
     }
 
-    public String[] getCc()
+    public List<String> getCc()
     {
         return cc;
     }
 
-    public void setCc(String[] cc)
+    public void setCc(List<String> cc)
     {
         this.cc = cc;
     }
 
     public void setCc(String cc)
     {
-        this.cc = new String[] {cc};
+        if (this.cc == null) {
+            this.cc = new ArrayList<String>();
+        }
+        this.cc.add(cc);
     }
 
     public String getFrom()
@@ -99,12 +105,12 @@ public class RJMMessage
         this.text = text;
     }
 
-    public String[] getTo()
+    public List<String> getTo()
     {
         if (to.size() == 0) {
             return null;
         }
-        return (String[])to.toArray(new String[to.size()]);
+        return to;
     }
 
     public void setTo(String[] to)

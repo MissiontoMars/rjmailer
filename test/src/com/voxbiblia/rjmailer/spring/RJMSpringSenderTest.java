@@ -22,10 +22,10 @@ public class RJMSpringSenderTest
         m.setReplyTo("greger@greger.con");
         RJMMessage rjmm = RJMSpringSender.convertSimpleMessage(m);
         assertEquals("Testing testing, all systems", rjmm.getSubject());
-        assertEquals("a@b.c", rjmm.getBcc()[0]);
-        assertEquals(1, rjmm.getBcc().length);
-        assertEquals("d@e.f", rjmm.getCc()[0]);
-        assertEquals(1, rjmm.getCc().length);
+        assertEquals("a@b.c", rjmm.getBcc().get(0));
+        assertEquals(1, rjmm.getBcc().size());
+        assertEquals("d@e.f", rjmm.getCc().get(0));
+        assertEquals(1, rjmm.getCc().size());
         assertEquals("per@albin.con", rjmm.getFrom());
         assertEquals("greger@greger.con", rjmm.getReplyTo());
     }

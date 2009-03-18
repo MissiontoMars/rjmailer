@@ -43,7 +43,7 @@ class ConversationHandler
      * @return the tracking information recived from the server upon accept
      * @param to array of strings specifying recieving email addresses
      */
-    public String sendMail(RJMMessage message, List to, String server)
+    public String sendMail(RJMMessage message, List<String> to, String server)
     {
         try {
             Socket s = new Socket(server, 25);
@@ -53,7 +53,7 @@ class ConversationHandler
         }
     }
 
-    String send(RJMMessage msg, List to, Socket socket)
+    String send(RJMMessage msg, List<String> to, Socket socket)
             throws IOException
     {
         if (msg == null) {
@@ -79,8 +79,8 @@ class ConversationHandler
         sendCommand("MAIL FROM: <" + AddressUtil.getAddress(from) + ">", os);
         checkStatus(is, inBuf, 250);
 
-        for (int i = 0; i < to.size(); i++) {
-            sendCommand("RCPT TO: <" + to.get(i) +">", os);
+        for (String s : to) {
+            sendCommand("RCPT TO: <" + s +">", os);
             checkStatus(is, inBuf, 250);
         }
         sendCommand("DATA", os);
@@ -98,7 +98,7 @@ class ConversationHandler
             throws IOException
     {
         os.write(toBytes(AddressUtil.encodeAddressHeader("From", msg.getFrom())));
-        String[] to = msg.getTo();
+        List<String> to = msg.getTo();
         if (to != null) {
             os.write(toBytes(AddressUtil.encodeAddressHeader("To", to)));            
         }

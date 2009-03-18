@@ -13,21 +13,21 @@ public class ResolverProxyCache
 {
     private ResolverProxy inner;
     private int minutes;
-    private Map cacheMap;
-    private LinkedList entries;
+    private Map<String, List<String>> cacheMap;
+    private LinkedList<CacheEntry> entries;
 
     public ResolverProxyCache(ResolverProxy inner, int minutes)
     {
         this.inner = inner;
         this.minutes = minutes;
-        cacheMap = new HashMap();
-        entries = new LinkedList();
+        cacheMap = new HashMap<String,List<String>>();
+        entries = new LinkedList<CacheEntry>();
     }
 
-    public List resolveMX(String name)
+    public List<String> resolveMX(String name)
     {
         purgeOldEntries();
-        List l = (List)cacheMap.get(name);
+        List<String> l = cacheMap.get(name);
         if (l == null) {
             l = inner.resolveMX(name);
             cacheMap.put(name, l);
@@ -38,7 +38,7 @@ public class ResolverProxyCache
 
     private void purgeOldEntries()
     {
-        CacheEntry ce = (CacheEntry)entries.getFirst();
+        CacheEntry ce = entries.getFirst();
         while (ce != null) {
             long l = System.currentTimeMillis() - minutes * 60 * 1000;
             if (ce.getCreated() > l) {
@@ -47,7 +47,7 @@ public class ResolverProxyCache
 
             cacheMap.remove(ce.getKey());
             entries.removeFirst();
-            ce = (CacheEntry)entries.getFirst();
+            ce = entries.getFirst();
         }
     }
 

@@ -12,7 +12,7 @@ public class SendStateTest
 {
     public void testSimple()
     {
-        Map m = new HashMap();
+        Map<String,String[]> m = new HashMap<String,String[]>();
         m.put("domain.con", new String[] {"mx0.domain.con", "mx1.domain.con"});
         DummyResolverProxy drp = new DummyResolverProxy(m);
 
@@ -30,7 +30,7 @@ public class SendStateTest
 
     public void testSoftFailure()
     {
-        Map m = new HashMap();
+        Map<String, String[]> m = new HashMap<String,String[]>();
         m.put("domain.con", new String[] {"mx0.domain.con", "mx1.domain.con"});
         DummyResolverProxy drp = new DummyResolverProxy(m);
 
@@ -54,7 +54,7 @@ public class SendStateTest
 
     public void testHardFailure()
     {
-        Map m = new HashMap();
+        Map<String,String[]> m = new HashMap<String,String[]>();
         m.put("domain.con", new String[] {"mx0.domain.con", "mx1.domain.con"});
         DummyResolverProxy drp = new DummyResolverProxy(m);
 

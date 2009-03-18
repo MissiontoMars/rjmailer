@@ -7,16 +7,15 @@ import java.util.*;
  */
 class SendState
 {
-    private Map recipients = new HashMap();
-    private Map mxToRecipients = new HashMap();
-    private Map results = new HashMap();
+    private Map<String, RecipientState> recipients = new HashMap<String, RecipientState>();
+    private Map<String, List<String>> mxToRecipients = new HashMap<String, List<String>>();
+    private Map<String, SendResult> results = new HashMap<String, SendResult>();
 
     public SendState(ResolverProxy resolverProxy, List recipients)
     {
-        Iterator i = recipients.iterator();
-        while (i.hasNext()) {
-            String s = (String)i.next();
-            List mxes = resolverProxy.resolveMX(AddressUtil.getDomain(s));
+        for (Object recipient : recipients) {
+            String s = (String) recipient;
+            List<String> mxes = resolverProxy.resolveMX(AddressUtil.getDomain(s));
             this.recipients.put(s, new RecipientState(mxes));
         }
     }
@@ -24,26 +23,24 @@ class SendState
     public MXData nextMXData()
     {
         if (mxToRecipients.isEmpty()) {
-            Iterator i = recipients.keySet().iterator();
-            while (i.hasNext()) {
-                String recipient = (String)i.next();
-                RecipientState rs = (RecipientState)recipients.get(recipient);
+            for (String s : recipients.keySet()) {
+                RecipientState rs = recipients.get(s);
                 String mx = rs.nextMX();
                 if (mx != null) {
-                    List l = (List)mxToRecipients.get(mx);
+                    List<String> l = mxToRecipients.get(mx);
                     if (l == null) {
-                        l = new ArrayList();
+                        l = new ArrayList<String>();
                         mxToRecipients.put(mx, l);
                     }
-                    l.add(recipient);
+                    l.add(s);
                 }
             }
             if (mxToRecipients.isEmpty()) {
                 return null;
             }
         }
-        String mx = (String)mxToRecipients.keySet().iterator().next();
-        MXData d = new MXData(mx, (List)mxToRecipients.get(mx));
+        String mx = mxToRecipients.keySet().iterator().next();
+        MXData d = new MXData(mx, mxToRecipients.get(mx));
         mxToRecipients.remove(mx);
         return d;
     }
@@ -62,14 +59,14 @@ class SendState
      *
      * @return a result Map
      */
-    public Map getResults()
+    public Map<String,SendResult> getResults()
     {
         return results;
     }
 
     public void softFailure(String email, String mx, String failure)
     {
-        RecipientState rs = (RecipientState)recipients.get(email);
+        RecipientState rs = recipients.get(email);
         if (rs.softFailure(failure)) {
             //noinspection ThrowableInstanceNeverThrown
             results.put(email, new SMTPException(failure + " No more mail servers to try", mx));
@@ -86,13 +83,13 @@ class SendState
 
     private static class RecipientState
     {
-        private LinkedList mailExchangers;
+        private LinkedList<String> mailExchangers;
 
-        private List softFailures = new ArrayList();
+        private List<String> softFailures = new ArrayList<String>();
 
-        public RecipientState(List mailExchangers)
+        public RecipientState(List<String> mailExchangers)
         {
-            this.mailExchangers = new LinkedList(mailExchangers);
+            this.mailExchangers = new LinkedList<String>(mailExchangers);
         }
 
         public String nextMX()
@@ -100,7 +97,7 @@ class SendState
             if (mailExchangers.isEmpty()) {
                 return null;
             }
-            return (String)mailExchangers.removeFirst();
+            return mailExchangers.removeFirst();
         }
 
         // returns true if there are no more mailExchangers to try
@@ -110,7 +107,7 @@ class SendState
             return mailExchangers.isEmpty();
         }
 
-        public List getSoftFailures()
+        public List<String> getSoftFailures()
         {
             return softFailures;
         }

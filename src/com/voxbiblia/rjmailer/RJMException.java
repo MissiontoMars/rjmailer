@@ -5,6 +5,7 @@ package com.voxbiblia.rjmailer;
  */
 public class RJMException
     extends RuntimeException
+    implements SendResult
 {
     /**
 	 * Used to shut up eclipse build warnings

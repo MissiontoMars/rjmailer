@@ -4,6 +4,7 @@ package com.voxbiblia.rjmailer;
  * Instances of this class contains information about a sent message.
  */
 public class RJMResult
+    implements SendResult
 {
     private String recievingServer;
     private String result;

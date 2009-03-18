@@ -39,7 +39,7 @@ class TextEncoder
         } catch (UnsupportedEncodingException e) {
             throw new Error(e);
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int available = MAX_LINE_LENGTH;
         int endChars = 0;
 
@@ -123,11 +123,10 @@ class TextEncoder
      */
     static String canonicalize(String indata)
     {
-        StringBuffer sb = new StringBuffer(indata.length());
+        StringBuilder sb = new StringBuilder(indata.length());
         char[] chars = indata.toCharArray();
         int state = OUTSIDE;
-        for (int i = 0; i < chars.length; i++) {
-            char c = chars[i];
+        for (char c : chars) {
             if (state == OUTSIDE) {
                 if (c == '\r') {
                     state = GOT_CR;
@@ -182,8 +181,8 @@ class TextEncoder
     {
         char[] chars = data.toCharArray();
         int nonAsciiCount = 0;
-        for (int i = 0; i <chars.length; i++) {
-            if (chars[i] > 128) {
+        for (char aChar : chars) {
+            if (aChar > 128) {
                 nonAsciiCount++;
             }
         }
@@ -347,11 +346,11 @@ class TextEncoder
             return required;
         }
         char[] chars = s.toCharArray();
-        for (int i = 0; i < chars.length; i++) {
-            if (chars[i] > 0xfe) {
+        for (char aChar : chars) {
+            if (aChar > 0xfe) {
                 return UTF8;
             }
-            if (chars[i] > 0x7f) {
+            if (aChar > 0x7f) {
                 required = LATIN1;
             }
         }

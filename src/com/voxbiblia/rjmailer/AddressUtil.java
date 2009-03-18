@@ -1,8 +1,9 @@
 package com.voxbiblia.rjmailer;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * A small utility class that with convinience methods for handling RFC2822
@@ -87,19 +88,19 @@ class AddressUtil
         throw new Error("malformed field: "+ field);
     }
 
-    public static List getToAddresses(RJMMessage msg)
+    public static List<String> getToAddresses(RJMMessage msg)
     {
-        List l = new ArrayList();
-        String[] ss = msg.getTo();
+        List<String> l = new ArrayList<String>();
+        List<String> ss = msg.getTo();
         if (ss != null) {
-            for (int i = 0; i < ss.length; i++) {
-                l.add(getAddress(ss[i]));
+            for (String s : ss) {
+                l.add(getAddress(s));
             }
         }
         ss = msg.getBcc();
         if (ss != null) {
-            for (int i = 0; i < ss.length; i++) {
-                l.add(getAddress(ss[i]));
+            for (String s : ss) {
+                l.add(getAddress(s));
             }
         }
         return l;
@@ -121,24 +122,24 @@ class AddressUtil
 
     static String encodeAddressHeader(String field, String address)
     {
-        return encodeAddressHeader(field, new String[] {address});
+        return encodeAddressHeader(field, Collections.singletonList(address));
     }
 
     private static final int MAX_LINE = 78;
 
-    static String encodeAddressHeader(String field, String[] addresses)
+    static String encodeAddressHeader(String field, List<String> addresses)
     {
-        List l = new ArrayList();
+        List<String> l = new ArrayList<String>();
 
         l.add(field + ":");
 
-        for (int i = 0 ; i < addresses.length; i++) {
-            appendAddress(addresses[i], l);
+        for (String s : addresses) {
+            appendAddress(s, l);
         }
         removeLastComma(l);
 
         int available = MAX_LINE;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Iterator tokens = l.iterator();
         sb.append(tokens.next());
         while(tokens.hasNext()) {
@@ -159,14 +160,13 @@ class AddressUtil
         return sb.toString();
     }
 
-    private static void removeLastComma(List l)
+    private static void removeLastComma(List<String> l)
     {
-        String last = (String)l.get(l.size() -1);
+        String last = l.get(l.size() -1);
         l.set(l.size() - 1, last.substring(0,last.length() - 1));
     }
 
-    private static void appendAddress(String address, List tokenList)
-
+    private static void appendAddress(String address, List<String> tokenList)
     {
         String dn = getDisplayName(address);
         if (dn != null) {

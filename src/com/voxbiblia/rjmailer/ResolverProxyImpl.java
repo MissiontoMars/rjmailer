@@ -33,6 +33,7 @@ class ResolverProxyImpl
         return true;
     }
 
+    @SuppressWarnings("unchecked")
     public ResolverProxyImpl(String server)
     {
         try {
@@ -41,8 +42,8 @@ class ResolverProxyImpl
             Class mxRecord = Class.forName("com.voxbiblia.jresolver.MXRecord");
             resolve = resolverClass.getMethod("resolve", new Class[] {mxQueryClass});
             Constructor cons = resolverClass.getConstructor(new Class[] {String.class});
-            resolver = cons.newInstance(new Object[] {server});
-            getExchange = mxRecord.getMethod("getExchange", null);
+            resolver = cons.newInstance(server);
+            getExchange = mxRecord.getMethod("getExchange");
         } catch (ClassNotFoundException e) {
             throw new Error("Don't try to use the ResolverProxy without " +
                     "having jresolver in your classpath. Get it from " +
@@ -63,15 +64,18 @@ class ResolverProxyImpl
      * @param name the hostname to resolve
      * @return a list of mail exchanger hostnames
      */
-    public List resolveMX(String name)
+    @SuppressWarnings("unchecked")
+    public List<String> resolveMX(String name)
     {
         try {
-            List l = (List)resolve.invoke(resolver,
-                    new Object[] {getMXQuery(name)});
-            List result = new ArrayList(l.size());
-            for (int i = 0; i < l.size(); i++) {
-                result.add(convertMXRecord(l.get(i)));
+
+            List<Object> l = (List<Object>)resolve.invoke(resolver,
+                    getMXQuery(name));
+            List<String> result = new ArrayList<String>(l.size());
+            for (Object o : l) {
+                result.add(convertMXRecord(o));
             }
+
             return result;
         } catch (Exception e) {
             if (e instanceof InvocationTargetException
@@ -87,7 +91,7 @@ class ResolverProxyImpl
     {
         try {
             return mxQueryClass.getConstructor(new Class[] {String.class})
-                    .newInstance(new Object[] {name});
+                    .newInstance(name);
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -96,7 +100,7 @@ class ResolverProxyImpl
     private String convertMXRecord(Object o)
     {
         try {
-            return (String)getExchange.invoke(o, null);
+            return (String)getExchange.invoke(o);
         } catch (Exception e) {
             throw new Error(e);
         }
