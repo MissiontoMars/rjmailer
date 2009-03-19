@@ -49,9 +49,9 @@ class ConversationHandler
             Socket s = new Socket(server, 25);
             return send(message, to, s);
         } catch (IOException e) {
-            throw new RJMException.Builder()
-                    .setServer("Connection to the email server failed")
-                    .setServer(server).build();
+            throw new RJMException(RJMException.ExactCause.SMTP_CONNECT,
+                    "Connection to the email server failed")
+                    .setServer(server);
         }
     }
 
@@ -170,10 +170,9 @@ class ConversationHandler
         String line = getServerLine(is, inBuf);
         int status = getStatus(line);
         if (status != expected) {
-            throw new RJMException.Builder()
-                    .setMessage("Unexpected status value from t" +
-                            "he server")
-                    .setServerLine(line).build();
+            throw new RJMException(RJMException.ExactCause.SMTP_UNEXPECTED_STATUS,
+                    "Unexpected status value from the server")
+                    .setServerLine(line);
         }
         while (line.length() > 3 && line.charAt(3) == '-') {
             line = getServerLine(is, inBuf);

@@ -49,9 +49,12 @@ class SendState
     public void hardFailure(String email, String mx, String failure)
     {
         recipients.remove(email);
-        //noinspection ThrowableInstanceNeverThrown
-        results.put(email, new RJMException.Builder()
-                .setMessage(failure).setServer(mx).build());
+
+        results.put(email, new RJMException(
+                RJMException.ExactCause.SMTP_UNEXPECTED_STATUS,
+                "The server returned an error indicating an unrecoverable " +
+                        "error").setServer(mx).setEmail(email)
+                .setServerLine(failure));
     }
 
     /**
@@ -69,10 +72,10 @@ class SendState
     {
         RecipientState rs = recipients.get(email);
         if (rs.softFailure(failure)) {
-            //noinspection ThrowableResultOfMethodCallIgnored
-            results.put(email, new RJMException.Builder()
-                    .setMessage(" No more mail servers to try")
-                    .setServer(mx).build());
+            results.put(email,
+                    new RJMException(RJMException.ExactCause.ALL_SERVERS_FAILED,
+                    "No more mail servers to try")
+                    .setServer(mx).setEmail(email));
             recipients.remove(email);
         }
     }
