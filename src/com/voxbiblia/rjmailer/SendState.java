@@ -50,7 +50,8 @@ class SendState
     {
         recipients.remove(email);
         //noinspection ThrowableInstanceNeverThrown
-        results.put(email, new SMTPException(failure, mx));
+        results.put(email, new RJMException.Builder()
+                .setMessage(failure).setServer(mx).build());
     }
 
     /**
@@ -68,8 +69,10 @@ class SendState
     {
         RecipientState rs = recipients.get(email);
         if (rs.softFailure(failure)) {
-            //noinspection ThrowableInstanceNeverThrown
-            results.put(email, new SMTPException(failure + " No more mail servers to try", mx));
+            //noinspection ThrowableResultOfMethodCallIgnored
+            results.put(email, new RJMException.Builder()
+                    .setMessage(" No more mail servers to try")
+                    .setServer(mx).build());
             recipients.remove(email);
         }
     }

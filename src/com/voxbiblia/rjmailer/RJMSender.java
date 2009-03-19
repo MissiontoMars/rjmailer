@@ -86,7 +86,7 @@ public class RJMSender
         
         MXData d = ss.nextMXData();
         if (d == null) {
-            throw new RJMException("Invalid state, no MXData");
+            throw new Error("Invalid state, no MXData");
         }
         while (d != null) {
             List l = d.getRecipients();

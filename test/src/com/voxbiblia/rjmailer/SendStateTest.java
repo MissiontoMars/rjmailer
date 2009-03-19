@@ -67,7 +67,7 @@ public class SendStateTest
 
         Map results = ss.getResults();
         assertEquals(1, results.size());
-        SMTPException r = (SMTPException)results.get("u@domain.con");
+        RJMException r = (RJMException)results.get("u@domain.con");
         assertEquals("mx0.domain.con", r.getServer());
         assertEquals("No such user", r.getMessage());
     }
