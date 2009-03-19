@@ -75,13 +75,41 @@ class ResolverProxyImpl
             for (Object o : l) {
                 result.add(convertMXRecord(o));
             }
-
+            if (result.isEmpty()) {
+                throw new RJMException.Builder()
+                        .setMessage("The domain name is misconfigured, no MX records")
+                        .setExactCause(RJMException.ExactCause.DOMAIN_INVALID)
+                        .setDomain(name).build();
+            }
             return result;
         } catch (Exception e) {
-            if (e instanceof InvocationTargetException
-                    && e.getCause() instanceof RuntimeException) {
-                throw new RJMDomainException("Failed to resolve mx " + name,
-                        e.getCause());
+            if (e instanceof InvocationTargetException) {
+                Throwable t = e.getCause();
+                if (t == null) {
+                    throw new Error(e);
+                }
+                if ("ServFailException".equals(t.getClass().getName())) {
+                    throw new RJMException.Builder()
+                            .setMessage("The name server failed to resolve " +
+                                    "the domain. This failure can be " +
+                                    "temporary or permanent.")
+                            .setExactCause(RJMException.ExactCause.DOMAIN_FAILURE)
+                            .setDomain(name).build();
+                }
+                if ("TimeoutException".equals(t.getClass().getName())) {
+                    throw new RJMException.Builder()
+                            .setMessage("The name resolution took too long to perform")
+                            .setExactCause(RJMException.ExactCause.DOMAIN_FAILURE)
+                            .setDomain(name).build();
+                }
+                if ("ServFailException".equals(t.getClass().getName())) {
+                    throw new RJMException.Builder()
+                            .setMessage("The name server failed find email " +
+                                    "servers for the domain. This could be a " +
+                                    "temporary error")
+                            .setExactCause(RJMException.ExactCause.DOMAIN_FAILURE)
+                            .setDomain(name).build();
+                }
             }
             throw new Error(e);
         }
