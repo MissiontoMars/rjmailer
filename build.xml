@@ -35,6 +35,7 @@
                 <exclude name="dist/**"/>
                 <exclude name="src/**"/>
                 <exclude name="test/**"/>
+                <exclude name=".git/**"/>
                 <exclude name="actual.txt"/>
                 <exclude name="expected.txt"/>
             </zipfileset>
