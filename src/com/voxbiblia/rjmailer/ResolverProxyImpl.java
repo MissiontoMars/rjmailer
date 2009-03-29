@@ -76,12 +76,13 @@ class ResolverProxyImpl
                 result.add(convertMXRecord(o));
             }
             if (result.isEmpty()) {
-                throw new RJMException.Builder()
-                        .setMessage("The domain name is misconfigured, no MX records")
-                        .setExactCause(RJMException.ExactCause.DOMAIN_INVALID)
-                        .setDomain(name).build();
+                throw new RJMException(RJMException.ExactCause.DOMAIN_INVALID,
+                        "The domain name is misconfigured, no MX records")
+                        .setDomain(name);
             }
             return result;
+        } catch (RJMException e) {
+            throw e;
         } catch (Exception e) {
             if (e instanceof InvocationTargetException) {
                 Throwable t = e.getCause();
@@ -89,26 +90,22 @@ class ResolverProxyImpl
                     throw new Error(e);
                 }
                 if ("ServFailException".equals(t.getClass().getName())) {
-                    throw new RJMException.Builder()
-                            .setMessage("The name server failed to resolve " +
-                                    "the domain. This failure can be " +
-                                    "temporary or permanent.")
-                            .setExactCause(RJMException.ExactCause.DOMAIN_FAILURE)
-                            .setDomain(name).build();
+                    throw new RJMException(RJMException.ExactCause.DOMAIN_FAILURE,
+                            "The name server failed to resolve the domain. " +
+                                    "This failure can be temporary or permanent.")
+                            .setDomain(name);
                 }
                 if ("TimeoutException".equals(t.getClass().getName())) {
-                    throw new RJMException.Builder()
-                            .setMessage("The name resolution took too long to perform")
-                            .setExactCause(RJMException.ExactCause.DOMAIN_FAILURE)
-                            .setDomain(name).build();
+                    throw new RJMException(RJMException.ExactCause.DOMAIN_FAILURE,
+                            "The name resolution took too long to perform")
+                            .setDomain(name);
                 }
                 if ("ServFailException".equals(t.getClass().getName())) {
-                    throw new RJMException.Builder()
-                            .setMessage("The name server failed find email " +
+                    throw new RJMException(RJMException.ExactCause.DOMAIN_FAILURE,
+                            "The name server failed find email " +
                                     "servers for the domain. This could be a " +
                                     "temporary error")
-                            .setExactCause(RJMException.ExactCause.DOMAIN_FAILURE)
-                            .setDomain(name).build();
+                            .setDomain(name);
                 }
             }
             throw new Error(e);
