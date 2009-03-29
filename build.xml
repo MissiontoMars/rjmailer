@@ -13,7 +13,7 @@
         <mkdir dir="classes/production/${ant.project.name}"/>
         <javac destdir="classes/production/${ant.project.name}"
             classpathref="class.path"  encoding="UTF-8"
-            target="1.4" source="1.4" debug="yes">
+            target="1.5" source="1.5" debug="yes">
             <src path="src"/>
         </javac>
     </target>
