@@ -18,7 +18,7 @@
         </javac>
     </target>
 
-    <target name="dist" depends="compile">
+    <target name="dist" depends="compile,javadoc">
         <mkdir dir="dist"/>
         <jar file="dist/${ant.project.name}-${rjmailer.version}.jar">
             <fileset dir="classes/production/${ant.project.name}"/>
@@ -31,6 +31,9 @@
 	    tarfile="dist/${ant.project.name}-${rjmailer.version}-test.tar.bz2"
 	    compression="bzip2" basedir=".">
             <include name="test/**"/>
+        </tar>
+        <tar tarfile="dist/${ant.project.name}-${rjmailer.version}-javadoc.tar.bz2" compression="bzip2" basedir=".">
+            <include name="javadoc/**"/>
         </tar>
         <zip file="dist/${ant.project.name}-${rjmailer.version}.zip">
             <zipfileset dir="." prefix="${ant.project.name}-${rjmailer.version}">
@@ -51,11 +54,21 @@
         </zip>
     </target>
 
+    <target name="javadoc">
+        <javadoc sourcepath="src" destdir="javadoc"
+            packagenames="com.voxbiblia.rjmailer"
+            windowtitle="${ant.project.name} javadoc">
+            <link href="http://java.sun.com/javase/6/docs/api/"/>
+        </javadoc>
+    </target>
+
+
     <target name="clean">
         <delete dir="classes"/>
         <delete dir="dist"/>
         <delete file="actual.txt"/>
         <delete file="expected.txt"/>
+        <delete file="javadoc"/>
     </target>
 
 </project>
