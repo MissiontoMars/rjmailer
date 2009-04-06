@@ -1,7 +1,5 @@
 package com.voxbiblia.rjmailer;
 
-import junit.framework.TestCase;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Collections;
@@ -12,13 +10,13 @@ import java.util.Map;
  * Tests ConversationHandler 
  */
 public class ConversationHandlerTest
-    extends TestCase
+    extends TestBase
 {
     public void testSend()
             throws Exception            
     {
         ConversationHandler ch = new ConversationHandler("localhost");
-        Map m = new HashMap();
+        Map<String,String> m = new HashMap<String,String>();
         m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
         m.put("@@DATE@@", ch.fieldGenerator.getNextDate());
         m.put("@@VERSION@@", ConversationHandler.getVersion());
@@ -74,7 +72,7 @@ public class ConversationHandlerTest
             throws Exception
     {
         ConversationHandler ch = new ConversationHandler("localhost");
-        Map m = new HashMap();
+        Map<String,String> m = new HashMap<String,String>();
         m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
         m.put("@@DATE@@", ch.fieldGenerator.getNextDate());
         m.put("@@VERSION@@", ConversationHandler.getVersion());

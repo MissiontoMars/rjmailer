@@ -1,12 +1,10 @@
 package com.voxbiblia.rjmailer;
 
-import junit.framework.TestCase;
-
 /**
  * Tests Base64Encoder
  */
 public class Base64EncoderTest
-    extends TestCase
+    extends TestBase
 {
     public void testEncodeBase64()
             throws Exception

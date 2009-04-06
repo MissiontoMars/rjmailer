@@ -1,7 +1,5 @@
 package com.voxbiblia.rjmailer;
 
-import junit.framework.TestCase;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,7 +7,7 @@ import java.util.List;
  * Tests AddressUtil
  */
 public class AddressUtilTest
-        extends TestCase
+        extends TestBase
 {
     public void testGetAddress()
     {

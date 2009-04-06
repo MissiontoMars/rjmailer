@@ -1,19 +1,17 @@
 package com.voxbiblia.rjmailer;
 
-import junit.framework.TestCase;
-
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.File;
-import java.util.Map;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Tests DummySMTPSocket
  */
 public class DummySMTPSocketTest
-    extends TestCase
+    extends TestBase
 {
     public void testReadEnd()
             throws IOException
@@ -150,7 +148,7 @@ public class DummySMTPSocketTest
     public void testWithSubstitutions()
             throws Exception
     {
-        Map m = new HashMap();
+        Map<String,String> m = new HashMap<String,String>();
         m.put("@FOO@", "u");
         DummySMTPSocket dss = new DummySMTPSocket(
                 new String[] {"foo", "IN_FILE"},

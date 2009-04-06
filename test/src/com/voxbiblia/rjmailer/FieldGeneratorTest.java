@@ -1,13 +1,10 @@
 package com.voxbiblia.rjmailer;
 
-import junit.framework.TestCase;
-
-
 /**
  * Tests FieldGenerator
  */
 public class FieldGeneratorTest
-    extends TestCase
+    extends TestBase
 {
     public void testGetMessageId()
     {

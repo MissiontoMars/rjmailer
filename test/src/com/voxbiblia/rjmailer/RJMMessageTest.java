@@ -1,14 +1,12 @@
 package com.voxbiblia.rjmailer;
 
-import junit.framework.TestCase;
-
 import java.util.List;
 
 /**
  * Tests RJMMessage
  */
 public class RJMMessageTest
-    extends TestCase
+    extends TestBase
 {
     public void testAddTo()
     {

@@ -1,7 +1,5 @@
 package com.voxbiblia.rjmailer;
 
-import junit.framework.TestCase;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -11,16 +9,16 @@ import java.util.Map;
  * Tests RJMSender.
  */
 public class RJMSenderTest
-    extends TestCase
+    extends TestBase
 {
     public void testMakeMXMap()
     {
         RJMSender s = new RJMSender("ehloName");
-        Map m = new HashMap();
-        m.put("a.con", "mx.a.con");
-        m.put("b.con", "mx.b.con");
-        s.setResolverProxy(new DummyResolverProxy(m));
-        m = s.makeMXMap(new String[] {"meep@a.con", "meep@b.con"});
+        Map<String,String> data = new HashMap<String,String>();
+        data.put("a.con", "mx.a.con");
+        data.put("b.con", "mx.b.con");
+        s.setResolverProxy(new DummyResolverProxy(data));
+        Map<String, List<String>> m = s.makeMXMap(new String[] {"meep@a.con", "meep@b.con"});
 
         assertEquals(2, m.size());
         Iterator i = m.keySet().iterator();
@@ -29,12 +27,12 @@ public class RJMSenderTest
             String mx = (String)i.next();
             if (mx.equals("mx.a.con")) {
                 hasA = true;
-                List l = (List)m.get(mx);
+                List l = m.get(mx);
                 assertEquals(1, l.size());
                 assertEquals("meep@a.con", l.get(0));
             } else if (mx.equals("mx.b.con")) {
                 hasB = true;
-                List l = (List)m.get(mx);
+                List l = m.get(mx);
                 assertEquals(1, l.size());
                 assertEquals("meep@b.con", l.get(0));
             }
@@ -46,13 +44,13 @@ public class RJMSenderTest
     public void testMakeMXMapSingle()
     {
         RJMSender s = new RJMSender("ehloName");
-        Map m = new HashMap();
-        m.put("a.con", "mx.a.con");
-        s.setResolverProxy(new DummyResolverProxy(m));
-        m = s.makeMXMap(new String[] {"meep@a.con"});
+        Map<String,String> data = new HashMap<String,String>();
+        data.put("a.con", "mx.a.con");
+        s.setResolverProxy(new DummyResolverProxy(data));
+        Map<String, List<String>> m = s.makeMXMap(new String[] {"meep@a.con"});
 
         assertEquals(1, m.size());
-        List l = (List)m.get("mx.a.con");
+        List l = m.get("mx.a.con");
         assertEquals("meep@a.con", l.get(0));
     }
 

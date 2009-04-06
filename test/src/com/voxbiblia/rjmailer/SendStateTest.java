@@ -1,14 +1,14 @@
 package com.voxbiblia.rjmailer;
 
-import junit.framework.TestCase;
-
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Tests SendState.
  */
 public class SendStateTest
-    extends TestCase
+    extends TestBase
 {
     public void testSimple()
     {

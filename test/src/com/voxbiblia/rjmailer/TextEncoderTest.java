@@ -1,12 +1,10 @@
 package com.voxbiblia.rjmailer;
 
-import junit.framework.TestCase;
-
 /**
  * Tests TextEncoder
  */
 public class TextEncoderTest
-        extends TestCase
+        extends TestBase
 {
 
     public void testEncode()
