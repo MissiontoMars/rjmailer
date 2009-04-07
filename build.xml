@@ -6,6 +6,7 @@
         <fileset dir="../support">
             <include name="spring-framework-2.0.5/dist/modules/spring-core.jar"/>
             <include name="spring-framework-2.0.5/dist/modules/spring-support.jar"/>
+            <include name="slf4j-1.5.6/slf2j-api-1.5.6.jar"/>
         </fileset>
     </path>
 
@@ -19,6 +20,7 @@
     </target>
 
     <target name="dist" depends="compile,javadoc">
+        
         <mkdir dir="dist"/>
         <jar file="dist/${ant.project.name}-${rjmailer.version}.jar">
             <fileset dir="classes/production/${ant.project.name}"/>
