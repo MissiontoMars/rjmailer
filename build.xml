@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="rjmailer" default="dist">
     <property file="src/com/voxbiblia/rjmailer/version.properties" />
+    <property name="deps-root" value="../support"/>
+    <property name="slf-version" value="1.5.6"/>
 
     <path id="class.path">
-        <fileset dir="../support">
-            <include name="spring-framework-2.0.5/dist/modules/spring-core.jar"/>
-            <include name="spring-framework-2.0.5/dist/modules/spring-support.jar"/>
-            <include name="slf4j-1.5.6/slf2j-api-1.5.6.jar"/>
+        <fileset dir="lib">
+            <include name="slf4j-api-1.5.6.jar"/>
         </fileset>
     </path>
 
@@ -14,13 +14,12 @@
         <mkdir dir="classes/production/${ant.project.name}"/>
         <javac destdir="classes/production/${ant.project.name}"
             classpathref="class.path"  encoding="UTF-8"
-            target="1.5" source="1.5" debug="yes">
-            <src path="src"/>
+            target="1.5" source="1.5" debug="yes"
+                srcdir="src" excludes="com/voxbiblia/rjmailer/spring/**">
         </javac>
     </target>
 
     <target name="dist" depends="compile,javadoc">
-        
         <mkdir dir="dist"/>
         <jar file="dist/${ant.project.name}-${rjmailer.version}.jar">
             <fileset dir="classes/production/${ant.project.name}"/>
@@ -34,13 +33,15 @@
 	    compression="bzip2" basedir=".">
             <include name="test/**"/>
         </tar>
-        <tar tarfile="dist/${ant.project.name}-${rjmailer.version}-javadoc.tar.bz2" compression="bzip2" basedir=".">
+        <tar tarfile="dist/${ant.project.name}-${rjmailer.version}-javadoc.tar.bz2"
+             compression="bzip2" basedir=".">
             <include name="javadoc/**"/>
         </tar>
         <zip file="dist/${ant.project.name}-${rjmailer.version}.zip">
             <zipfileset dir="." prefix="${ant.project.name}-${rjmailer.version}">
                 <exclude name="classes/**"/>
                 <exclude name="dist/**"/>
+                <exclude name="javadoc/**"/>
                 <exclude name="src/**"/>
                 <exclude name="test/**"/>
                 <exclude name=".git/**"/>
@@ -51,6 +52,7 @@
 		prefix="${ant.project.name}-${rjmailer.version}">
                 <include name="*-src.tar.bz2"/>
                 <include name="*-test.tar.bz2"/>
+                <include name="*-javadoc.tar.bz2"/>
                 <include name="*.jar"/>
             </zipfileset>
         </zip>
@@ -59,6 +61,7 @@
     <target name="javadoc">
         <javadoc sourcepath="src" destdir="javadoc"
             packagenames="com.voxbiblia.rjmailer"
+            classpathref="class.path"
             windowtitle="${ant.project.name} javadoc">
             <link href="http://java.sun.com/javase/6/docs/api/"/>
         </javadoc>
@@ -71,6 +74,17 @@
         <delete file="actual.txt"/>
         <delete file="expected.txt"/>
         <delete file="javadoc"/>
+
+    </target>
+
+    <target name="setup-deps">
+        <delete dir="lib" includes="*.jar"/>
+        <copy todir="lib"
+              file="${deps-root}/slf4j-${slf-version}/slf4j-api-${slf-version}.jar"/>
+        <copy todir="lib"
+              file="${deps-root}/slf4j-${slf-version}/slf4j-jdk14-${slf-version}.jar"/>
+        <copy todir="lib"
+              file="${deps-root}/jresolver/jresolver-0.2.1.jar"/>
     </target>
 
 </project>
