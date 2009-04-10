@@ -1,5 +1,8 @@
 package com.voxbiblia.rjmailer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -12,6 +15,8 @@ import java.util.Random;
  */
 class FieldGenerator
 {
+    private static final Logger log = LoggerFactory.getLogger(FieldGenerator.class);
+
     private String ehloHostname, nextMessageId, nextDate;
     private final Random random = new Random();
     private static SimpleDateFormat sdf = new SimpleDateFormat(
@@ -101,8 +106,10 @@ class FieldGenerator
         nowBytes[4] = (byte)(now >> 8 & 0xff);
         nowBytes[5] = (byte)(now & 0xff);
 
-        return Base64Encoder.encode(nowBytes) + "-" + Base64Encoder.encode(bs) +
+        String s = Base64Encoder.encode(nowBytes) + "-" + Base64Encoder.encode(bs) +
                 "@" + ehloHostname;
+        log.debug("generated message id {}", s);
+        return s;
     }
 
 
