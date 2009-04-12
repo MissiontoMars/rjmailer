@@ -6,7 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * RJMSender is the main entry point to the rjmailer library.
+ * RJMSender is the main entry point to the rjmailer library. It is used to send
+ * emails. The typical use case is to construct an instance of this class, use
+ * the setter methods to configure it and reuse it to send multiple mail
+ * messages. Once this class is configured it's send methods can be used
+ * concurrently by multiple threads.
  *
  * @author Noa Resare (noa@voxbiblia.com)
  */
@@ -22,11 +26,29 @@ public class RJMSender
     /** the number of minutes to cache resolver results */
     private static final int RESOLVER_CACHE_TIMEOUT_MINS = 3;
 
+    /**
+     * Constructs a new RJMSender instance, that uses the specified ehloHostname
+     * as the EHLO command parameters when connecting to remote SMTP servers.
+     *
+     * @param ehloHostname the hostname of this computer. 
+     */
     public RJMSender(String ehloHostname)
     {
         conversationHandler = new ConversationHandler(ehloHostname);
     }
 
+    /**
+     * Sends <code>message</code> to one recipient. If the sum of all values
+     * of properties <code>to</code> and <code>bcc</code> is more than one (1),
+     * an IllegalArgumentException is thrown.
+     *
+     *
+     * @param message the message to send.
+     * @return an RJMResult instance containing tracking information about
+     * @throws IllegalArgumentException if there is more than one recipient
+     * of <code>message</code>
+     * @throws RJMException if there was a failure sending the message
+     */
     public RJMResult send(RJMMessage message)
     {
         List<String> tos = AddressUtil.getToAddresses(message);
@@ -34,13 +56,23 @@ public class RJMSender
             throw new IllegalArgumentException("Please use the sendMulti() " +
                     "method to send messages with multiple recipients");
         }
-        Object o = sendMulti(message).get(tos.get(0));
+        SendResult o = sendMulti(message).get(tos.get(0));
         if (o instanceof RJMException) {
             throw (RJMException)o;
         }
         return (RJMResult)o;
     }
 
+    /**
+     * Sends <code>message</code> to multiple recipients. The difference
+     * compared to the simplified {@link RJMSender#send send()} method is that
+     * it can return multiple results for different recipients. Please note
+     * that the results returned can be both {@link RJMException} and
+     * {@link RJMResult} instances. 
+     *
+     * @param message the messge to send.
+     * @return a Map mapping recipient addresses to SendResult instances
+     */
     public Map<String, SendResult> sendMulti(RJMMessage message)
     {
         if (!calledAfterPropertiesSet) {
@@ -54,7 +86,8 @@ public class RJMSender
         String result = conversationHandler.sendMail(message, tos, smtpServer);
         Map<String, SendResult> results = new HashMap<String, SendResult>();
         for (String to : tos) {
-            results.put(to, new RJMResult(smtpServer, result));
+            results.put(to, new RJMResult(smtpServer, result,
+                    RJMResult.Status.SENT));
         }
         return results;
     }
