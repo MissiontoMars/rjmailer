@@ -12,8 +12,7 @@
             <include name="jresolver-0.2.1.jar"/>
         </fileset>
         <fileset dir="build-deps">
-            <include name="spring-core-${spring-version}.jar"/>
-            <include name="spring-context-support-${spring-version}.jar"/>
+            <include name="spring-mail-${spring-version}.jar"/>
         </fileset>
     </path>
 
@@ -94,10 +93,21 @@
               file="${deps-root}/slf4j-${slf-version}/slf4j-jdk14-${slf-version}.jar"/>
         <copy todir="lib"
               file="${deps-root}/jresolver/jresolver-0.2.1.jar"/>
-        <copy tofile="build-deps/spring-core-${spring-version}.jar"
-              file="${deps-root}/spring-framework-${spring-version}/dist/modules/spring-core.jar"/>
-        <copy tofile="build-deps/spring-context-support-${spring-version}.jar"
-              file="${deps-root}/spring-framework-${spring-version}/dist/modules/spring-context-support.jar"/>
+
+        <unjar dest="tmp"
+               src="${deps-root}/spring-framework-${spring-version}/dist/modules/spring-core.jar"/>
+        <unjar dest="tmp"
+               src="${deps-root}/spring-framework-${spring-version}/dist/modules/spring-context-support.jar"/>
+
+        <jar jarfile="build-deps/spring-mail-${spring-version}.jar">
+            <fileset dir="tmp">
+                <include name="**/SimpleMailMessage.class"/>
+                <include name="**/MailException.class"/>
+                <include name="**/MailSender.class"/>
+                <include name="**/NestedRuntimeException.class"/>
+            </fileset>
+        </jar>
+        <delete dir="tmp"/>
 
     </target>
 
