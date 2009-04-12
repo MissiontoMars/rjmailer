@@ -83,7 +83,7 @@ class SendState
     public void success(String email, String mx, String result)
     {
         recipients.remove(email);
-        results.put(email, new RJMResult(mx, result));
+        results.put(email, new RJMResult(mx, result, RJMResult.Status.SENT));
     }
 
 
