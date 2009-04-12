@@ -7,6 +7,7 @@
     <path id="class.path">
         <fileset dir="lib">
             <include name="slf4j-api-1.5.6.jar"/>
+            <include name="jresolver-0.2.1.jar"/>
         </fileset>
     </path>
 
@@ -71,6 +72,7 @@
     <target name="clean">
         <delete dir="classes"/>
         <delete dir="dist"/>
+        <delete dir="javadoc"/>
         <delete file="actual.txt"/>
         <delete file="expected.txt"/>
         <delete file="javadoc"/>

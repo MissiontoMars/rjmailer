@@ -17,7 +17,7 @@ public class RJMSenderTest
         Map<String,String> data = new HashMap<String,String>();
         data.put("a.con", "mx.a.con");
         data.put("b.con", "mx.b.con");
-        s.setResolverProxy(new DummyResolverProxy(data));
+        s.setResolver(new DummyResolver(data));
         Map<String, List<String>> m = s.makeMXMap(new String[] {"meep@a.con", "meep@b.con"});
 
         assertEquals(2, m.size());
@@ -46,7 +46,7 @@ public class RJMSenderTest
         RJMSender s = new RJMSender("ehloName");
         Map<String,String> data = new HashMap<String,String>();
         data.put("a.con", "mx.a.con");
-        s.setResolverProxy(new DummyResolverProxy(data));
+        s.setResolver(new DummyResolver(data));
         Map<String, List<String>> m = s.makeMXMap(new String[] {"meep@a.con"});
 
         assertEquals(1, m.size());

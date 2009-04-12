@@ -14,7 +14,7 @@ public class SendStateTest
     {
         Map<String,String[]> m = new HashMap<String,String[]>();
         m.put("domain.con", new String[] {"mx0.domain.con", "mx1.domain.con"});
-        DummyResolverProxy drp = new DummyResolverProxy(m);
+        DummyResolver drp = new DummyResolver(m);
 
         SendState ss = new SendState(drp, Collections.singletonList("u@domain.con"));
         MXData mxd = ss.nextMXData();
@@ -32,7 +32,7 @@ public class SendStateTest
     {
         Map<String, String[]> m = new HashMap<String,String[]>();
         m.put("domain.con", new String[] {"mx0.domain.con", "mx1.domain.con"});
-        DummyResolverProxy drp = new DummyResolverProxy(m);
+        DummyResolver drp = new DummyResolver(m);
 
         SendState ss = new SendState(drp, Collections.singletonList("u@domain.con"));
         MXData mxd = ss.nextMXData();
@@ -56,7 +56,7 @@ public class SendStateTest
     {
         Map<String,String[]> m = new HashMap<String,String[]>();
         m.put("domain.con", new String[] {"mx0.domain.con", "mx1.domain.con"});
-        DummyResolverProxy drp = new DummyResolverProxy(m);
+        DummyResolver drp = new DummyResolver(m);
 
         SendState ss = new SendState(drp, Collections.singletonList("u@domain.con"));
         MXData mxd = ss.nextMXData();

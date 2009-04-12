@@ -11,7 +11,7 @@ class SendState
     private Map<String, List<String>> mxToRecipients = new HashMap<String, List<String>>();
     private Map<String, SendResult> results = new HashMap<String, SendResult>();
 
-    public SendState(ResolverProxy resolverProxy, List recipients)
+    public SendState(Resolver resolverProxy, List recipients)
     {
         for (Object recipient : recipients) {
             String s = (String) recipient;

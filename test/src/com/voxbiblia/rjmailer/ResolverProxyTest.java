@@ -9,15 +9,10 @@ public class ResolverProxyTest
     extends TestBase
 {
 
-    public void testHasJresolver()
-    {
-        assertTrue(ResolverProxyImpl.hasJresolver());
-    }
-
     public void testResolveMX()
     {
         // we use opendns.com servers, they can handle some extra requests.
-        ResolverProxyImpl rp = new ResolverProxyImpl("208.67.222.222");
+        ResolverImpl rp = new ResolverImpl("208.67.222.222", 1);
         List l = rp.resolveMX("mxtest.voxbiblia.com");
         assertEquals(2, l.size());
         assertEquals("adam.voxbiblia.com", l.get(0));
@@ -27,8 +22,13 @@ public class ResolverProxyTest
     public void testResolveDomainExistsNoMX()
     {
         // we use opendns.com servers, they can handle some extra requests.
-        ResolverProxyImpl rp = new ResolverProxyImpl("208.67.222.222");
-        List l = rp.resolveMX("www.voxbiblia.com");
-        assertFalse(l.isEmpty());
+        ResolverImpl rp = new ResolverImpl("208.67.222.222", 1);
+        try {
+            List l = rp.resolveMX("www.voxbiblia.com");
+            fail("should have thrown RJMException");
+        } catch (RJMException e) {
+            assertEquals(e.getExactCause(), RJMException.ExactCause.DOMAIN_INVALID);
+        }
+
     }
 }

@@ -16,8 +16,11 @@ public class RJMSender
     private String smtpServer;
     private String nameServer;
 
-    private ResolverProxy resolverProxy;
+    private Resolver resolver;
     private boolean calledAfterPropertiesSet = false;
+
+    /** the number of minutes to cache resolver results */
+    private static final int RESOLVER_CACHE_TIMEOUT_MINS = 3;
 
     public RJMSender(String ehloHostname)
     {
@@ -45,7 +48,7 @@ public class RJMSender
         }
         List<String> tos = AddressUtil.getToAddresses(message);
 
-        if (resolverProxy != null) {
+        if (resolver != null) {
             return resolveAndSend(message, tos);
         }
         String result = conversationHandler.sendMail(message, tos, smtpServer);
@@ -59,8 +62,8 @@ public class RJMSender
     private void afterPropertiesSet()
     {
         calledAfterPropertiesSet = true;
-        if (resolverProxy != null) {
-            // this means that setResolverProxy was called and the caller knows
+        if (resolver != null) {
+            // this means that setResolver was called and the caller knows
             // what she is doing
             return;
         }
@@ -71,18 +74,13 @@ public class RJMSender
                     "smtpServer must be set");
         }
         if (nameServer != null) {
-            if (!ResolverProxyImpl.hasJresolver()) {
-                throw new Error("You don't have the jresolver classes in " +
-                        "your classpath, download and install or use the " +
-                        "smtpServer property instead of nameServer");
-            }
-            resolverProxy = new ResolverProxyImpl(nameServer);
+            resolver = new ResolverImpl(nameServer, RESOLVER_CACHE_TIMEOUT_MINS);
         }
     }
 
     private Map<String, SendResult> resolveAndSend(RJMMessage message, List tos)
     {
-        SendState ss = new SendState(resolverProxy, tos);
+        SendState ss = new SendState(resolver, tos);
         
         MXData d = ss.nextMXData();
         if (d == null) {
@@ -110,7 +108,7 @@ public class RJMSender
 
         for (String to : tos) {
             String domain = AddressUtil.getDomain(to);
-            String mx = resolverProxy.resolveMX(domain).get(0);
+            String mx = resolver.resolveMX(domain).get(0);
             List<String> l = m.get(mx);
             if (l == null) {
                 l = new ArrayList<String>();
@@ -132,8 +130,8 @@ public class RJMSender
     }
 
     // this method is for testing purposes
-    void setResolverProxy(ResolverProxy resolverProxy)
+    void setResolver(Resolver resolver)
     {
-        this.resolverProxy = resolverProxy;
+        this.resolver = resolver;
     }
 }

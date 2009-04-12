@@ -7,12 +7,12 @@ import java.util.Map;
 /**
  * For testing the ResolverProxy.
  */
-public class DummyResolverProxy
-    implements ResolverProxy
+public class DummyResolver
+    implements Resolver
 {
     private Map responses;
 
-    public DummyResolverProxy(Map responses)
+    public DummyResolver(Map responses)
     {
         this.responses = responses; 
     }
