@@ -4,18 +4,18 @@ This is a small library that is used to send SMTP emails. It connects to an
 SMTP server, formats and sends email messages. It does roughly the same thing
 as the smtp part of the javamail package, but using has several advantages.
 
-Features:
+External dependencies
 
-- Lightweight. The binary jar is less than 19k big at the moment, and the
-external dependencies are kept at a minimum.
+This library has a few external dependencies. All such dependencies are
+distributed as jars in the lib directory of the main distribution.
 
-- Integrates well with Spring Framework. If you use interfaces in the mail
-package of Spring Framework you can replace your current email sending solution
-with rjmailer right away. The rjmailer Spring integration code is optional,
-however and can be safely ignored.
+Logging
 
-- Rigorously unit tested. The package has been developed using a test driven
-approach.
+Since the rjmailer library is designed to be integrated in many different
+environments I have choosen to output logging using the lightweight logging
+facade slf4j. slf4j is compatible with most logging frameworks such as log4j,
+java.util.logging from jdk1.4 and others. For more information about configuring
+slf4j please see http://slf4j.org
 
 Usage instructions:
 
