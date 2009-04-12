@@ -12,7 +12,7 @@ import java.util.Properties;
  * A ConversationHandler instance knows how to carry out an SMTP conversation
  * with a remote host.
  *
- * @author Noa Resare (noa@resare.com) 
+ * @author Noa Resare (noa@voxbiblia.com)
  */
 class ConversationHandler
 {

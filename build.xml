@@ -68,6 +68,7 @@
         <javadoc sourcepath="src" destdir="javadoc"
             packagenames="com.voxbiblia.rjmailer"
             classpathref="classpath"
+            overview="src/package.html"
             windowtitle="${ant.project.name} javadoc">
             <link href="http://java.sun.com/javase/6/docs/api/"/>
         </javadoc>

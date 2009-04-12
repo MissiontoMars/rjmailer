@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Sends email.
+ * RJMSender is the main entry point to the rjmailer library.
  *
- * @author Noa Resare (noa@resare.com)
+ * @author Noa Resare (noa@voxbiblia.com)
  */
 public class RJMSender
 {

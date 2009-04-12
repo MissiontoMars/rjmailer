@@ -11,7 +11,7 @@ import java.util.Random;
 /**
  * Generates Message-ID and Date fields.
  *
- * @author Noa Resare (noa@resare.com)
+ * @author Noa Resare (noa@voxbiblia.com)
  */
 class FieldGenerator
 {

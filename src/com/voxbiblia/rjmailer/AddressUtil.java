@@ -9,7 +9,7 @@ import java.util.List;
  * A small utility class that with convinience methods for handling RFC2822
  * addresses.
  *
- * @author Noa Resare (noa@resare.com)
+ * @author Noa Resare (noa@voxbiblia.com)
  */
 class AddressUtil
 {
