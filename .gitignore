@@ -3,3 +3,4 @@ classes
 dist
 javadoc
 lib/*.jar
+build-deps/*.jar

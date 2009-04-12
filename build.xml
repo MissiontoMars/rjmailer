@@ -3,20 +3,26 @@
     <property file="src/com/voxbiblia/rjmailer/version.properties" />
     <property name="deps-root" value="../support"/>
     <property name="slf-version" value="1.5.6"/>
+    <property name="spring-version" value="2.5.6"/>
 
-    <path id="class.path">
+
+    <path id="classpath">
         <fileset dir="lib">
             <include name="slf4j-api-1.5.6.jar"/>
             <include name="jresolver-0.2.1.jar"/>
+        </fileset>
+        <fileset dir="build-deps">
+            <include name="spring-core-${spring-version}.jar"/>
+            <include name="spring-context-support-${spring-version}.jar"/>
         </fileset>
     </path>
 
     <target name="compile" >
         <mkdir dir="classes/production/${ant.project.name}"/>
         <javac destdir="classes/production/${ant.project.name}"
-            classpathref="class.path"  encoding="UTF-8"
+            classpathref="classpath"  encoding="UTF-8"
             target="1.5" source="1.5" debug="yes"
-                srcdir="src" excludes="com/voxbiblia/rjmailer/spring/**">
+               srcdir="src">
         </javac>
     </target>
 
@@ -62,7 +68,7 @@
     <target name="javadoc">
         <javadoc sourcepath="src" destdir="javadoc"
             packagenames="com.voxbiblia.rjmailer"
-            classpathref="class.path"
+            classpathref="classpath"
             windowtitle="${ant.project.name} javadoc">
             <link href="http://java.sun.com/javase/6/docs/api/"/>
         </javadoc>
@@ -81,12 +87,18 @@
 
     <target name="setup-deps">
         <delete dir="lib" includes="*.jar"/>
+        <delete dir="build-deps" includes="*.jar"/>
         <copy todir="lib"
               file="${deps-root}/slf4j-${slf-version}/slf4j-api-${slf-version}.jar"/>
         <copy todir="lib"
               file="${deps-root}/slf4j-${slf-version}/slf4j-jdk14-${slf-version}.jar"/>
         <copy todir="lib"
               file="${deps-root}/jresolver/jresolver-0.2.1.jar"/>
+        <copy tofile="build-deps/spring-core-${spring-version}.jar"
+              file="${deps-root}/spring-framework-${spring-version}/dist/modules/spring-core.jar"/>
+        <copy tofile="build-deps/spring-context-support-${spring-version}.jar"
+              file="${deps-root}/spring-framework-${spring-version}/dist/modules/spring-context-support.jar"/>
+
     </target>
 
 </project>
