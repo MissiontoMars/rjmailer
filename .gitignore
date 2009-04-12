@@ -1,1 +1,5 @@
 rjmailer.iws
+classes
+dist
+javadoc
+lib/*.jar
