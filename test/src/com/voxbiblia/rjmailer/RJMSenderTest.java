@@ -1,6 +1,5 @@
 package com.voxbiblia.rjmailer;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,10 +13,10 @@ public class RJMSenderTest
     public void testMakeMXMap()
     {
         RJMSender s = new RJMSender("ehloName");
-        Map<String,String> data = new HashMap<String,String>();
-        data.put("a.con", "mx.a.con");
-        data.put("b.con", "mx.b.con");
-        s.setResolver(new DummyResolver(data));
+        DummyResolver dr = new DummyResolver();
+        dr.addData("a.con", "mx.a.con");
+        dr.addData("b.con", "mx.b.con");
+        s.setResolver(dr);
         Map<String, List<String>> m = s.makeMXMap(new String[] {"meep@a.con", "meep@b.con"});
 
         assertEquals(2, m.size());
@@ -44,9 +43,9 @@ public class RJMSenderTest
     public void testMakeMXMapSingle()
     {
         RJMSender s = new RJMSender("ehloName");
-        Map<String,String> data = new HashMap<String,String>();
-        data.put("a.con", "mx.a.con");
-        s.setResolver(new DummyResolver(data));
+        DummyResolver dr = new DummyResolver();
+        dr.addData("a.con", "mx.a.con");
+        s.setResolver(dr);
         Map<String, List<String>> m = s.makeMXMap(new String[] {"meep@a.con"});
 
         assertEquals(1, m.size());

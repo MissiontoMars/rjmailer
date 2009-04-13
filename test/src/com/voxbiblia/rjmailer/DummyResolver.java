@@ -1,8 +1,6 @@
 package com.voxbiblia.rjmailer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * For testing the ResolverProxy.
@@ -10,26 +8,17 @@ import java.util.Map;
 public class DummyResolver
     implements Resolver
 {
-    private Map responses;
+    private Map<String,List<String>> responses =
+            new HashMap<String,List<String>>();
 
-    public DummyResolver(Map responses)
+
+    public void addData(String name, String... mxValues)
     {
-        this.responses = responses; 
+        responses.put(name, Arrays.asList(mxValues));
     }
 
-    public List resolveMX(String name)
+    public List<String> resolveMX(String name)
     {
-        Object o = responses.get(name);
-        List l = new ArrayList();
-        if (o instanceof String) {
-            l.add(responses.get(name));
-            return l;
-        } else {
-            String[] sa = (String[])o;
-            for (int i = 0; i < sa.length; i++ ) {
-                l.add(sa[i]);
-            }
-        }
-        return l;
+        return responses.get(name);
     }
 }
