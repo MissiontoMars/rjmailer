@@ -25,6 +25,7 @@ public class RJMSender
 
     /** the number of minutes to cache resolver results */
     private static final int RESOLVER_CACHE_TIMEOUT_MINS = 3;
+    private SocketFactory socketFactory;
 
     /**
      * Constructs a new RJMSender instance, that uses the specified ehloHostname
@@ -101,6 +102,9 @@ public class RJMSender
             return;
         }
 
+        if (socketFactory == null) {
+            socketFactory = new TCPSocketFactory();
+        }
 
         if (smtpServer == null && nameServer == null) {
             throw new Error("Either one of the properties nameServer or " +
@@ -160,6 +164,12 @@ public class RJMSender
     public void setNameServer(String nameServer)
     {
         this.nameServer = nameServer;
+    }
+
+
+    void setSocketFactory(SocketFactory socketFactory)
+    {
+        this.socketFactory = socketFactory;
     }
 
     // this method is for testing purposes

@@ -1,5 +1,8 @@
 package com.voxbiblia.rjmailer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,10 +19,13 @@ import java.util.Properties;
  */
 class ConversationHandler
 {
+    private static final Logger log = LoggerFactory.getLogger(ConversationHandler.class);
+
     private String ehloHostname;
     private static final byte[] EOL = {(byte)'\r', (byte)'\n'};
     // default access so that test case code can access it
     FieldGenerator fieldGenerator;
+    SocketFactory socketFactory;
 
     /**
      * Constructs a ConverstaionHandler that can carry out SMTP conversations
@@ -45,55 +51,64 @@ class ConversationHandler
      */
     public String sendMail(RJMMessage message, List<String> to, String server)
     {
+        Socket s0 = null;
         try {
-            Socket s = new Socket(server, 25);
-            return send(message, to, s);
+            s0 = socketFactory.createSocket(server, 25);
+
+            if (message == null) {
+                throw new RJMInputException("Can not send null message");
+            }
+            if (to == null || to.isEmpty()) {
+                throw new RJMInputException("Not enough addresses to send email " +
+                        "to, please supply at least one");
+            }
+
+            byte[] inBuf = new byte[1000];
+            InputStream is = s0.getInputStream();
+            OutputStream os = s0.getOutputStream();
+            checkStatus(is, inBuf, 220);
+            sendCommand("EHLO " + ehloHostname, os);
+            checkStatus(is, inBuf, 250);
+
+            String from = message.getFrom();
+            if (from == null || from.length() < 1) {
+                throw new RJMInputException("Can not send email with null sender " +
+                        "address");
+            }
+            sendCommand("MAIL FROM: <" + AddressUtil.getAddress(from) + ">", os);
+            checkStatus(is, inBuf, 250);
+
+            for (String s : to) {
+                sendCommand("RCPT TO: <" + s +">", os);
+                checkStatus(is, inBuf, 250);
+            }
+            sendCommand("DATA", os);
+            checkStatus(is, inBuf, 354);
+            writeHeaders(message, os);
+            String charset = TextEncoder.getCharset(message.getText());
+            String data = TextEncoder.canonicalize(message.getText());
+            os.write(toBytes("\r\n" + TextEncoder.encodeQP(data, charset)
+                    + "\r\n.\r\n"));
+
+            return checkStatus(is, inBuf, 250).substring("250 ".length());
         } catch (IOException e) {
             throw new RJMException(RJMException.ExactCause.SMTP_CONNECT,
                     "Connection to the email server failed")
                     .setServer(server);
+        } finally {
+            safeClose(s0, server);
         }
     }
 
-    String send(RJMMessage msg, List<String> to, Socket socket)
-            throws IOException
+
+    private void safeClose(Socket socket, String server)
     {
-        if (msg == null) {
-            throw new RJMInputException("Can not send null message");
+        try {
+            socket.close();
+        } catch (IOException e) {
+            log.warn("Closing the of the socket to server '{}' failed " +
+                    "with an IOException. Ignoring", server);
         }
-        if (to == null || to.isEmpty()) {
-            throw new RJMInputException("Not enough addresses to send email " +
-                    "to, please supply at least one");
-        }
-        
-        byte[] inBuf = new byte[1000];
-        InputStream is = socket.getInputStream();
-        OutputStream os = socket.getOutputStream();
-        checkStatus(is, inBuf, 220);
-        sendCommand("EHLO " + ehloHostname, os);
-        checkStatus(is, inBuf, 250);
-
-        String from = msg.getFrom();
-        if (from == null || from.length() < 1) {
-            throw new RJMInputException("Can not send email with null sender " +
-                    "address");
-        }
-        sendCommand("MAIL FROM: <" + AddressUtil.getAddress(from) + ">", os);
-        checkStatus(is, inBuf, 250);
-
-        for (String s : to) {
-            sendCommand("RCPT TO: <" + s +">", os);
-            checkStatus(is, inBuf, 250);
-        }
-        sendCommand("DATA", os);
-        checkStatus(is, inBuf, 354);
-        writeHeaders(msg, os);
-        String charset = TextEncoder.getCharset(msg.getText());
-        String data = TextEncoder.canonicalize(msg.getText());
-        os.write(toBytes("\r\n" + TextEncoder.encodeQP(data, charset)  
-                + "\r\n.\r\n"));
-
-        return checkStatus(is, inBuf, 250).substring("250 ".length());
     }
 
     private void writeHeaders(RJMMessage msg, OutputStream os)
@@ -212,5 +227,10 @@ class ConversationHandler
 
     static int getStatus(String s) {
         return Integer.parseInt(s.substring(0,3));
+    }
+
+    void setSocketFactory(SocketFactory socketFactory)
+    {
+        this.socketFactory = socketFactory;
     }
 }
