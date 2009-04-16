@@ -20,7 +20,9 @@ public class ConversationHandlerTest
         m.put("@@MSG_ID@@", ch.fieldGenerator.getNextMessgeId());
         m.put("@@DATE@@", ch.fieldGenerator.getNextDate());
         m.put("@@VERSION@@", ConversationHandler.getVersion());
-        DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
+
+
+        DummySMTPSocket s =  new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n" +
                     "250-VRFY\r\n250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
@@ -29,14 +31,16 @@ public class ConversationHandlerTest
                 "IN_FILE",
                 "250 Ok: queued as 62B14FFD8"
         }, new File("test/data/test1.txt"), m);
+        DummySocketFactory sf = new DummySocketFactory(s);
+        ch.setSocketFactory(sf);
 
         RJMMessage rmm = new RJMMessage();
         rmm.setFrom("sender@sender.com");
         rmm.setText("email data");
         rmm.setSubject("rågrut");
         rmm.setTo("reciever@reciever.com");
-        assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm,
-                Collections.singletonList("reciever@reciever.com"), s));
+        assertEquals("Ok: queued as 62B14FFD8", ch.sendMail(rmm,
+                Collections.singletonList("reciever@reciever.com"), "host"));
         assertTrue("more data to read from the server", s.hasFinished());
     }
 
@@ -53,14 +57,16 @@ public class ConversationHandlerTest
                 "IN_FILE",
                 "250 Ok: queued as 62B14FFD8"
         }, new File("test/data/test1.txt"));
+        DummySocketFactory dsf = new DummySocketFactory(s);
+        ch.setSocketFactory(dsf);
 
         RJMMessage rmm = new RJMMessage();
         rmm.setFrom("sender@sender.com");
         rmm.setText("email dataa");
         rmm.setSubject("rågrut");
         try {
-            assertEquals("Ok: queued as 62B14FFD8", ch.send(rmm,
-                    Collections.singletonList("reciever@reciever.com"), s));
+            assertEquals("Ok: queued as 62B14FFD8", ch.sendMail(rmm,
+                    Collections.singletonList("reciever@reciever.com"), "host"));
             fail("should have thrown IAE");
         } catch (IllegalArgumentException e) {
             // ignore
@@ -85,6 +91,8 @@ public class ConversationHandlerTest
                 "IN_FILE",
                 "250 Ok: queued as 62B15FFD8"
         }, new File("test/data/test2.txt"), m);
+        DummySocketFactory dsf = new DummySocketFactory(s);
+        ch.setSocketFactory(dsf);
         RJMMessage rmm = new RJMMessage();
         rmm.setFrom("sender@sender.com");
         rmm.setTo("\"The Receiver\" <the@receiver.co>");
@@ -110,8 +118,8 @@ public class ConversationHandlerTest
         rmm.setSubject("Harry Bellafånte har långa ord men inte så långa " +
                 "att det räcker.");
 
-        assertEquals("Ok: queued as 62B15FFD8", ch.send(rmm,
-                Collections.singletonList("reciever@reciever.com"), s));
+        assertEquals("Ok: queued as 62B15FFD8", ch.sendMail(rmm,
+                Collections.singletonList("reciever@reciever.com"), "ignored"));
         assertTrue("more data to read from the server", s.hasFinished());
     }
 
