@@ -24,8 +24,8 @@ class ConversationHandler
     private String ehloHostname;
     private static final byte[] EOL = {(byte)'\r', (byte)'\n'};
     // default access so that test case code can access it
-    FieldGenerator fieldGenerator;
-    SocketFactory socketFactory;
+    private FieldGenerator fieldGenerator;
+    private SocketFactory socketFactory;
 
     /**
      * Constructs a ConverstaionHandler that can carry out SMTP conversations
@@ -227,6 +227,12 @@ class ConversationHandler
 
     static int getStatus(String s) {
         return Integer.parseInt(s.substring(0,3));
+    }
+
+    // for testing purposes
+    FieldGenerator getFieldGenerator()
+    {
+        return fieldGenerator;
     }
 
     void setSocketFactory(SocketFactory socketFactory)

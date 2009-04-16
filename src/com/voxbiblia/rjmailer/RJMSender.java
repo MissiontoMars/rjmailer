@@ -166,6 +166,12 @@ public class RJMSender
         this.nameServer = nameServer;
     }
 
+    // used for testing purposes
+    ConversationHandler getConversationHandler()
+    {
+        return conversationHandler;
+    }
+
 
     void setSocketFactory(SocketFactory socketFactory)
     {
