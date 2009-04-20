@@ -14,7 +14,7 @@ public class MultiConnectTest
     {
         RJMSender sender = new RJMSender("test.ehlo.host");
         DummyResolver dr = new DummyResolver();
-        dr.addData("example.con", "mx1.example.con", "mx2.example.con");
+        dr.addData("reciever.com", "mx1.example.con", "mx2.example.con");
         sender.setResolver(dr);
         DummySocketFactory dsf = new DummySocketFactory();
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",

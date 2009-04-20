@@ -19,6 +19,11 @@ public class DummyResolver
 
     public List<String> resolveMX(String name)
     {
-        return responses.get(name);
+        List<String> l =  responses.get(name);
+        if (l == null) {
+            throw new RJMException(RJMException.ExactCause.DOMAIN_NOT_FOUND,
+                    "No data domain: "+  name).setDomain(name);
+        }
+        return l;
     }
 }

@@ -11,11 +11,12 @@ class SendState
     private Map<String, List<String>> mxToRecipients = new HashMap<String, List<String>>();
     private Map<String, SendResult> results = new HashMap<String, SendResult>();
 
-    public SendState(Resolver resolverProxy, List recipients)
+    public SendState(Resolver resolver, List recipients)
     {
         for (Object recipient : recipients) {
             String s = (String) recipient;
-            List<String> mxes = resolverProxy.resolveMX(AddressUtil.getDomain(s));
+            List<String> mxes = resolver.resolveMX(AddressUtil.getDomain(s));
+
             this.recipients.put(s, new RecipientState(mxes));
         }
     }

@@ -7,6 +7,10 @@ public class RJMException
     extends RuntimeException
     implements SendResult
 {
+    public int getStatus()
+    {
+        return status;
+    }
 
     public enum ExactCause
     {
@@ -20,6 +24,7 @@ public class RJMException
     private String email;
     private String server;
     private String serverLine;
+    private int status;
 
     /**
 	 * Used to shut up eclipse build warnings
@@ -78,6 +83,12 @@ public class RJMException
     public RJMException setServerLine(String serverLine)
     {
         this.serverLine = serverLine;
+        return this;
+    }
+
+    public RJMException setStatus(int status)
+    {
+        this.status = status;
         return this;
     }
 }

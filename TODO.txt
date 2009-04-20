@@ -9,6 +9,7 @@ subclasses.
 TODO clean up existing and add missing javadocs
 TODO set a timeout for each smtp session
 
+TODO handle 251 message delivery status (address change)
 
 Exceptional stuff
 

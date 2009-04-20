@@ -16,7 +16,7 @@ public class DummySMTPSocket extends Socket
     // indicates which line we are at
     private int state = WRITING_TO_SERVER;
 
-    private List fromServer, toServer, innerTo;
+    private List<String> fromServer, toServer, innerTo;
     private String currentExpected;
     private ByteArrayOutputStream baos = new ByteArrayOutputStream();
     private Map substitutions;
@@ -30,9 +30,9 @@ public class DummySMTPSocket extends Socket
                            Map substitutions)
     {
         this.substitutions = substitutions;
-        fromServer = new ArrayList();
-        toServer = new ArrayList();
-        innerTo = new ArrayList();
+        fromServer = new ArrayList<String>();
+        toServer = new ArrayList<String>();
+        innerTo = new ArrayList<String>();
         int i = 0;
         while  (true) {
             if (i > conversation.length - 1) {
@@ -91,9 +91,12 @@ public class DummySMTPSocket extends Socket
                 s = pop(innerTo);
             }
         }
-        Iterator i = substitutions.keySet().iterator();
+        Iterator i = null;
+        if (substitutions != null) {
+            i = substitutions.keySet().iterator();
+        }
         if (s != null) {
-            while (i.hasNext()) {
+            while (i != null && i.hasNext()) {
                 String key = (String)i.next();
                 s = s.replaceFirst(key, (String)substitutions.get(key));
             }

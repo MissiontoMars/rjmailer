@@ -35,6 +35,9 @@ public class DummySocketFactory
         if (s != null) {
             return s;
         }
+        if (defaultSocket == null) {
+            throw new Error("No socket in store for hostname" + serverName);
+        }
         return defaultSocket;
     }
 }
