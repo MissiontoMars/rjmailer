@@ -3,9 +3,6 @@ TODO handle corner cases where headers containing addresses are really long
 part doesn't
 TODO add mime attachment creation functionality
 TODO clean up the execption throwing
-- analyze when exceptional stuff happens and create a few Exception
-subclasses.
-- 
 TODO clean up existing and add missing javadocs
 TODO set a timeout for each smtp session
 
