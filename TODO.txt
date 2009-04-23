@@ -8,6 +8,8 @@ TODO set a timeout for each smtp session
 
 TODO handle 251 message delivery status (address change)
 
+TODO move hard failures to new api in SendState
+
 Exceptional stuff
 
 - resolver timeout

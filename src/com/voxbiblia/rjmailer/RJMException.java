@@ -1,5 +1,7 @@
 package com.voxbiblia.rjmailer;
 
+import java.util.List;
+
 /**
  * The root exception of the RJMailer exception hierarchy.
  */
@@ -7,17 +9,6 @@ public class RJMException
     extends RuntimeException
     implements SendResult
 {
-    public int getStatus()
-    {
-        return status;
-    }
-
-    public enum ExactCause
-    {
-        DOMAIN_NOT_FOUND, DOMAIN_INVALID, DOMAIN_FAILURE,
-        SMTP_CONNECT, SMTP_UNEXPECTED_STATUS,
-        INVALID_INPUT, ALL_SERVERS_FAILED
-    }
 
     private final ExactCause exactCause;
     private String domain;
@@ -25,6 +16,8 @@ public class RJMException
     private String server;
     private String serverLine;
     private int status;
+    private List<RJMException> softFailures;
+
 
     /**
 	 * Used to shut up eclipse build warnings
@@ -35,6 +28,22 @@ public class RJMException
     {
         super(message);
         this.exactCause = exactCause;
+    }
+
+    public int getStatus()
+    {
+        return status;
+    }
+
+    public List<RJMException> getSoftFailures()
+    {
+        return softFailures;
+    }
+
+    public RJMException setSoftFailures(List<RJMException> setSoftFailures)
+    {
+        this.softFailures = setSoftFailures;
+        return this;
     }
 
     public ExactCause getExactCause()
@@ -91,4 +100,5 @@ public class RJMException
         this.status = status;
         return this;
     }
+
 }

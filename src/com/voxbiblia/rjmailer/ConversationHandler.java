@@ -65,7 +65,7 @@ class ConversationHandler
 
             return executeConversation(message, s0, to);
     } catch (IOException e) {
-            throw new RJMException(RJMException.ExactCause.SMTP_CONNECT,
+            throw new RJMException(ExactCause.SMTP_CONNECT,
                     "Connection to the email server failed")
                     .setServer(server);
         } finally {
@@ -196,7 +196,7 @@ class ConversationHandler
         String line = getServerLine(is, inBuf);
         int status = getStatus(line);
         if (status != expected) {
-            throw new RJMException(RJMException.ExactCause.SMTP_UNEXPECTED_STATUS,
+            throw new RJMException(ExactCause.SMTP_UNEXPECTED_STATUS,
                     "Unexpected status value from the server")
                     .setServerLine(line).setStatus(status);
         }

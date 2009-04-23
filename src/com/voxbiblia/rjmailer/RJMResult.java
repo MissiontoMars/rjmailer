@@ -1,11 +1,14 @@
 package com.voxbiblia.rjmailer;
 
+import java.util.List;
+
 /**
  * Instances of this class contains information about the sending of a message.
  */
 public class RJMResult
     implements SendResult
 {
+
     public enum Status {
         SENT, DEFERRED
     }
@@ -13,6 +16,7 @@ public class RJMResult
     private String recievingServer;
     private String result;
     private Status status;
+    private List<RJMException> softFailures;
 
     public RJMResult(String recievingServer, String result, Status status)
     {
@@ -44,5 +48,15 @@ public class RJMResult
     public Status getStatus()
     {
         return status;
+    }
+
+    public List<RJMException> getSoftFailures()
+    {
+        return softFailures;
+    }
+
+    public void setSoftFailures(List<RJMException> softFailures)
+    {
+        this.softFailures = softFailures;
     }
 }

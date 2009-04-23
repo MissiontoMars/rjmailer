@@ -38,7 +38,7 @@ class ResolverImpl
      */
     public List<String> resolveMX(String name)
     {
-        List<String> l = null;
+        List<String> l;
         synchronized (this) {
             purgeOldEntries();
             l = cacheMap.get(name);
@@ -85,7 +85,7 @@ class ResolverImpl
             List<MXRecord> l = (List<MXRecord>)resolver.resolve(query);
             Collections.sort(l);
             if (l.isEmpty()) {
-                throw new RJMException(RJMException.ExactCause.DOMAIN_INVALID,
+                throw new RJMException(ExactCause.DOMAIN_INVALID,
                         "The domain is not set up to receive email, no MX records")
                         .setDomain(name);
             }
@@ -97,12 +97,12 @@ class ResolverImpl
             }
             return result;
         } catch (ServFailException e) {
-            throw new RJMException(RJMException.ExactCause.DOMAIN_FAILURE,
+            throw new RJMException(ExactCause.DOMAIN_FAILURE,
                     "The name server failed to resolve the domain. " +
                             "This failure can be temporary or permanent.")
                     .setDomain(name);
         } catch (TimeoutException e) {
-            throw new RJMException(RJMException.ExactCause.DOMAIN_FAILURE,
+            throw new RJMException(ExactCause.DOMAIN_FAILURE,
                     "The name resolution took too long to perform")
                     .setDomain(name);
         }

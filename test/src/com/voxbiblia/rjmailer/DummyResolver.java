@@ -21,7 +21,7 @@ public class DummyResolver
     {
         List<String> l =  responses.get(name);
         if (l == null) {
-            throw new RJMException(RJMException.ExactCause.DOMAIN_NOT_FOUND,
+            throw new RJMException(ExactCause.DOMAIN_NOT_FOUND,
                     "No data domain: "+  name).setDomain(name);
         }
         return l;

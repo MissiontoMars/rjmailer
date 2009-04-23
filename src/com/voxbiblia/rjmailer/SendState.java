@@ -11,6 +11,7 @@ class SendState
     private Map<String, List<String>> mxToRecipients = new HashMap<String, List<String>>();
     private Map<String, SendResult> results = new HashMap<String, SendResult>();
 
+
     public SendState(Resolver resolver, List recipients)
     {
         for (Object recipient : recipients) {
@@ -52,7 +53,7 @@ class SendState
         recipients.remove(email);
 
         results.put(email, new RJMException(
-                RJMException.ExactCause.SMTP_UNEXPECTED_STATUS,
+                ExactCause.SMTP_UNEXPECTED_STATUS,
                 "The server returned an error indicating an unrecoverable " +
                         "error").setServer(mx).setEmail(email)
                 .setServerLine(failure));
@@ -69,22 +70,29 @@ class SendState
         return results;
     }
 
-    public void softFailure(String email, String mx, String failure)
+
+    public void softFailure(String to, RJMException e)
     {
-        RecipientState rs = recipients.get(email);
-        if (rs.softFailure(failure)) {
-            results.put(email,
-                    new RJMException(RJMException.ExactCause.ALL_SERVERS_FAILED,
+        RecipientState rs = recipients.get(to);
+
+        if (rs.softFailure(e)) {
+            results.put(to,
+                    new RJMException(ExactCause.ALL_SERVERS_FAILED,
                     "No more mail servers to try")
-                    .setServer(mx).setEmail(email));
-            recipients.remove(email);
+                    .setEmail(e.getEmail()).setSoftFailures(rs.getSoftFailures()));
+            recipients.remove(to);
         }
     }
 
     public void success(String email, String mx, String result)
     {
-        recipients.remove(email);
-        results.put(email, new RJMResult(mx, result, RJMResult.Status.SENT));
+        RecipientState rs = recipients.remove(email);
+        RJMResult r = new RJMResult(mx, result, RJMResult.Status.SENT);
+        List<RJMException> softFailures = rs.getSoftFailures();
+        if (softFailures != null) {
+            r.setSoftFailures(softFailures);
+        }
+        results.put(email, r);
     }
 
 
@@ -92,7 +100,7 @@ class SendState
     {
         private LinkedList<String> mailExchangers;
 
-        private List<String> softFailures = new ArrayList<String>();
+        private List<RJMException> softFailures = null;
 
         public RecipientState(List<String> mailExchangers)
         {
@@ -108,13 +116,16 @@ class SendState
         }
 
         // returns true if there are no more mailExchangers to try
-        public boolean softFailure(String failureMessage)
+        public boolean softFailure(RJMException e)
         {
-            softFailures.add(failureMessage);
+            if (softFailures == null) {
+                softFailures = new ArrayList<RJMException>();
+            }
+            softFailures.add(e);
             return mailExchangers.isEmpty();
         }
 
-        public List<String> getSoftFailures()
+        public List<RJMException> getSoftFailures()
         {
             return softFailures;
         }

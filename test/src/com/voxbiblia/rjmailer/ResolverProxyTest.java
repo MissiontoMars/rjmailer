@@ -24,10 +24,10 @@ public class ResolverProxyTest
         // we use opendns.com servers, they can handle some extra requests.
         ResolverImpl rp = new ResolverImpl("208.67.222.222", 1);
         try {
-            List l = rp.resolveMX("www.voxbiblia.com");
+            rp.resolveMX("www.voxbiblia.com");
             fail("should have thrown RJMException");
         } catch (RJMException e) {
-            assertEquals(e.getExactCause(), RJMException.ExactCause.DOMAIN_INVALID);
+            assertEquals(e.getExactCause(), ExactCause.DOMAIN_INVALID);
         }
 
     }

@@ -13,7 +13,7 @@ public class RJMInputException
 	
     public RJMInputException(String msg)
     {
-        super(RJMException.ExactCause.INVALID_INPUT, msg);
+        super(ExactCause.INVALID_INPUT, msg);
     }
 
 }
