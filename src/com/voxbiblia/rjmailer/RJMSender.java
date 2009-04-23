@@ -105,6 +105,7 @@ public class RJMSender
         if (socketFactory == null) {
             socketFactory = new TCPSocketFactory();
         }
+        conversationHandler.setSocketFactory(socketFactory);
 
         if (smtpServer == null && nameServer == null) {
             throw new Error("Either one of the properties nameServer or " +
@@ -181,7 +182,7 @@ public class RJMSender
 
     void setSocketFactory(SocketFactory socketFactory)
     {
-        this.socketFactory = socketFactory;
+        conversationHandler.setSocketFactory(socketFactory);
     }
 
     // this method is for testing purposes

@@ -6,6 +6,9 @@ TODO clean up the execption throwing
 TODO clean up existing and add missing javadocs
 TODO set a timeout for each smtp session
 
+TODO to addresses are a misnormer, should be named recipients instead
+(since bcc entries are expanded into 'to')
+
 TODO handle 251 message delivery status (address change)
 
 TODO move hard failures to new api in SendState
