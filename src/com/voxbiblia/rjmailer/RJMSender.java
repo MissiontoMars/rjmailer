@@ -156,6 +156,12 @@ public class RJMSender
         return m;
     }
 
+    /**
+     * Sets an relay SMTP server used for all outgoing messages, or as a
+     * fallback if synchronized sending fails.
+     *
+     * @param smtpServer the hostname or ip address of the SMTP server
+     */
     public void setSmtpServer(String smtpServer)
     {
         this.smtpServer = smtpServer;
