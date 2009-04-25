@@ -4,3 +4,5 @@ dist
 javadoc
 lib/*.jar
 build-deps/*.jar
+actual.txt
+expected.txt
