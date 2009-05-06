@@ -86,8 +86,15 @@
     </target>
 
     <target name="setup-deps">
-        <delete dir="lib" includes="*.jar"/>
-        <delete dir="build-deps" includes="*.jar"/>
+        <delete>
+	    <fileset dir="lib">
+                <include name="*.jar"/>
+            </fileset>
+	    <fileset dir="build-deps">
+                <include name="*.jar"/>
+            </fileset>
+        </delete>
+       
         <copy todir="lib"
               file="${deps-root}/slf4j-${slf-version}/slf4j-api-${slf-version}.jar"/>
         <copy todir="lib"
