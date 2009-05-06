@@ -23,7 +23,6 @@ class ConversationHandler
 
     private String ehloHostname;
     private static final byte[] EOL = {(byte)'\r', (byte)'\n'};
-    // default access so that test case code can access it
     private FieldGenerator fieldGenerator;
     private SocketFactory socketFactory;
 
@@ -44,12 +43,12 @@ class ConversationHandler
     /**
      * Sends an email message to a specified server using the SMTP protocol.
      *
-     * @param message The message to send
-     * @param server the name of the server to connect to
-     * @return the tracking information recived from the server upon accept
+     * @return the tracking information recived from the server upon accept  @param message The message to send
      * @param to array of strings specifying recieving email addresses
+     * @param server the name of the server to connect to
+     * @param ss
      */
-    public String sendMail(RJMMessage message, List<String> to, String server)
+    public void sendMail(RJMMessage message, List<String> to, String server, SendState ss)
     {
         Socket s0 = null;
         try {
@@ -62,8 +61,7 @@ class ConversationHandler
                 throw new RJMInputException("Not enough addresses to send email " +
                         "to, please supply at least one");
             }
-
-            return executeConversation(message, s0, to);
+            executeConversation(message, s0, to, ss);
     } catch (IOException e) {
             throw new RJMException(ExactCause.SMTP_CONNECT,
                     "Connection to the email server failed")
@@ -74,7 +72,8 @@ class ConversationHandler
     }
 
 
-    private String executeConversation(RJMMessage message, Socket s0, List<String> to)
+    private void executeConversation(RJMMessage message, Socket s0,
+                                       List<String> to, SendState ss)
             throws IOException
     {
 

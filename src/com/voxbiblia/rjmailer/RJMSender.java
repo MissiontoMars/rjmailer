@@ -84,13 +84,9 @@ public class RJMSender
         if (resolver != null) {
             return resolveAndSend(message, tos);
         }
-        String result = conversationHandler.sendMail(message, tos, smtpServer);
-        Map<String, SendResult> results = new HashMap<String, SendResult>();
-        for (String to : tos) {
-            results.put(to, new RJMResult(smtpServer, result,
-                    RJMResult.Status.SENT));
-        }
-        return results;
+        SendState ss = new SendState(smtpServer, tos);
+        conversationHandler.sendMail(message, tos, smtpServer, ss);
+        return ss.getResults();
     }
 
     private void afterPropertiesSet()
@@ -125,12 +121,14 @@ public class RJMSender
             throw new Error("Invalid state, no MXData");
         }
         while (d != null) {
-            List l = d.getRecipients();
-            String result = conversationHandler.sendMail(message, 
-                    d.getRecipients(), d.getServer());
+            conversationHandler.sendMail(message,
+                        d.getRecipients(), d.getServer(), ss);
+
+            /*
             for (int i = 0; i < tos.size(); i++) {
                 ss.success((String)l.get(i),d.getServer(), result);
             }
+            */
 
 
             d = ss.nextMXData();

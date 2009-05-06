@@ -40,7 +40,7 @@ public class ConversationHandlerTest
         rmm.setSubject("rågrut");
         rmm.setTo("reciever@reciever.com");
         assertEquals("Ok: queued as 62B14FFD8", ch.sendMail(rmm,
-                Collections.singletonList("reciever@reciever.com"), "host"));
+                Collections.singletonList("reciever@reciever.com"), "host", ss));
         assertTrue("more data to read from the server", s.hasFinished());
     }
 
@@ -66,7 +66,7 @@ public class ConversationHandlerTest
         rmm.setSubject("rågrut");
         try {
             assertEquals("Ok: queued as 62B14FFD8", ch.sendMail(rmm,
-                    Collections.singletonList("reciever@reciever.com"), "host"));
+                    Collections.singletonList("reciever@reciever.com"), "host", ss));
             fail("should have thrown IAE");
         } catch (IllegalArgumentException e) {
             // ignore
@@ -120,7 +120,7 @@ public class ConversationHandlerTest
                 "att det räcker.");
 
         assertEquals("Ok: queued as 62B15FFD8", ch.sendMail(rmm,
-                Collections.singletonList("reciever@reciever.com"), "ignored"));
+                Collections.singletonList("reciever@reciever.com"), "ignored", ss));
         assertTrue("more data to read from the server", s.hasFinished());
     }
 

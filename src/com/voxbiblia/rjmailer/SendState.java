@@ -12,7 +12,14 @@ class SendState
     private Map<String, SendResult> results = new HashMap<String, SendResult>();
 
 
-    public SendState(Resolver resolver, List recipients)
+    public SendState(String relayServer, List<String> recipients)
+    {
+        for (String to : recipients) {
+            this.recipients.put(to,new RecipientState((relayServer)));
+        }
+    }
+
+    public SendState(Resolver resolver, List<String> recipients)
     {
         for (Object recipient : recipients) {
             String s = (String) recipient;
@@ -101,6 +108,12 @@ class SendState
         private LinkedList<String> mailExchangers;
 
         private List<RJMException> softFailures = null;
+
+        public RecipientState(String mailExchanger)
+        {
+            this(Collections.singletonList(mailExchanger));
+        }
+
 
         public RecipientState(List<String> mailExchangers)
         {
