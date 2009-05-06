@@ -112,7 +112,7 @@ public class RJMSender
         }
     }
 
-    private Map<String, SendResult> resolveAndSend(RJMMessage message, List tos)
+    private Map<String, SendResult> resolveAndSend(RJMMessage message, List<String> tos)
     {
         SendState ss = new SendState(resolver, tos);
         

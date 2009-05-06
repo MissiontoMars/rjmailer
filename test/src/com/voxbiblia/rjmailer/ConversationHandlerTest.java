@@ -2,8 +2,8 @@ package com.voxbiblia.rjmailer;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,13 +34,19 @@ public class ConversationHandlerTest
         DummySocketFactory sf = new DummySocketFactory(s);
         ch.setSocketFactory(sf);
 
+
+
         RJMMessage rmm = new RJMMessage();
         rmm.setFrom("sender@sender.com");
         rmm.setText("email data");
         rmm.setSubject("rågrut");
         rmm.setTo("reciever@reciever.com");
-        assertEquals("Ok: queued as 62B14FFD8", ch.sendMail(rmm,
-                Collections.singletonList("reciever@reciever.com"), "host", ss));
+        List<String> to = AddressUtil.getToAddresses(rmm);
+        SendState ss = new SendState(new DummyResolver(), to);
+        ch.sendMail(rmm, to, "host", ss);
+        Map<String,SendResult> results = ss.getResults();
+        RJMResult r = (RJMResult)results.get(to.get(0));
+        assertEquals("Ok: queued as 62B14FFD8",r.getResult());
         assertTrue("more data to read from the server", s.hasFinished());
     }
 
@@ -64,9 +70,11 @@ public class ConversationHandlerTest
         rmm.setFrom("sender@sender.com");
         rmm.setText("email dataa");
         rmm.setSubject("rågrut");
+
+        List<String> to = AddressUtil.getToAddresses(rmm);
+
         try {
-            assertEquals("Ok: queued as 62B14FFD8", ch.sendMail(rmm,
-                    Collections.singletonList("reciever@reciever.com"), "host", ss));
+            ch.sendMail(rmm, to, "host", new SendState(new DummyResolver(), to));
             fail("should have thrown IAE");
         } catch (IllegalArgumentException e) {
             // ignore
@@ -119,8 +127,14 @@ public class ConversationHandlerTest
         rmm.setSubject("Harry Bellafånte har långa ord men inte så långa " +
                 "att det räcker.");
 
-        assertEquals("Ok: queued as 62B15FFD8", ch.sendMail(rmm,
-                Collections.singletonList("reciever@reciever.com"), "ignored", ss));
+
+        List<String> to = AddressUtil.getToAddresses(rmm);
+        SendState ss = new SendState(new DummyResolver(), to);
+        ch.sendMail(rmm, to, "ignored", ss); 
+
+        Map<String,SendResult> results = ss.getResults();
+        RJMResult r = (RJMResult)results.get(to.get(0));
+        assertEquals("Ok: queued as 62B14FFD8",r.getResult());
         assertTrue("more data to read from the server", s.hasFinished());
     }
 

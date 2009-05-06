@@ -72,7 +72,7 @@ class ConversationHandler
     }
 
 
-    private void executeConversation(RJMMessage message, Socket s0,
+    private String executeConversation(RJMMessage message, Socket s0,
                                        List<String> to, SendState ss)
             throws IOException
     {
@@ -105,7 +105,6 @@ class ConversationHandler
                 + "\r\n.\r\n"));
 
         return checkStatus(is, inBuf, 250).substring("250 ".length());
-
     }
 
 
