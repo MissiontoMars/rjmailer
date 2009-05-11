@@ -25,10 +25,10 @@ public class MultiConnectTest
         dsf.addSocket("mx1.example.con", s);
 
         Map<String,String> m = new HashMap<String,String>();
-        FieldGenerator fg = sender.getConversationHandler().getFieldGenerator();
+        FieldGenerator fg = sender.getFieldGenerator();
         m.put("@@MSG_ID@@", fg.getNextMessgeId());
         m.put("@@DATE@@", fg.getNextDate());
-        m.put("@@VERSION@@", ConversationHandler.getVersion());
+        m.put("@@VERSION@@", SMTPConversation.getVersion());
 
         s =  new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n" +

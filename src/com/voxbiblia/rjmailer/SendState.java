@@ -55,15 +55,10 @@ class SendState
     }
 
 
-    public void hardFailure(String email, String mx, String failure)
+    public void hardFailure(String email, RJMException e)
     {
-        recipients.remove(email);
-
-        results.put(email, new RJMException(
-                ExactCause.SMTP_UNEXPECTED_STATUS,
-                "The server returned an error indicating an unrecoverable " +
-                        "error").setServer(mx).setEmail(email)
-                .setServerLine(failure));
+        RecipientState rs = recipients.remove(email);
+        results.put(email, e.setSoftFailures(rs.getSoftFailures()));
     }
 
     /**

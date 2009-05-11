@@ -1,6 +1,5 @@
 package com.voxbiblia.rjmailer;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -15,12 +14,15 @@ public class ConversationHandlerTest
     public void testSend()
             throws Exception            
     {
-        ConversationHandler ch = new ConversationHandler("localhost");
+        String ehloHost = "localhost";
+        SMTPConversation ch = new SMTPConversation(ehloHost,"host");
         Map<String,String> m = new HashMap<String,String>();
-        FieldGenerator fg = ch.getFieldGenerator();
+
+        FieldGenerator fg = new FieldGenerator(ehloHost);
+        ch.setFieldGenerator(fg);
         m.put("@@MSG_ID@@", fg.getNextMessgeId());
         m.put("@@DATE@@", fg.getNextDate());
-        m.put("@@VERSION@@", ConversationHandler.getVersion());
+        m.put("@@VERSION@@", SMTPConversation.getVersion());
 
         DummySMTPSocket s =  new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n" +
@@ -43,7 +45,7 @@ public class ConversationHandlerTest
         rmm.setTo("reciever@reciever.com");
         List<String> to = AddressUtil.getToAddresses(rmm);
         SendState ss = new SendState(new DummyResolver(), to);
-        ch.sendMail(rmm, to, "host", ss);
+        ch.sendMail(rmm, to, ss);
         Map<String,SendResult> results = ss.getResults();
         RJMResult r = (RJMResult)results.get(to.get(0));
         assertEquals("Ok: queued as 62B14FFD8",r.getResult());
@@ -53,7 +55,7 @@ public class ConversationHandlerTest
     public void testSendBodyError()
             throws Exception
     {
-        ConversationHandler ch = new ConversationHandler("localhost");
+        SMTPConversation ch = new SMTPConversation("localhost", "host");
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
                     "250 8BITMIME",
@@ -74,7 +76,7 @@ public class ConversationHandlerTest
         List<String> to = AddressUtil.getToAddresses(rmm);
 
         try {
-            ch.sendMail(rmm, to, "host", new SendState(new DummyResolver(), to));
+            ch.sendMail(rmm, to, new SendState(new DummyResolver(), to));
             fail("should have thrown IAE");
         } catch (IllegalArgumentException e) {
             // ignore
@@ -85,12 +87,14 @@ public class ConversationHandlerTest
     public void testSend2()
             throws Exception
     {
-        ConversationHandler ch = new ConversationHandler("localhost");
+        String ehloHost = "localhost";
+        SMTPConversation ch = new SMTPConversation(ehloHost, "ignored");
         Map<String,String> m = new HashMap<String,String>();
-        FieldGenerator fg = ch.getFieldGenerator();
+        FieldGenerator fg = new FieldGenerator(ehloHost);
+        ch.setFieldGenerator(fg);
         m.put("@@MSG_ID@@", fg.getNextMessgeId());
         m.put("@@DATE@@", fg.getNextDate());
-        m.put("@@VERSION@@", ConversationHandler.getVersion());
+        m.put("@@VERSION@@", SMTPConversation.getVersion());
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
                     "250 8BITMIME",
@@ -130,7 +134,7 @@ public class ConversationHandlerTest
 
         List<String> to = AddressUtil.getToAddresses(rmm);
         SendState ss = new SendState(new DummyResolver(), to);
-        ch.sendMail(rmm, to, "ignored", ss); 
+        ch.sendMail(rmm, to, ss);
 
         Map<String,SendResult> results = ss.getResults();
         RJMResult r = (RJMResult)results.get(to.get(0));
@@ -140,9 +144,9 @@ public class ConversationHandlerTest
 
     public void testGetStatus()
     {
-        assertEquals(100, ConversationHandler.getStatus("100 Hello"));
+        assertEquals(100, SMTPConversation.getStatus("100 Hello"));
         try {
-            ConversationHandler.getStatus("foo");
+            SMTPConversation.getStatus("foo");
             fail();
         } catch (NumberFormatException e) {
             // exception expected
@@ -150,23 +154,8 @@ public class ConversationHandlerTest
 
     }
 
-    public void testCheckStatus()
-            throws Exception
-    {
-        byte[] resp = "220 OK\r\nX".getBytes("US-ASCII");
-
-        ByteArrayInputStream bais = new ByteArrayInputStream(resp);
-        ConversationHandler.checkStatus(bais, new byte[100], 220);
-        assertEquals('X', bais.read());
-
-        resp = "250-FIRST\r\n250 second\r\nX".getBytes("US-ASCII");
-        bais = new ByteArrayInputStream(resp);
-        ConversationHandler.checkStatus(bais, new byte[100], 250);
-        assertEquals('X', bais.read());
-    }
-
     public void testGetVersion()
     {
-        assertNotNull(ConversationHandler.getVersion());
+        assertNotNull(SMTPConversation.getVersion());
     }
 }

@@ -119,7 +119,9 @@ public class SendStateTest
         SendState ss = new SendState(drp, Collections.singletonList("u@domain.con"));
         MXData mxd = ss.nextMXData();
         assertEquals("mx0.domain.con", mxd.getServer());
-        ss.hardFailure("u@domain.con", "mx0.domain.con", "No such user");
+
+        RJMException e = new RJMException(ExactCause.SMTP_UNEXPECTED_STATUS, "No such user");
+        ss.hardFailure("u@domain.con", e);
 
         assertNull(ss.nextMXData());
 

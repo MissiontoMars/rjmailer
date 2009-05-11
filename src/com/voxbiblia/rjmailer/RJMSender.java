@@ -16,9 +16,10 @@ import java.util.Map;
  */
 public class RJMSender
 {
-    private ConversationHandler conversationHandler;
+    private String ehloHostname;
     private String smtpServer;
     private String nameServer;
+    private FieldGenerator fieldGenerator;
 
     private Resolver resolver;
     private boolean calledAfterPropertiesSet = false;
@@ -35,7 +36,8 @@ public class RJMSender
      */
     public RJMSender(String ehloHostname)
     {
-        conversationHandler = new ConversationHandler(ehloHostname);
+        this.ehloHostname = ehloHostname;
+        fieldGenerator = new FieldGenerator(ehloHostname);
     }
 
     /**
@@ -85,7 +87,10 @@ public class RJMSender
             return resolveAndSend(message, tos);
         }
         SendState ss = new SendState(smtpServer, tos);
-        conversationHandler.sendMail(message, tos, smtpServer, ss);
+        SMTPConversation c = new SMTPConversation(ehloHostname, smtpServer);
+        c.setFieldGenerator(fieldGenerator);
+        c.setSocketFactory(socketFactory);
+        c.sendMail(message, tos, ss);
         return ss.getResults();
     }
 
@@ -101,7 +106,6 @@ public class RJMSender
         if (socketFactory == null) {
             socketFactory = new TCPSocketFactory();
         }
-        conversationHandler.setSocketFactory(socketFactory);
 
         if (smtpServer == null && nameServer == null) {
             throw new Error("Either one of the properties nameServer or " +
@@ -121,8 +125,11 @@ public class RJMSender
             throw new Error("Invalid state, no MXData");
         }
         while (d != null) {
-            conversationHandler.sendMail(message,
-                        d.getRecipients(), d.getServer(), ss);
+            SMTPConversation conversation = new SMTPConversation(ehloHostname,
+                    d.getServer());
+            conversation.setSocketFactory(socketFactory);
+            conversation.setFieldGenerator(fieldGenerator);
+            conversation.sendMail(message, d.getRecipients(), ss);
 
             /*
             for (int i = 0; i < tos.size(); i++) {
@@ -171,21 +178,20 @@ public class RJMSender
         this.nameServer = nameServer;
     }
 
-    // used for testing purposes
-    ConversationHandler getConversationHandler()
-    {
-        return conversationHandler;
-    }
-
 
     void setSocketFactory(SocketFactory socketFactory)
     {
-        conversationHandler.setSocketFactory(socketFactory);
+        this.socketFactory = socketFactory;
     }
 
     // this method is for testing purposes
     void setResolver(Resolver resolver)
     {
         this.resolver = resolver;
+    }
+
+    FieldGenerator getFieldGenerator()
+    {
+        return fieldGenerator;
     }
 }
