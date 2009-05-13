@@ -113,6 +113,7 @@
                 <include name="**/MailException.class"/>
                 <include name="**/MailSender.class"/>
                 <include name="**/NestedRuntimeException.class"/>
+                <include name="**/MailMessage.class"/>
             </fileset>
         </jar>
         <delete dir="tmp"/>
