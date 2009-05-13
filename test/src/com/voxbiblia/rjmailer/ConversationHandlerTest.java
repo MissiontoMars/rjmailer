@@ -44,7 +44,9 @@ public class ConversationHandlerTest
         rmm.setSubject("rågrut");
         rmm.setTo("reciever@reciever.com");
         List<String> to = AddressUtil.getToAddresses(rmm);
-        SendState ss = new SendState(new DummyResolver(), to);
+        DummyResolver dr = new DummyResolver();
+        dr.addData("reciever.com", "some.server");
+        SendState ss = new SendState(dr, to);
         ch.sendMail(rmm, to, ss);
         Map<String,SendResult> results = ss.getResults();
         RJMResult r = (RJMResult)results.get(to.get(0));

@@ -12,13 +12,13 @@ public class MultiConnectTest
 {
     public void testSimple()
     {
-        RJMSender sender = new RJMSender("test.ehlo.host");
+        RJMSender sender = new RJMSender("localhost");
         DummyResolver dr = new DummyResolver();
         dr.addData("reciever.com", "mx1.example.con", "mx2.example.con");
         sender.setResolver(dr);
         DummySocketFactory dsf = new DummySocketFactory();
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
-                "EHLO test.ehlo.host", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
+                "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
                     "250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
                 "RCPT TO: <reciever@reciever.com>", "450 Temporary error."}, null, null);
