@@ -120,7 +120,8 @@ public class SendStateTest
         MXData mxd = ss.nextMXData();
         assertEquals("mx0.domain.con", mxd.getServer());
 
-        RJMException e = new RJMException(ExactCause.SMTP_UNEXPECTED_STATUS, "No such user");
+        RJMException e = new RJMException(ExactCause.SMTP_UNEXPECTED_STATUS,
+                "No such user").setServer("mx0.domain.con");
         ss.hardFailure("u@domain.con", e);
 
         assertNull(ss.nextMXData());
@@ -129,7 +130,7 @@ public class SendStateTest
         assertEquals(1, results.size());
         RJMException r = (RJMException)results.get("u@domain.con");
         assertEquals("mx0.domain.con", r.getServer());
-        assertEquals("No such user", r.getServerLine());
+        assertEquals("No such user", r.getMessage());
     }
 
 

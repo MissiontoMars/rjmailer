@@ -28,7 +28,7 @@ public class ConversationHandlerTest
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n" +
                     "250-VRFY\r\n250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
-                "RCPT TO: <reciever@reciever.com>", "250 Ok",
+                "RCPT TO: <receiver@receiver.com>", "250 Ok",
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
                 "IN_FILE",
                 "250 Ok: queued as 62B14FFD8"
@@ -42,10 +42,10 @@ public class ConversationHandlerTest
         rmm.setFrom("sender@sender.com");
         rmm.setText("email data");
         rmm.setSubject("rågrut");
-        rmm.setTo("reciever@reciever.com");
+        rmm.setTo("receiver@receiver.com");
         List<String> to = AddressUtil.getToAddresses(rmm);
         DummyResolver dr = new DummyResolver();
-        dr.addData("reciever.com", "some.server");
+        dr.addData("receiver.com", "some.server");
         SendState ss = new SendState(dr, to);
         ch.sendMail(rmm, to, ss);
         Map<String,SendResult> results = ss.getResults();
@@ -62,7 +62,7 @@ public class ConversationHandlerTest
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
                     "250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
-                "RCPT TO: <reciever@reciever.com>", "250 Ok",
+                "RCPT TO: <receiver@receiver.com>", "250 Ok",
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
                 "IN_FILE",
                 "250 Ok: queued as 62B14FFD8"
@@ -74,11 +74,16 @@ public class ConversationHandlerTest
         rmm.setFrom("sender@sender.com");
         rmm.setText("email dataa");
         rmm.setSubject("rågrut");
+        rmm.setTo("some@to.address");
 
         List<String> to = AddressUtil.getToAddresses(rmm);
 
+        DummyResolver dr = new DummyResolver();
+        dr.addData("to.address", "some.server");
+
+
         try {
-            ch.sendMail(rmm, to, new SendState(new DummyResolver(), to));
+            ch.sendMail(rmm, to, new SendState(dr, to));
             fail("should have thrown IAE");
         } catch (IllegalArgumentException e) {
             // ignore
@@ -101,16 +106,17 @@ public class ConversationHandlerTest
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
                     "250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
-                "RCPT TO: <reciever@reciever.com>", "250 Ok",
+                "RCPT TO: <the@receiver.com>", "250 Ok",
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
                 "IN_FILE",
-                "250 Ok: queued as 62B15FFD8"
+                "250 Ok: queued as 62B14FFD8"
+
         }, new File("test/data/test2.txt"), m);
         DummySocketFactory dsf = new DummySocketFactory(s);
         ch.setSocketFactory(dsf);
         RJMMessage rmm = new RJMMessage();
         rmm.setFrom("sender@sender.com");
-        rmm.setTo("\"The Receiver\" <the@receiver.co>");
+        rmm.setTo("\"The Receiver\" <the@receiver.com>");
 
         // contains space at end of line
         rmm.setText("BWO är ett band som består av tre stycken äggmökar, \n" +
@@ -135,11 +141,14 @@ public class ConversationHandlerTest
 
 
         List<String> to = AddressUtil.getToAddresses(rmm);
-        SendState ss = new SendState(new DummyResolver(), to);
+        DummyResolver dr = new DummyResolver();
+        dr.addData("receiver.com", "server.com");
+        SendState ss = new SendState(dr, to);
         ch.sendMail(rmm, to, ss);
 
         Map<String,SendResult> results = ss.getResults();
         RJMResult r = (RJMResult)results.get(to.get(0));
+
         assertEquals("Ok: queued as 62B14FFD8",r.getResult());
         assertTrue("more data to read from the server", s.hasFinished());
     }

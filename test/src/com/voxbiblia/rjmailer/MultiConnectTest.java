@@ -14,14 +14,14 @@ public class MultiConnectTest
     {
         RJMSender sender = new RJMSender("localhost");
         DummyResolver dr = new DummyResolver();
-        dr.addData("reciever.com", "mx1.example.con", "mx2.example.con");
+        dr.addData("receiver.com", "mx1.example.con", "mx2.example.con");
         sender.setResolver(dr);
         DummySocketFactory dsf = new DummySocketFactory();
         DummySMTPSocket s = new DummySMTPSocket(new String[] {"220 OK",
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n250-VRFY\r\n" +
                     "250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
-                "RCPT TO: <reciever@reciever.com>", "450 Temporary error."}, null, null);
+                "RCPT TO: <receiver@receiver.com>", "450 Temporary error."}, null, null);
         dsf.addSocket("mx1.example.con", s);
 
         Map<String,String> m = new HashMap<String,String>();
@@ -34,7 +34,7 @@ public class MultiConnectTest
                 "EHLO localhost", "250-smtpd.voxbiblia.com\r\n" +
                     "250-VRFY\r\n250 8BITMIME",
                 "MAIL FROM: <sender@sender.com>", "250 Ok",
-                "RCPT TO: <reciever@reciever.com>", "250 Ok",
+                "RCPT TO: <receiver@receiver.com>", "250 Ok",
                 "DATA", "354 End data with <CR><LF>.<CR><LF>",
                 "IN_FILE",
                 "250 Ok: queued as 62B14FFD8"
@@ -49,7 +49,7 @@ public class MultiConnectTest
         rmm.setFrom("sender@sender.com");
         rmm.setText("email data");
         rmm.setSubject("rågrut");
-        rmm.setTo("reciever@reciever.com");
+        rmm.setTo("receiver@receiver.com");
         RJMResult r = sender.send(rmm);
         assertEquals("Ok: queued as 62B14FFD8", r.getResult());
         assertEquals("mx2.example.con", r.getRecievingServer());

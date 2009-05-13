@@ -1,5 +1,5 @@
 From: sender@sender.com
-To: reciever@reciever.com
+To: receiver@receiver.com
 Subject: =?ISO-8859-1?Q?r=E5grut?=
 Date: @@DATE@@
 Message-ID: <@@MSG_ID@@>

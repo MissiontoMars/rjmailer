@@ -22,7 +22,7 @@ public class DummyResolver
         List<String> l =  responses.get(name);
         if (l == null) {
             throw new RJMException(ExactCause.DOMAIN_NOT_FOUND,
-                    "No data domain: "+  name).setDomain(name);
+                    "No data for domain: "+  name).setDomain(name);
         }
         return l;
     }
