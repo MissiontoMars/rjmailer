@@ -10,9 +10,9 @@ distributed under the MIT licence, a BSD type licence which premits
 redistribution.
 
 
-The file jresolver-0.2.1.jar is extracted from
+The file jresolver-0.3.1.jar is extracted from
 
-cdba2e028046fdec73ae203f5692bafec93bd786  jresolver-0.2.1.zip   
+e88bfce8c942953c8db7551104906b221d670332  jresolver-0.3.1.zip
 
-as downloaded from http://fs.voxbiblia.com/jresolver/ on 2009-04-10. jresolver
+as downloaded from http://fs.voxbiblia.com/jresolver/ on 2009-08-30. jresolver
 is distributed under the GPLv3 licence which permits redistribution.

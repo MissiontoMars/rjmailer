@@ -4,15 +4,14 @@
     <property name="deps-root" value="../support"/>
     <property name="slf-version" value="1.5.6"/>
     <property name="spring-version" value="2.5.6"/>
-
+    <property name="jresolver-version" value="0.3.1"/>
 
     <path id="classpath">
         <fileset dir="lib">
-            <include name="slf4j-api-1.5.6.jar"/>
-            <include name="jresolver-0.2.1.jar"/>
+            <include name="*.jar"/>
         </fileset>
         <fileset dir="build-deps">
-            <include name="spring-mail-${spring-version}.jar"/>
+            <include name="*.jar"/>
         </fileset>
     </path>
 
@@ -100,7 +99,7 @@
         <copy todir="lib"
               file="${deps-root}/slf4j-${slf-version}/slf4j-jdk14-${slf-version}.jar"/>
         <copy todir="lib"
-              file="${deps-root}/jresolver/jresolver-0.2.1.jar"/>
+              file="${deps-root}/jresolver/jresolver-${jresolver-version}.jar"/>
 
         <unjar dest="tmp"
                src="${deps-root}/spring-framework-${spring-version}/dist/modules/spring-core.jar"/>
