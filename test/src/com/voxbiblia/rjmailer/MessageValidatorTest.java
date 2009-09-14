@@ -32,6 +32,8 @@ public class MessageValidatorTest
     public void testInvalidEmail()
     {
         doTestEmail("\"Gunde Svan\" <>");
+        doTestEmail("foobar.svensson");
+
     }
 
     private void doTestEmail(String email)

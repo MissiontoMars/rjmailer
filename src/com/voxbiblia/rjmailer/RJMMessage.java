@@ -7,6 +7,14 @@ import java.util.List;
 
 /**
  * Represents an Email that can be sent via the MailSender.
+ *
+ * The fields bcc, cc, from, replyTo and to holds email addresses, or
+ * email addresses with a real name part in double quotes with the
+ * actual email address in '<' '>' afterwards.
+ *
+ * The format of the email address is a simplified version of the
+ * RFC2822 addr-spec where the localpart and domain part consists only
+ * of a dot-atom, not a quoted-string or domain-literal.
  */
 public class RJMMessage
 {

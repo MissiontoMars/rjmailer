@@ -17,6 +17,7 @@ public class RJMException
     private String serverLine;
     private int status;
     private List<RJMException> softFailures;
+    private CauseDetail detail;
 
 
     /**
@@ -28,6 +29,13 @@ public class RJMException
     {
         super(message);
         this.exactCause = exactCause;
+    }
+
+    protected RJMException(ExactCause exactCause, CauseDetail detail, String message)
+    {
+        super(message);
+        this.exactCause = exactCause;
+        this.detail = detail;
     }
 
     public int getStatus()
@@ -101,4 +109,8 @@ public class RJMException
         return this;
     }
 
+    public CauseDetail getDetail()
+    {
+        return detail;
+    }
 }
