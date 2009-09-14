@@ -81,6 +81,7 @@ public class RJMSender
         if (!calledAfterPropertiesSet) {
             afterPropertiesSet();
         }
+        MessageValidator.validate(message);
         List<String> tos = AddressUtil.getToAddresses(message);
 
         if (resolver != null) {
