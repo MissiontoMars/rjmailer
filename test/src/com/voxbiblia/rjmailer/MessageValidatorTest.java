@@ -33,7 +33,9 @@ public class MessageValidatorTest
     {
         doTestEmail("\"Gunde Svan\" <>");
         doTestEmail("foobar.svensson");
-
+        doTestEmail("apa bepo@rjmailer.org");
+        doTestEmail("malå@adak.de");
+        doTestEmail("adak@malå.de");
     }
 
     private void doTestEmail(String email)

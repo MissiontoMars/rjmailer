@@ -5,5 +5,5 @@ package com.voxbiblia.rjmailer;
  */
 public enum CauseDetail
 {
-    EMAIL_MISSING_AT
+    ADDRESS_INVALID_CHAR, ADDRESS_MISSING_AT
 }
