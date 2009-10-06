@@ -2,6 +2,7 @@ package com.voxbiblia.rjmailer;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class DummySocketFactory
             return s;
         }
         if (defaultSocket == null) {
-            throw new Error("No socket in store for hostname" + serverName);
+            throw new UnknownHostException(serverName);
         }
         return defaultSocket;
     }
