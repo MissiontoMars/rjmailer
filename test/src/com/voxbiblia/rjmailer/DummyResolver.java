@@ -19,6 +19,13 @@ public class DummyResolver
 
     public List<String> resolveMX(String name)
     {
+        if ("servfail-domain".equals(name)) {
+            throw new RJMException(ExactCause.DOMAIN_FAILURE,
+                    "The resolving nameserver failed to look up name: " + name
+                    ).setDomain(name);
+        }
+
+
         List<String> l =  responses.get(name);
         if (l == null) {
             throw new RJMException(ExactCause.DOMAIN_NOT_FOUND,

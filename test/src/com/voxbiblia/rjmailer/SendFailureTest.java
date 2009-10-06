@@ -29,7 +29,7 @@ public class SendFailureTest
     }
 
 
-    public void testDomainLookupFailure()
+    public void testDomainLookupNXDOMAIN()
     {
         RJMMessage m = new RJMMessage();
         m.addTo("a.b@nonexistant");
@@ -44,6 +44,24 @@ public class SendFailureTest
             assertEquals(e.getExactCause(), ExactCause.DOMAIN_NOT_FOUND);
         }
     }
+
+    public void testDomainLookupSERVFAIL()
+    {
+        RJMMessage m = new RJMMessage();
+        m.addTo("a.b@servfail-domain");
+        m.setFrom("noa@resare.com");
+        RJMSender s = new RJMSender("ehloName");
+        s.setResolver(new DummyResolver());
+        s.setSmtpServer("anything");
+        try {
+            s.send(m);
+            fail("nonexistant recipient domain");
+        } catch (RJMException e) {
+            assertEquals(e.getExactCause(), ExactCause.DOMAIN_FAILURE);
+        }
+    }
+
+
 
     public void testHostNotFoundFailure()
             throws Exception
@@ -63,7 +81,7 @@ public class SendFailureTest
             List<RJMException> softs = e.getSoftFailures();
             assertEquals(1, softs.size());
             //noinspection ThrowableResultOfMethodCallIgnored
-            assertEquals(ExactCause.DOMAIN_FAILURE, softs.get(0).getExactCause());
+            assertEquals(ExactCause.DOMAIN_INVALID, softs.get(0).getExactCause());
         }
     }
 }

@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -111,7 +112,7 @@ class SMTPConversation
 
             sendCommand("MAIL FROM: <" + AddressUtil.getAddress(msg.getFrom()) + ">");
             checkStatus(250);
-        } catch (SMTPException e) {
+        } catch (Exception e) {
             for (String s : l) {
                 convertFailure(e, s, ss);
             }
@@ -148,16 +149,27 @@ class SMTPConversation
         }
     }
 
-    private void convertFailure(SMTPException e, String to, SendState ss)
+    private void convertFailure(Exception e, String to, SendState ss)
     {
 
-        RJMException rje = new RJMException(ExactCause.SMTP_UNEXPECTED_STATUS,
-                e.getMsg()).setEmail(to).setStatus(e.getCode()).setServer(server);
-        if (e.isHard()) {
-            ss.hardFailure(to, rje);
-        } else {
-            ss.softFailure(to, rje);
+        RJMException rje = null;
+        if (e instanceof SMTPException) {
+            SMTPException se = (SMTPException)e;
+            rje = new RJMException(ExactCause.SMTP_UNEXPECTED_STATUS,
+                    se.getMsg()).setEmail(to).setStatus(se.getCode()).setServer(server);
+            if (se.isHard()) {
+                ss.hardFailure(to, rje);
+                return;
+            }
         }
+        if (e instanceof RJMException) {
+            rje = (RJMException)e;
+        }
+
+        if (rje == null) {
+            throw new Error("exception of unknown type: "+ e.getClass().getName());
+        }
+        ss.softFailure(to, rje);
     }
 
     private void setupSocket() throws SMTPException
@@ -175,6 +187,9 @@ class SMTPConversation
             socket = socketFactory.createSocket(server, 25);
             is = socket.getInputStream();
             os = socket.getOutputStream();
+        } catch (UnknownHostException e) {
+            throw new RJMException(ExactCause.DOMAIN_INVALID,
+                    "Could not resolve server hostname " + server);
         } catch (IOException e) {
             throw new SMTPException(e.getMessage(), 0, false);
         }
