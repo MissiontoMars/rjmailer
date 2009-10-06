@@ -24,3 +24,9 @@ Exceptional stuff
 - recipient rejected
 - message rejected
   
+TODO add cc header
+TODO fix error in jresolver:
+Exception in thread "Scheduler" java.lang.IllegalMonitorStateException
+	at java.lang.Object.notify(Native Method)
+	at com.voxbiblia.jresolver.ConversationScheduler.run(ConversationScheduler.java:152)
+

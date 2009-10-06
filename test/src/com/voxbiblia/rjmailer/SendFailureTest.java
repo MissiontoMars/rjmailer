@@ -28,7 +28,6 @@ public class SendFailureTest
         }
     }
 
-
     public void testDomainLookupNXDOMAIN()
     {
         RJMMessage m = new RJMMessage();
@@ -60,8 +59,6 @@ public class SendFailureTest
             assertEquals(e.getExactCause(), ExactCause.DOMAIN_FAILURE);
         }
     }
-
-
 
     public void testHostNotFoundFailure()
             throws Exception

@@ -32,12 +32,25 @@ public class RJMMessage
         return bcc;
     }
 
+    /**
+     * Sets the list of blind carbon copy addresses. BCC addresses are added to
+     * the list of recipients, but not added to the CC header of the message
+     * when sent.
+     *
+     * @param bcc a list of bcc email addresses
+     */
     public void setBcc(List<String> bcc)
     {
         this.bcc = bcc;
     }
 
-    public void setBcc(String bcc)
+
+    /**
+     * Adds an address to he list of blind carbon copy addresses.
+     *
+     * @param bcc the bcc address to add to the list of bcc addresses
+     */
+    public void addBcc(String bcc)
     {
         if (this.bcc == null) {
             this.bcc = new ArrayList<String>();
@@ -50,6 +63,12 @@ public class RJMMessage
         return cc;
     }
 
+    /**
+     * Sets the list of carbon copy addresses. The list of CC addresses are
+     * added to the list of recipients as well as to the Cc: email header
+     *
+     * @param cc the list of cc addresses
+     */
     public void setCc(List<String> cc)
     {
         this.cc = cc;
