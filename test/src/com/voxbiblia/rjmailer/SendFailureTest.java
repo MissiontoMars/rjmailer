@@ -85,4 +85,16 @@ public class SendFailureTest
             assertEquals(ExactCause.DOMAIN_INVALID, softs.get(0).getExactCause());
         }
     }
+
+    public void testNonexistantUser()
+    {
+        RJMMessage m = new RJMMessage();
+        m.addTo("doesnotexist@resare.com");
+        m.setFrom("noa@resare.com");
+        RJMSender s = new RJMSender("a.b.c");
+        s.setNameServer("94.247.170.67");
+        s.send(m);
+
+
+    }
 }
