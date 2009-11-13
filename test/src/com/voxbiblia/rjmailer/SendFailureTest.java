@@ -76,6 +76,7 @@ public class SendFailureTest
         s.setSocketFactory(new DummySocketFactory());
         try {
             s.send(m);
+            fail("Should have thrown RJMException");
         } catch (RJMException e) {
             assertEquals(ExactCause.ALL_SERVERS_FAILED, e.getExactCause());
             List<RJMException> softs = e.getSoftFailures();
