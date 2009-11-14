@@ -21,6 +21,7 @@ import java.util.Properties;
  * @author Noa Resare (noa@voxbiblia.com)
  */
 class SMTPConversation
+    implements Conversation
 {
     private static class SMTPException extends Exception
     {

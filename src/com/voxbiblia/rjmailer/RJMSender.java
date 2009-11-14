@@ -22,6 +22,7 @@ public class RJMSender
     private FieldGenerator fieldGenerator;
 
     private Resolver resolver;
+    private ConversationFactory conversationFactory;
     private boolean calledAfterPropertiesSet = false;
 
     /** the number of minutes to cache resolver results */
@@ -88,9 +89,9 @@ public class RJMSender
             return resolveAndSend(message, tos);
         }
         SendState ss = new SendState(smtpServer, tos);
-        SMTPConversation c = new SMTPConversation(ehloHostname, smtpServer);
-        c.setFieldGenerator(fieldGenerator);
-        c.setSocketFactory(socketFactory);
+
+
+        Conversation c = conversationFactory.getConversation(smtpServer);
         c.sendMail(message, tos, ss);
         return ss.getResults();
     }
@@ -114,6 +115,14 @@ public class RJMSender
         }
         if (nameServer != null) {
             resolver = new ResolverImpl(nameServer, RESOLVER_CACHE_TIMEOUT_MINS);
+        }
+
+        if (conversationFactory == null) {
+            ConversationFactoryImpl cf = new ConversationFactoryImpl();
+            cf.setEhloHostname(ehloHostname);
+            cf.setSocketFactory(socketFactory);
+            cf.setFieldGenerator(fieldGenerator);
+            conversationFactory = cf;
         }
     }
 
