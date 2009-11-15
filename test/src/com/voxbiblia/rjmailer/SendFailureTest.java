@@ -89,8 +89,20 @@ public class SendFailureTest
         m.addTo("doesnotexist@resare.com");
         m.setFrom("noa@resare.com");
         RJMSender s = new RJMSender("a.b.c");
-        s.setNameServer("94.247.170.67");
-        s.send(m);
+        s.setConversationFactory(new ConversationFactory() {
+            public Conversation getConversation(String smtpServer)
+            {
+                return new DummyConversation();
+            }
+        });
+        
+        try {
+            s.send(m);
+            fail("should result in RJMException");
+        } catch (RJMException e) {
+            assertEquals(ExactCause.MAILBOX_UNAVAILABLE, e.getExactCause());
+        }
+
 
 
     }

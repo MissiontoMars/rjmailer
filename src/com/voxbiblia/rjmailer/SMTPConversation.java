@@ -156,8 +156,15 @@ class SMTPConversation
         RJMException rje = null;
         if (e instanceof SMTPException) {
             SMTPException se = (SMTPException)e;
-            rje = new RJMException(ExactCause.SMTP_UNEXPECTED_STATUS,
-                    se.getMsg()).setEmail(to).setStatus(se.getCode()).setServer(server);
+            ExactCause ec = ExactCause.SMTP_UNEXPECTED_STATUS;
+            if (se.getCode() == 550) {
+                ec = ExactCause.MAILBOX_UNAVAILABLE;
+            }
+            String msg = se.getMsg();
+            if (msg.length() > 4) {
+                msg = msg.substring(4);
+            }
+            rje = new RJMException(ec, msg).setEmail(to).setStatus(se.getCode()).setServer(server);
             if (se.isHard()) {
                 ss.hardFailure(to, rje);
                 return;

@@ -109,7 +109,7 @@ public class RJMSender
             socketFactory = new TCPSocketFactory();
         }
 
-        if (smtpServer == null && nameServer == null) {
+        if (smtpServer == null && nameServer == null && conversationFactory == null) {
             throw new Error("Either one of the properties nameServer or " +
                     "smtpServer must be set");
         }
@@ -198,6 +198,11 @@ public class RJMSender
     void setResolver(Resolver resolver)
     {
         this.resolver = resolver;
+    }
+
+    void setConversationFactory(ConversationFactory conversationFactory)
+    {
+        this.conversationFactory = conversationFactory;
     }
 
     FieldGenerator getFieldGenerator()
