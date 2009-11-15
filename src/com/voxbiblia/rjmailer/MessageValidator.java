@@ -45,11 +45,11 @@ public class MessageValidator
             e.setEmail(address);
             throw e;
         }
-        checkValidChars(address.substring(0, atOffset));
+        checkValidChars(address);
     }
 
-    private static final String dot_atom = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-            "abcdefghijklmnopqrstuvwxyz!#$%&'*+-/=?^_`{|}~.";
+    private static final String dot_atom = "0123456789ABCDEFGHIJKLMNO" +
+            "PQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&'*+-/=?^_`{|}~.@";
 
     private static void checkValidChars(String s)
     {
