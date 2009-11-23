@@ -1,6 +1,11 @@
 package com.voxbiblia.rjmailer;
 
-import com.voxbiblia.jresolver.*;
+import com.voxbiblia.jresolver.MXQuery;
+import com.voxbiblia.jresolver.MXRecord;
+import com.voxbiblia.jresolver.ServFailException;
+import com.voxbiblia.jresolver.TimeoutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -13,6 +18,8 @@ import java.util.*;
 class ResolverImpl
     implements Resolver
 {
+    private static final Logger log = LoggerFactory.getLogger(ResolverImpl.class);
+
     private com.voxbiblia.jresolver.Resolver resolver;
     private int cacheMinutes;
 
@@ -23,6 +30,9 @@ class ResolverImpl
 
     public ResolverImpl(String server, int cacheMinutes)
     {
+        if (server == null) {
+            log.info("No nameserver set, reading resolver configuration from /etc/resolv.conf");
+        }
         resolver = new com.voxbiblia.jresolver.Resolver(server);
         this.cacheMinutes = cacheMinutes;
     }

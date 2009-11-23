@@ -109,11 +109,7 @@ public class RJMSender
             socketFactory = new TCPSocketFactory();
         }
 
-        if (smtpServer == null && nameServer == null && conversationFactory == null) {
-            throw new Error("Either one of the properties nameServer or " +
-                    "smtpServer must be set");
-        }
-        if (nameServer != null) {
+        if (nameServer != null || smtpServer == null) {
             resolver = new ResolverImpl(nameServer, RESOLVER_CACHE_TIMEOUT_MINS);
         }
 
