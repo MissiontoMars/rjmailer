@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="rjmailer" default="dist">
+<project name="rjmailer" default="jar">
     <property file="src/com/voxbiblia/rjmailer/version.properties" />
     <property name="deps-root" value="../support"/>
     <property name="slf-version" value="1.5.6"/>
@@ -24,11 +24,14 @@
         </javac>
     </target>
 
-    <target name="dist" depends="compile,javadoc">
+    <target name="jar" depends="compile">
         <mkdir dir="dist"/>
         <jar file="dist/${ant.project.name}-${rjmailer.version}.jar">
             <fileset dir="classes/production/${ant.project.name}"/>
         </jar>
+    </target>
+
+    <target name="dist" depends="jar,javadoc">
         <tar tarfile="dist/${ant.project.name}-${rjmailer.version}-src.tar.bz2"
 		compression="bzip2" basedir=".">
             <include name="src/**"/>
