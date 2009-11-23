@@ -22,6 +22,11 @@
             target="1.5" source="1.5" debug="yes"
                srcdir="src">
         </javac>
+        <copy todir="classes/production">
+            <fileset dir="src">
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="jar" depends="compile">
