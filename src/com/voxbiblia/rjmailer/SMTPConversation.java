@@ -25,18 +25,18 @@ class SMTPConversation
 {
     private static class SMTPException extends Exception
     {
-        private String msg;
+        private String serverLine;
         private int code;
         private boolean hard;
 
-        public SMTPException(String msg, int code, boolean hard) {
-            this.msg = msg;
+        public SMTPException(String serverLine, int code, boolean hard) {
+            this.serverLine = serverLine;
             this.code = code;
             this.hard = hard;
         }
 
-        public String getMsg() {
-            return msg;
+        public String getServerLine() {
+            return serverLine;
         }
 
         public int getCode()
@@ -160,11 +160,14 @@ class SMTPConversation
             if (se.getCode() == 550) {
                 ec = ExactCause.MAILBOX_UNAVAILABLE;
             }
-            String msg = se.getMsg();
-            if (msg.length() > 4) {
-                msg = msg.substring(4);
+            String serverLine = se.getServerLine();
+            if (serverLine.length() > 4) {
+                serverLine = serverLine.substring(4);
             }
-            rje = new RJMException(ec, msg).setEmail(to).setStatus(se.getCode()).setServer(server);
+
+            rje = new RJMException(ec, serverLine).setEmail(to);
+            rje.setStatus(se.getCode()).setServer(server);
+            rje.setServerLine(serverLine);
             if (se.isHard()) {
                 ss.hardFailure(to, rje);
                 return;
@@ -180,7 +183,7 @@ class SMTPConversation
         ss.softFailure(to, rje);
     }
 
-    private void setupSocket() throws SMTPException
+    private void setupSocket() throws SMTPException, IOException
     {
         if (is != null) {
             throw new Error("An SMTPConversation can only be set up once");
@@ -198,8 +201,6 @@ class SMTPConversation
         } catch (UnknownHostException e) {
             throw new RJMException(ExactCause.DOMAIN_INVALID,
                     "Could not resolve server hostname " + server);
-        } catch (IOException e) {
-            throw new SMTPException(e.getMessage(), 0, false);
         }
     }
 
