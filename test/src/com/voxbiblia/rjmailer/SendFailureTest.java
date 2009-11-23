@@ -38,9 +38,10 @@ public class SendFailureTest
         s.setSmtpServer("anything");
         try {
             s.send(m);
-            fail("nonexistant recipient domain");
+            fail("should have indicated nonexistant recipient domain");
         } catch (RJMException e) {
             assertEquals(e.getExactCause(), ExactCause.DOMAIN_NOT_FOUND);
+            assertEquals("nonexistant", e.getDomain());
         }
     }
 
@@ -54,7 +55,7 @@ public class SendFailureTest
         s.setSmtpServer("anything");
         try {
             s.send(m);
-            fail("nonexistant recipient domain");
+            fail("should have indicated nonexistant recipient domain");
         } catch (RJMException e) {
             assertEquals(e.getExactCause(), ExactCause.DOMAIN_FAILURE);
         }
@@ -102,8 +103,21 @@ public class SendFailureTest
         } catch (RJMException e) {
             assertEquals(ExactCause.MAILBOX_UNAVAILABLE, e.getExactCause());
         }
+    }
 
 
-
+    public void XtestRealNonexistantDomain()
+    {
+        RJMMessage m = new RJMMessage();
+        m.addTo("noa@resare.con");
+        m.setFrom("noa@resare.com");
+        RJMSender s = new RJMSender("a.b.c");
+        try {
+            s.send(m);
+            fail();
+        } catch (RJMException e ) {
+            assertEquals(e.getExactCause(), ExactCause.DOMAIN_NOT_FOUND);
+            assertEquals("resare.con", e.getDomain());
+        }
     }
 }

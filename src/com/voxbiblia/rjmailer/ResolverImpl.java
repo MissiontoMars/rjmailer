@@ -1,9 +1,6 @@
 package com.voxbiblia.rjmailer;
 
-import com.voxbiblia.jresolver.MXQuery;
-import com.voxbiblia.jresolver.MXRecord;
-import com.voxbiblia.jresolver.ServFailException;
-import com.voxbiblia.jresolver.TimeoutException;
+import com.voxbiblia.jresolver.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,23 +45,33 @@ class ResolverImpl
      */
     public List<String> resolveMX(String name)
     {
-        List<String> l;
-        synchronized (this) {
-            purgeOldEntries();
-            l = cacheMap.get(name);
-        }
-        if (l != null) {
-            return l;
-        } else {
-            l = doResolveMX(name);
+        try {
+            List<String> l;
+            synchronized (this) {
+                purgeOldEntries();
+                l = cacheMap.get(name);
+            }
             if (l != null) {
-                synchronized (this) {
-                    cacheMap.put(name, l);
-                    entries.add(new CacheEntry(name));
+                return l;
+            } else {
+                l = doResolveMX(name);
+                if (l != null) {
+                    synchronized (this) {
+                        cacheMap.put(name, l);
+                        entries.add(new CacheEntry(name));
+                    }
                 }
             }
+            return l;
+        } catch (NXDomainException e) {
+            RJMException re = new RJMException(ExactCause.DOMAIN_NOT_FOUND,
+                    "No data for domain: " + name);
+            throw re.setDomain(name);
+        } catch (ServFailException e) {
+            RJMException re = new RJMException(ExactCause.DOMAIN_FAILURE,
+                    "DNS server misconfiguration for: " + name);
+            throw re.setDomain(name);
         }
-        return l;
     }
 
     private void purgeOldEntries()
