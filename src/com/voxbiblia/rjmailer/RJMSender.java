@@ -19,6 +19,7 @@ public class RJMSender
     private String ehloHostname;
     private String smtpServer;
     private String nameServer;
+    private int smtpPort = -1;
     private FieldGenerator fieldGenerator;
 
     private Resolver resolver;
@@ -118,6 +119,9 @@ public class RJMSender
             cf.setEhloHostname(ehloHostname);
             cf.setSocketFactory(socketFactory);
             cf.setFieldGenerator(fieldGenerator);
+            if (smtpPort != -1) {
+                cf.setSmtpPort(smtpPort);
+            }
             conversationFactory = cf;
         }
     }
@@ -204,5 +208,10 @@ public class RJMSender
     FieldGenerator getFieldGenerator()
     {
         return fieldGenerator;
+    }
+
+    public void setSmtpPort(int smtpPort)
+    {
+        this.smtpPort = smtpPort;
     }
 }

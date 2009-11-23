@@ -29,6 +29,7 @@ class SMTPConversation
         private int code;
         private boolean hard;
 
+
         public SMTPException(String serverLine, int code, boolean hard) {
             this.serverLine = serverLine;
             this.code = code;
@@ -61,6 +62,7 @@ class SMTPConversation
     private InputStream is;
     private OutputStream os;
     private Socket socket;
+    private int smtpPort = 25;
     byte[] inBuf = new byte[1000];
 
     /**
@@ -195,7 +197,7 @@ class SMTPConversation
             socketFactory = new TCPSocketFactory();
         }
         try {
-            socket = socketFactory.createSocket(server, 25);
+            socket = socketFactory.createSocket(server, smtpPort);
             is = socket.getInputStream();
             os = socket.getOutputStream();
         } catch (UnknownHostException e) {
@@ -373,5 +375,10 @@ class SMTPConversation
     void setSocketFactory(SocketFactory socketFactory)
     {
         this.socketFactory = socketFactory;
+    }
+
+    void setSmtpPort(int smtpPort)
+    {
+        this.smtpPort = smtpPort;
     }
 }
