@@ -72,7 +72,7 @@ class ResolverImpl
         if (entries.isEmpty()) {
             return;
         }
-        CacheEntry ce = entries.getFirst();
+        CacheEntry ce = entries.peekFirst();
         while (ce != null) {
             long l = System.currentTimeMillis() - cacheMinutes * 60 * 1000;
             if (ce.getCreated() > l) {
