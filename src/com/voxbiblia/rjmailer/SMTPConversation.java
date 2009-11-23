@@ -274,6 +274,11 @@ class SMTPConversation
             ClassLoader cl = SMTPConversation.class.getClassLoader();
 
             InputStream is  = cl.getResourceAsStream("com/voxbiblia/rjmailer/version.properties");
+            if (is == null) {
+                throw new Error("Could not find properties steam in classpath: " + cl);
+            }
+
+
             Properties p = new Properties();
             try {
                 p.load(is);
