@@ -21,11 +21,13 @@ class SendState
 
     public SendState(Resolver resolver, List<String> recipients)
     {
-        for (Object recipient : recipients) {
-            String s = (String) recipient;
-            List<String> mxes = resolver.resolveMX(AddressUtil.getDomain(s));
-
-            this.recipients.put(s, new RecipientState(mxes));
+        for (String s : recipients) {
+            try {
+                List<String> mxes = resolver.resolveMX(AddressUtil.getDomain(s));
+                this.recipients.put(s, new RecipientState(mxes));
+            } catch (RJMException e) {
+                throw e.setEmail(s);
+            }
         }
     }
 
