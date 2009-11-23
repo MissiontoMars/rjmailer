@@ -88,7 +88,7 @@ class ResolverImpl
 
             cacheMap.remove(ce.getKey());
             entries.removeFirst();
-            ce = entries.getFirst();
+            ce = entries.peekFirst();
         }
     }
 
