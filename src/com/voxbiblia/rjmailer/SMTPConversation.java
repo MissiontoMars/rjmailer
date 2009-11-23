@@ -271,7 +271,7 @@ class SMTPConversation
     static String getVersion()
     {
         if (version == null) {
-            ClassLoader cl = ClassLoader.getSystemClassLoader();
+            ClassLoader cl = SMTPConversation.class.getClassLoader();
 
             InputStream is  = cl.getResourceAsStream("com/voxbiblia/rjmailer/version.properties");
             Properties p = new Properties();
