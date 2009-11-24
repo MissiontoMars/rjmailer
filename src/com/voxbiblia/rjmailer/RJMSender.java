@@ -135,10 +135,7 @@ public class RJMSender
             throw new Error("Invalid state, no MXData");
         }
         while (d != null) {
-            SMTPConversation conversation = new SMTPConversation(ehloHostname,
-                    d.getServer());
-            conversation.setSocketFactory(socketFactory);
-            conversation.setFieldGenerator(fieldGenerator);
+            Conversation conversation = conversationFactory.getConversation(d.getServer());
             conversation.sendMail(message, d.getRecipients(), ss);
 
             /*
