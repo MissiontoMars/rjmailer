@@ -174,13 +174,20 @@ class SMTPConversation
                 ss.hardFailure(to, rje);
                 return;
             }
-        }
-        if (e instanceof RJMException) {
+        } else if (e instanceof IOException) {
+            rje = new RJMException(ExactCause.IO_EXCEPTION,
+                    String.format("Failed to communicate with %s:%d: %s",
+                            server, smtpPort, e.getMessage()));
+            rje.setServer(server).setEmail(to);
+
+        } else if (e instanceof RJMException) {
             rje = (RJMException)e;
         }
 
+
         if (rje == null) {
-            throw new Error("exception of unknown type: "+ e.getClass().getName());
+            throw new Error(String.format("unhandled exception %s: %s",
+                    e.getClass().getName(), e.getMessage()));
         }
         ss.softFailure(to, rje);
     }
@@ -310,7 +317,7 @@ class SMTPConversation
      * @param expected the integer value of the thre first ascii chars
      * @throws RJMException if there is a status code mismatch
      * @return the last line returned from server
-     * @throws com.voxbiblia.rjmailer.SMTPConversation.SMTPException if the returned numeric status value doesn't
+     * @throws SMTPException if the returned numeric status value doesn't
      * match expected
      * @throws IOException if the io fails
      */
