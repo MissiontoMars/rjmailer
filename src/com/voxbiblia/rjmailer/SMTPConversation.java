@@ -9,10 +9,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Instances of this class carries out an SMTP conversation with a specific
@@ -28,7 +25,6 @@ class SMTPConversation
         private String serverLine;
         private int code;
         private boolean hard;
-
 
         public SMTPException(String serverLine, int code, boolean hard) {
             this.serverLine = serverLine;
@@ -63,6 +59,7 @@ class SMTPConversation
     private OutputStream os;
     private Socket socket;
     private int smtpPort = 25;
+    private Set<String> ehloKeywords;
     byte[] inBuf = new byte[1000];
 
     /**
@@ -111,7 +108,7 @@ class SMTPConversation
             setupSocket();
             checkStatus(220);
             sendCommand("EHLO " + ehloHostname);
-            checkStatus(250);
+            ehloKeywords = parseEhloResponse(250);
 
             sendCommand("MAIL FROM: <" + AddressUtil.getAddress(msg.getFrom()) + ">");
             checkStatus(250);
@@ -308,6 +305,39 @@ class SMTPConversation
             throw new Error("no longer recognising US-ASCII");
         }
     }
+
+    /**
+     * Reads one ore more response lines from the server and checks the first
+     * three chars returned interpreted as digits against the expected status
+     * code. Throws an RJMException if a mismatch is found.
+     *
+     * @param expected the integer value of the thre first ascii chars
+     * @throws RJMException if there is a status code mismatch
+     * @return the last line returned from server
+     * @throws SMTPException if the returned numeric status value doesn't
+     * match expected
+     * @throws IOException if the io fails
+     */
+    Set<String> parseEhloResponse(int expected)
+            throws IOException, SMTPException
+    {
+        String line = getServerLine(is, inBuf);
+        int status = getStatus(line);
+        if (status != expected) {
+            boolean hard = true;
+            if (status > 399 && status < 500) {
+                hard = false;
+            }
+            throw new SMTPException(line, status, hard);
+        }
+        Set<String> lines = new HashSet<String>();
+        while (line.length() > 3 && line.charAt(3) == '-') {
+            line = getServerLine(is, inBuf);
+            lines.add(line.substring(4));
+        }
+        return lines;
+    }
+
 
     /**
      * Reads one ore more response lines from the server and checks the first
