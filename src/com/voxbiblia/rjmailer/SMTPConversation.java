@@ -59,7 +59,6 @@ class SMTPConversation
     private OutputStream os;
     private Socket socket;
     private int smtpPort = 25;
-    private Set<String> ehloKeywords;
     byte[] inBuf = new byte[1000];
 
     /**
@@ -108,8 +107,13 @@ class SMTPConversation
             setupSocket();
             checkStatus(220);
             sendCommand("EHLO " + ehloHostname);
-            ehloKeywords = parseEhloResponse(250);
-
+            Set<String> ehloKeywords = parseEhloResponse(250);
+            if (ehloKeywords.contains("STARTTLS")) {
+                log.info("Starting TLS");
+                sendCommand("STARTTLS");
+                checkStatus(220);
+                
+            }
             sendCommand("MAIL FROM: <" + AddressUtil.getAddress(msg.getFrom()) + ">");
             checkStatus(250);
         } catch (Exception e) {
