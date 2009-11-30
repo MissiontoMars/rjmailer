@@ -180,9 +180,28 @@ public class RJMSender
         this.smtpServer = smtpServer;
     }
 
+    /**
+     * Sets the DNS nameserver that is used to determine what mailservers to
+     * contact when sending email messages.
+     *
+     * @param nameServer the host name or ip number of the DNS name server
+     */
     public void setNameServer(String nameServer)
     {
         this.nameServer = nameServer;
+    }
+
+       /**
+     * This method can be used to indicate what port to try to connect to
+     * when contacting an email server. This is mainly used for testing on
+     * networks where the standard SMTP port 25 is blocked by the upstream
+     * network service provider.
+     *
+     * @param smtpPort An alternate SMTP port number to use when connecting
+     */
+    public void setSmtpPort(int smtpPort)
+    {
+        this.smtpPort = smtpPort;
     }
 
 
@@ -206,9 +225,5 @@ public class RJMSender
     {
         return fieldGenerator;
     }
-
-    public void setSmtpPort(int smtpPort)
-    {
-        this.smtpPort = smtpPort;
-    }
 }
+
