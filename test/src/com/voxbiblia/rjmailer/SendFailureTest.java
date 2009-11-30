@@ -110,12 +110,14 @@ public class SendFailureTest
     }
 
 
-    public void testRealNonexistantDomain()
+    public void XtestRealNonexistantDomain()
     {
         RJMMessage m = new RJMMessage();
-        m.addTo("eisley@resare.com");
+        m.addTo("noa@resare.com");
         m.setFrom("noa@resare.com");
-        RJMSender s = new RJMSender("a.b.c");
+        m.setText("test test");
+        m.setSubject("test test");
+        RJMSender s = new RJMSender("viktor.resare.com");
 
         s.setSmtpPort(10025);
         try {

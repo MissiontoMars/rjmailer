@@ -3,12 +3,14 @@ package com.voxbiblia.rjmailer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.SecureRandom;
 import java.util.*;
 
 /**
@@ -49,6 +51,7 @@ class SMTPConversation
 
 
     private static final Logger log = LoggerFactory.getLogger(SMTPConversation.class);
+    private static SSLSocketFactory sslSocketFactory = null;
 
     private static final byte[] EOL = {(byte)'\r', (byte)'\n'};
     private String server;
@@ -59,6 +62,7 @@ class SMTPConversation
     private OutputStream os;
     private Socket socket;
     private int smtpPort = 25;
+    private boolean tlsEnabled = false;
     byte[] inBuf = new byte[1000];
 
     /**
@@ -108,11 +112,9 @@ class SMTPConversation
             checkStatus(220);
             sendCommand("EHLO " + ehloHostname);
             Set<String> ehloKeywords = parseEhloResponse(250);
-            if (ehloKeywords.contains("STARTTLS")) {
-                log.info("Starting TLS");
-                sendCommand("STARTTLS");
-                checkStatus(220);
-                
+            if (ehloKeywords.contains("STARTTLS") && !tlsEnabled) {
+                enableTLS();
+
             }
             sendCommand("MAIL FROM: <" + AddressUtil.getAddress(msg.getFrom()) + ">");
             checkStatus(250);
@@ -151,6 +153,55 @@ class SMTPConversation
                 convertFailure(e, s, ss);
             }
         }
+    }
+
+    private void enableTLS()
+            throws IOException, SMTPException
+    {
+        if (sslSocketFactory == null) {
+            TrustManager[] tms = new TrustManager[] { new TrustingTrustManager() };
+            try {
+                SSLContext context = SSLContext.getInstance("TLS");
+                context.init(new KeyManager[0], tms, new SecureRandom());
+                sslSocketFactory = context.getSocketFactory();
+            } catch (Exception e) {
+                throw new Error(e);
+            }
+        }
+
+        log.info("Starting TLS");
+        sendCommand("STARTTLS");
+        checkStatus(220);
+        socket = sslSocketFactory.createSocket(socket, server, smtpPort, true);
+        configureCipherSuites((SSLSocket)socket);
+        os = socket.getOutputStream();
+        is = socket.getInputStream();
+        tlsEnabled = true;
+    }
+
+    private void configureCipherSuites(SSLSocket sslSocket)
+    {
+        List<String> target = new ArrayList<String>();
+        Set<String> source = new HashSet<String>(Arrays.asList(sslSocket.getSupportedCipherSuites()));
+        // preferred
+        if (source.contains("TLS_DHE_RSA_WITH_AES_128_CBC_SHA")) {
+            target.add("TLS_DHE_RSA_WITH_AES_128_CBC_SHA");
+        }
+        for (String s : source) {
+            if (s.indexOf("AES") != -1) {
+                if (!target.contains(s)) {
+                    target.add(s);
+                }
+            }
+        }
+        for (String s : source) {
+            if (s.indexOf("3DES") != -1) {
+                if (!target.contains(s)) {
+                    target.add(s);
+                }
+            }
+        }
+        sslSocket.setEnabledCipherSuites(target.toArray(new String[target.size()]));
     }
 
     private void convertFailure(Exception e, String to, SendState ss)
