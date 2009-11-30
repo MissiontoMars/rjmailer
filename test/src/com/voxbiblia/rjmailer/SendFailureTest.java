@@ -1,6 +1,8 @@
 package com.voxbiblia.rjmailer;
 
 import junit.framework.TestCase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -11,6 +13,8 @@ import java.util.List;
 public class SendFailureTest
     extends TestCase
 {
+
+    public static Logger log = LoggerFactory.getLogger(SendFailureTest.class);
 
     public void testSendFailure()
     {
@@ -106,18 +110,20 @@ public class SendFailureTest
     }
 
 
-    public void XtestRealNonexistantDomain()
+    public void testRealNonexistantDomain()
     {
         RJMMessage m = new RJMMessage();
-        m.addTo("noa@resare.con");
+        m.addTo("eisley@resare.com");
         m.setFrom("noa@resare.com");
         RJMSender s = new RJMSender("a.b.c");
+
+        s.setSmtpPort(10025);
         try {
             s.send(m);
             fail();
         } catch (RJMException e ) {
-            assertEquals(e.getExactCause(), ExactCause.DOMAIN_NOT_FOUND);
-            assertEquals("resare.con", e.getDomain());
+            assertEquals(e.getExactCause(), ExactCause.MAILBOX_UNAVAILABLE);
+            log.info(e.getServerLine());
         }
     }
 }

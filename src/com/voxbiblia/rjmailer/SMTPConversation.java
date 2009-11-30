@@ -9,10 +9,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Instances of this class carries out an SMTP conversation with a specific
@@ -25,18 +22,18 @@ class SMTPConversation
 {
     private static class SMTPException extends Exception
     {
-        private String msg;
+        private String serverLine;
         private int code;
         private boolean hard;
 
-        public SMTPException(String msg, int code, boolean hard) {
-            this.msg = msg;
+        public SMTPException(String serverLine, int code, boolean hard) {
+            this.serverLine = serverLine;
             this.code = code;
             this.hard = hard;
         }
 
-        public String getMsg() {
-            return msg;
+        public String getServerLine() {
+            return serverLine;
         }
 
         public int getCode()
@@ -61,6 +58,7 @@ class SMTPConversation
     private InputStream is;
     private OutputStream os;
     private Socket socket;
+    private int smtpPort = 25;
     byte[] inBuf = new byte[1000];
 
     /**
@@ -109,8 +107,13 @@ class SMTPConversation
             setupSocket();
             checkStatus(220);
             sendCommand("EHLO " + ehloHostname);
-            checkStatus(250);
-
+            Set<String> ehloKeywords = parseEhloResponse(250);
+            if (ehloKeywords.contains("STARTTLS")) {
+                log.info("Starting TLS");
+                sendCommand("STARTTLS");
+                checkStatus(220);
+                
+            }
             sendCommand("MAIL FROM: <" + AddressUtil.getAddress(msg.getFrom()) + ">");
             checkStatus(250);
         } catch (Exception e) {
@@ -160,27 +163,37 @@ class SMTPConversation
             if (se.getCode() == 550) {
                 ec = ExactCause.MAILBOX_UNAVAILABLE;
             }
-            String msg = se.getMsg();
-            if (msg.length() > 4) {
-                msg = msg.substring(4);
+            String serverLine = se.getServerLine();
+            if (serverLine.length() > 4) {
+                serverLine = serverLine.substring(4);
             }
-            rje = new RJMException(ec, msg).setEmail(to).setStatus(se.getCode()).setServer(server);
+
+            rje = new RJMException(ec, serverLine).setEmail(to);
+            rje.setStatus(se.getCode()).setServer(server);
+            rje.setServerLine(serverLine);
             if (se.isHard()) {
                 ss.hardFailure(to, rje);
                 return;
             }
-        }
-        if (e instanceof RJMException) {
+        } else if (e instanceof IOException) {
+            rje = new RJMException(ExactCause.IO_EXCEPTION,
+                    String.format("Failed to communicate with %s:%d: %s",
+                            server, smtpPort, e.getMessage()));
+            rje.setServer(server).setEmail(to);
+
+        } else if (e instanceof RJMException) {
             rje = (RJMException)e;
         }
 
+
         if (rje == null) {
-            throw new Error("exception of unknown type: "+ e.getClass().getName());
+            throw new Error(String.format("unhandled exception %s: %s",
+                    e.getClass().getName(), e.getMessage()));
         }
         ss.softFailure(to, rje);
     }
 
-    private void setupSocket() throws SMTPException
+    private void setupSocket() throws SMTPException, IOException
     {
         if (is != null) {
             throw new Error("An SMTPConversation can only be set up once");
@@ -192,14 +205,12 @@ class SMTPConversation
             socketFactory = new TCPSocketFactory();
         }
         try {
-            socket = socketFactory.createSocket(server, 25);
+            socket = socketFactory.createSocket(server, smtpPort);
             is = socket.getInputStream();
             os = socket.getOutputStream();
         } catch (UnknownHostException e) {
             throw new RJMException(ExactCause.DOMAIN_INVALID,
                     "Could not resolve server hostname " + server);
-        } catch (IOException e) {
-            throw new SMTPException(e.getMessage(), 0, false);
         }
     }
 
@@ -307,7 +318,40 @@ class SMTPConversation
      * @param expected the integer value of the thre first ascii chars
      * @throws RJMException if there is a status code mismatch
      * @return the last line returned from server
-     * @throws com.voxbiblia.rjmailer.SMTPConversation.SMTPException if the returned numeric status value doesn't
+     * @throws SMTPException if the returned numeric status value doesn't
+     * match expected
+     * @throws IOException if the io fails
+     */
+    Set<String> parseEhloResponse(int expected)
+            throws IOException, SMTPException
+    {
+        String line = getServerLine(is, inBuf);
+        int status = getStatus(line);
+        if (status != expected) {
+            boolean hard = true;
+            if (status > 399 && status < 500) {
+                hard = false;
+            }
+            throw new SMTPException(line, status, hard);
+        }
+        Set<String> lines = new HashSet<String>();
+        while (line.length() > 3 && line.charAt(3) == '-') {
+            line = getServerLine(is, inBuf);
+            lines.add(line.substring(4));
+        }
+        return lines;
+    }
+
+
+    /**
+     * Reads one ore more response lines from the server and checks the first
+     * three chars returned interpreted as digits against the expected status
+     * code. Throws an RJMException if a mismatch is found.
+     *
+     * @param expected the integer value of the thre first ascii chars
+     * @throws RJMException if there is a status code mismatch
+     * @return the last line returned from server
+     * @throws SMTPException if the returned numeric status value doesn't
      * match expected
      * @throws IOException if the io fails
      */
@@ -372,5 +416,10 @@ class SMTPConversation
     void setSocketFactory(SocketFactory socketFactory)
     {
         this.socketFactory = socketFactory;
+    }
+
+    void setSmtpPort(int smtpPort)
+    {
+        this.smtpPort = smtpPort;
     }
 }

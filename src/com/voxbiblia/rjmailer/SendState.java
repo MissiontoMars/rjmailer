@@ -1,5 +1,8 @@
 package com.voxbiblia.rjmailer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 /**
@@ -10,7 +13,7 @@ class SendState
     private Map<String, RecipientState> recipients = new HashMap<String, RecipientState>();
     private Map<String, List<String>> mxToRecipients = new HashMap<String, List<String>>();
     private Map<String, SendResult> results = new HashMap<String, SendResult>();
-
+    private static final Logger log = LoggerFactory.getLogger(SendState.class);
 
     public SendState(String relayServer, List<String> recipients)
     {
@@ -23,7 +26,13 @@ class SendState
     {
         for (String s : recipients) {
             try {
-                List<String> mxes = resolver.resolveMX(AddressUtil.getDomain(s));
+                String domain = AddressUtil.getDomain(s);
+                List<String> mxes = resolver.resolveMX(domain);
+                if (log.isDebugEnabled()) {
+                    for (String mx: mxes) {
+                        log.debug("Found mx {} for domain {}", mx, domain);
+                    }
+                }
                 this.recipients.put(s, new RecipientState(mxes));
             } catch (RJMException e) {
                 throw e.setEmail(s);

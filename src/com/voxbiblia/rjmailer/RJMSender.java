@@ -19,6 +19,7 @@ public class RJMSender
     private String ehloHostname;
     private String smtpServer;
     private String nameServer;
+    private int smtpPort = -1;
     private FieldGenerator fieldGenerator;
 
     private Resolver resolver;
@@ -118,6 +119,9 @@ public class RJMSender
             cf.setEhloHostname(ehloHostname);
             cf.setSocketFactory(socketFactory);
             cf.setFieldGenerator(fieldGenerator);
+            if (smtpPort != -1) {
+                cf.setSmtpPort(smtpPort);
+            }
             conversationFactory = cf;
         }
     }
@@ -131,10 +135,7 @@ public class RJMSender
             throw new Error("Invalid state, no MXData");
         }
         while (d != null) {
-            SMTPConversation conversation = new SMTPConversation(ehloHostname,
-                    d.getServer());
-            conversation.setSocketFactory(socketFactory);
-            conversation.setFieldGenerator(fieldGenerator);
+            Conversation conversation = conversationFactory.getConversation(d.getServer());
             conversation.sendMail(message, d.getRecipients(), ss);
 
             /*
@@ -204,5 +205,10 @@ public class RJMSender
     FieldGenerator getFieldGenerator()
     {
         return fieldGenerator;
+    }
+
+    public void setSmtpPort(int smtpPort)
+    {
+        this.smtpPort = smtpPort;
     }
 }
