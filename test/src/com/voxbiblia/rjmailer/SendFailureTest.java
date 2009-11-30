@@ -110,7 +110,7 @@ public class SendFailureTest
     }
 
 
-    public void XtestRealNonexistantDomain()
+    public void testRealTLS()
     {
         RJMMessage m = new RJMMessage();
         m.addTo("noa@resare.com");
@@ -120,12 +120,10 @@ public class SendFailureTest
         RJMSender s = new RJMSender("viktor.resare.com");
 
         s.setSmtpPort(10025);
-        try {
-            s.send(m);
-            fail();
-        } catch (RJMException e ) {
-            assertEquals(e.getExactCause(), ExactCause.MAILBOX_UNAVAILABLE);
-            log.info(e.getServerLine());
-        }
+        RJMResult r = s.send(m);
+        // openssl x509 -fingerprint -sha1 -noout -in /usr/share/ssl/certs/postfix.crt
+        assertEquals("83:B0:F8:D7:5C:C4:5D:84:38:A5:A1:36:BA:3B:C6:EA:F6:CC:5D:70",
+                r.getTlsCertHash());
+        assertEquals("TLS_DHE_RSA_WITH_AES_128_CBC_SHA", r.getTlsCipherSuite());
     }
 }

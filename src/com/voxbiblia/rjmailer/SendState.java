@@ -97,10 +97,13 @@ class SendState
         }
     }
 
-    public void success(String email, String mx, String result)
+    public void success(String email, String mx, String result,
+                        String tlsCipherSuite, String tlsCertHash)
     {
         RecipientState rs = recipients.remove(email);
         RJMResult r = new RJMResult(mx, result, RJMResult.Status.SENT);
+        r.setTlsCipherSuite(tlsCipherSuite);
+        r.setTlsCertHash(tlsCertHash);
         List<RJMException> softFailures = rs.getSoftFailures();
         if (softFailures != null) {
             r.setSoftFailures(softFailures);

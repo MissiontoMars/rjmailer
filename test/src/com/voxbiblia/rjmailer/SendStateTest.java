@@ -19,7 +19,7 @@ public class SendStateTest
         SendState ss = new SendState(drp, Collections.singletonList("u@domain.con"));
         MXData mxd = ss.nextMXData();
         assertEquals("mx0.domain.con", mxd.getServer());
-        ss.success("u@domain.con", "mx0.domain.con", "Sent as A9F4");
+        ss.success("u@domain.con", "mx0.domain.con", "Sent as A9F4", null,null);
         assertNull(ss.nextMXData());
         Map results = ss.getResults();
         assertEquals(1, results.size());
@@ -43,14 +43,14 @@ public class SendStateTest
         ss.softFailure("u0@domain.con",
                 new RJMException(ExactCause.SMTP_UNEXPECTED_STATUS,
                         "Some temporary error").setServer("mx0.domain.con"));
-        ss.success("u1@domain.con", "mx0.domain.con", "Sent as F0F0");
+        ss.success("u1@domain.con", "mx0.domain.con", "Sent as F0F0",null,null);
 
         mxd = ss.nextMXData();
         List<String> recipients = mxd.getRecipients();
         assertEquals(1, recipients.size());
 
         assertEquals("mx1.domain.con", mxd.getServer());
-        ss.success("u0@domain.con", "mx1.domain.con", "Sent as FFEE");
+        ss.success("u0@domain.con", "mx1.domain.con", "Sent as FFEE",null,null);
 
 
         assertNull(ss.nextMXData());
@@ -93,7 +93,7 @@ public class SendStateTest
         assertEquals(2, recipients.size());
         
 
-        ss.success("u0@domain.con", "mx1.domain.con", "Sent as FFEE");
+        ss.success("u0@domain.con", "mx1.domain.con", "Sent as FFEE",null,null);
         ss.softFailure("u1@domain.con", new RJMException(ExactCause.SMTP_UNEXPECTED_STATUS,
                 "Another soft failure"));
 

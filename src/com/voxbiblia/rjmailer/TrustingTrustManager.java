@@ -6,8 +6,8 @@ import java.security.cert.CertificateException;
 
 /**
  * This TrustManager has nothing but trust.
- **/
-public class TrustingTrustManager implements X509TrustManager
+ */
+class TrustingTrustManager implements X509TrustManager
 {
     public void checkClientTrusted(X509Certificate[] x509Certificates, String s)
             throws CertificateException

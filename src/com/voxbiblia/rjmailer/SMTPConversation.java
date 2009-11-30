@@ -4,13 +4,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.SecureRandom;
+import java.security.MessageDigest;
+import java.security.cert.Certificate;
 import java.util.*;
 
 /**
@@ -63,6 +61,8 @@ class SMTPConversation
     private Socket socket;
     private int smtpPort = 25;
     private boolean tlsEnabled = false;
+    private String tlsCipherSuite = null;
+    private String tlsCertHash = null;
     byte[] inBuf = new byte[1000];
 
     /**
@@ -114,7 +114,7 @@ class SMTPConversation
             Set<String> ehloKeywords = parseEhloResponse(250);
             if (ehloKeywords.contains("STARTTLS") && !tlsEnabled) {
                 enableTLS();
-
+                
             }
             sendCommand("MAIL FROM: <" + AddressUtil.getAddress(msg.getFrom()) + ">");
             checkStatus(250);
@@ -146,7 +146,7 @@ class SMTPConversation
 
             String result = checkStatus(250).substring("250 ".length());
             for (String s : l) {
-                ss.success(s, server, result);
+                ss.success(s, server, result, tlsCipherSuite, tlsCertHash);
             }
         } catch (SMTPException e) {
             for (String s : l) {
@@ -162,7 +162,7 @@ class SMTPConversation
             TrustManager[] tms = new TrustManager[] { new TrustingTrustManager() };
             try {
                 SSLContext context = SSLContext.getInstance("TLS");
-                context.init(new KeyManager[0], tms, new SecureRandom());
+                context.init(new KeyManager[0], tms, null);
                 sslSocketFactory = context.getSocketFactory();
             } catch (Exception e) {
                 throw new Error(e);
@@ -172,17 +172,47 @@ class SMTPConversation
         log.info("Starting TLS");
         sendCommand("STARTTLS");
         checkStatus(220);
-        socket = sslSocketFactory.createSocket(socket, server, smtpPort, true);
-        configureCipherSuites((SSLSocket)socket);
+        SSLSocket ss = (SSLSocket)sslSocketFactory.createSocket(socket, server,
+                smtpPort, true);
+        configureCipherSuites(ss);
+        ss.startHandshake();
+        tlsCipherSuite = ss.getSession().getCipherSuite();
+        tlsCertHash = makeCertHash(ss);
+
+        socket = ss;
         os = socket.getOutputStream();
         is = socket.getInputStream();
         tlsEnabled = true;
     }
 
+    private String makeCertHash(SSLSocket ss)
+    {
+        try {
+            Certificate[] cs = ss.getSession().getPeerCertificates();
+            if (cs.length == 0) {
+                return null;
+            }
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            md.update(cs[0].getEncoded());
+            StringBuilder sb = new StringBuilder();
+            byte[] digest = md.digest();
+            sb.append(String.format("%02X", digest[0]));
+            for (int i = 1; i < digest.length; i++) {
+                sb.append(String.format(":%02X", digest[i]));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
+
+    
+
     private void configureCipherSuites(SSLSocket sslSocket)
     {
         List<String> target = new ArrayList<String>();
-        Set<String> source = new HashSet<String>(Arrays.asList(sslSocket.getSupportedCipherSuites()));
+        Set<String> source = new HashSet<String>(
+                Arrays.asList(sslSocket.getSupportedCipherSuites()));
         // preferred
         if (source.contains("TLS_DHE_RSA_WITH_AES_128_CBC_SHA")) {
             target.add("TLS_DHE_RSA_WITH_AES_128_CBC_SHA");

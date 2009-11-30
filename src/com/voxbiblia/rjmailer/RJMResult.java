@@ -17,12 +17,15 @@ public class RJMResult
     private String result;
     private Status status;
     private List<RJMException> softFailures;
+    private String tlsCipherSuite;
+    private String tlsCertHash;
 
     public RJMResult(String recievingServer, String result, Status status)
     {
         this.recievingServer = recievingServer;
         this.result = result;
         this.status = status;
+
     }
 
     public String getRecievingServer()
@@ -58,5 +61,25 @@ public class RJMResult
     public void setSoftFailures(List<RJMException> softFailures)
     {
         this.softFailures = softFailures;
+    }
+
+    public String getTlsCipherSuite()
+    {
+        return tlsCipherSuite;
+    }
+
+    public void setTlsCipherSuite(String tlsCipherSuite)
+    {
+        this.tlsCipherSuite = tlsCipherSuite;
+    }
+
+    public String getTlsCertHash()
+    {
+        return tlsCertHash;
+    }
+
+    public void setTlsCertHash(String tlsCertHash)
+    {
+        this.tlsCertHash = tlsCertHash;
     }
 }
